@@ -1,0 +1,133 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// npx prisma migrate dev --name init
+
+generator client {
+    provider        = "prisma-client-js"
+    previewFeatures = ["referentialIntegrity"]
+}
+
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+model Example {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Config {
+    id                 Int     @id @default(autoincrement())
+    minEntry           Int
+    minStockAfterEntry Int
+    minStockAfterSale  Int
+    maxDebt            Int
+    disableAllRule     Boolean
+}
+
+model Account {
+    id              Int               @id @default(autoincrement())
+    username        String            @unique @db.VarChar(255)
+    password        String            @db.VarChar(255)
+    role            String            @db.VarChar(255)
+    BookEntryTicket BookEntryTicket[]
+    Sale            Sale[]
+    Payment         Payment[]
+}
+
+model Customer {
+    id      Int       @id @default(autoincrement())
+    name    String    @db.VarChar(255)
+    address String    @db.VarChar(255)
+    phone   String    @db.VarChar(255)
+    email   String    @unique @db.VarChar(255)
+    debt    Int
+    Sale    Sale[]
+    Payment Payment[]
+}
+
+model Book {
+    id              Int               @id @default(autoincrement())
+    title           String            @db.VarChar(255)
+    price           Int
+    quantity        Int
+    BookEntryTicket BookEntryTicket[]
+    BookAuthor      BookAuthor[]
+    CategoryAuthor  CategoryAuthor[]
+    SaleDetail      SaleDetail[]
+}
+
+model BookEntryTicket {
+    id        Int      @id @default(autoincrement())
+    account   Account  @relation(fields: [accountId], references: [id])
+    accountId Int
+    book      Book     @relation(fields: [bookId], references: [id])
+    bookId    Int
+    quantity  Int
+    createdAt DateTime @default(now())
+}
+
+model Author {
+    id         Int          @id @default(autoincrement())
+    name       String       @db.VarChar(255)
+    BookAuthor BookAuthor[]
+}
+
+model Category {
+    id             Int              @id @default(autoincrement())
+    name           String           @db.VarChar(255)
+    CategoryAuthor CategoryAuthor[]
+}
+
+model BookAuthor {
+    book     Book   @relation(fields: [bookId], references: [id])
+    bookId   Int
+    author   Author @relation(fields: [authorId], references: [id])
+    authorId Int
+
+    @@id([bookId, authorId])
+}
+
+model CategoryAuthor {
+    book       Book     @relation(fields: [bookId], references: [id])
+    bookId     Int
+    category   Category @relation(fields: [categoryId], references: [id])
+    categoryId Int
+
+    @@id([bookId, categoryId])
+}
+
+model Sale {
+    id          Int          @id @default(autoincrement())
+    totalAmount Int
+    amountPaid  Int
+    createdAt   DateTime     @default(now())
+    customer    Customer     @relation(fields: [customerId], references: [id])
+    customerId  Int
+    acount      Account      @relation(fields: [accountId], references: [id])
+    accountId   Int
+    SaleDetail  SaleDetail[]
+}
+
+model SaleDetail {
+    sale     Sale @relation(fields: [saleId], references: [id])
+    saleId   Int
+    book     Book @relation(fields: [bookId], references: [id])
+    bookId   Int
+    quantity Int
+
+    @@id([bookId, saleId])
+}
+
+model Payment {
+    id         Int      @id @default(autoincrement())
+    amountPaid Int
+    createdAt  DateTime @default(now())
+    customer   Customer @relation(fields: [customerId], references: [id])
+    customerId Int
+    acount     Account  @relation(fields: [accountId], references: [id])
+    accountId  Int
+}
