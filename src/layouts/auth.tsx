@@ -1,5 +1,14 @@
+import Head from "next/head";
+
 export function AuthLayout(props: { children: React.ReactNode }) {
-  return <div className="relative min-h-screen w-full">{props.children}</div>;
+  return (
+    <>
+      <Head>
+        <title>Login</title>
+      </Head>
+      <div className="relative min-h-screen w-full">{props.children}</div>
+    </>
+  );
 }
 
 export default AuthLayout;
