@@ -1,6 +1,8 @@
 import { type AppType } from "next/app";
 import { type Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
+import { ThemeProvider } from "@material-tailwind/react";
+import { MaterialTailwindControllerProvider } from "@/context";
 
 import { api } from "@/utils/api";
 
@@ -12,7 +14,11 @@ const MyApp: AppType<{ session: Session | null }> = ({
 }) => {
   return (
     <SessionProvider session={session}>
-      <Component {...pageProps} />
+      <ThemeProvider>
+        <MaterialTailwindControllerProvider>
+          <Component {...pageProps} />
+        </MaterialTailwindControllerProvider>
+      </ThemeProvider>
     </SessionProvider>
   );
 };
