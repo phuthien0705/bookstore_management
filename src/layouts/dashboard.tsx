@@ -14,7 +14,7 @@ export function DashboardLayout(props: { children: React.ReactNode }) {
   useEffect(() => {
     if (!sessionData) {
       void router.push({
-        pathname: "/login",
+        pathname: "/",
       });
     }
   }, [router, sessionData]);
