@@ -1,32 +1,45 @@
+import dynamic from "next/dynamic";
 import Head from "next/head";
+import { useState } from "react";
+import toast from "react-hot-toast";
 import DashboardLayout from "@/layouts/dashboard";
 import {
-  Avatar,
   Button,
   Card,
   CardBody,
   CardHeader,
-  Chip,
   Typography,
 } from "@material-tailwind/react";
-import { authorsTableData } from "@/data";
-import { useState } from "react";
-import { AuthorModal } from "@/components/modals/AuthorModal";
-import { api } from "@/utils/api";
 import { LoadingScreen } from "@/components/loading/LoadingScreen";
+import { type NextPageWithLayout } from "../page";
+import { type Author } from "@prisma/client";
+import { api } from "@/utils/api";
+const AuthorModal = dynamic(() => import("@/components/modals/AuthorModal"));
 
-function AuthorPage() {
-  const [openModal, setOpenModal] = useState(false);
+const AuthorPage: NextPageWithLayout = () => {
+  const [openModal, setOpenModal] = useState<boolean>(false);
+  const [currentItem, setCurrentItem] = useState<Author | null>(null);
   const handleOpen = () => setOpenModal((cur) => !cur);
-
   const { data, isLoading, isFetching } = api.author.getAll.useQuery();
-  console.log({ data, isLoading, isFetching });
+  // console.log({ data, isLoading, isFetching });
+  const utils = api.useContext();
+  const { mutate: deleteAuthor } = api.author.delete.useMutation({
+    async onSuccess(data: any) {
+      toast.success("Delete successfully");
+      await utils.author.getAll.refetch();
+    },
+    onError(err) {
+      console.error(err);
+      handleOpen();
+    },
+  });
+
   return (
     <>
       <Head>
         <title>AuthorManagement</title>
       </Head>
-      <DashboardLayout>
+      <>
         <div className="mt-12 mb-8">
           <Card>
             <CardHeader
@@ -74,13 +87,8 @@ function AuthorPage() {
                   )}
                   {!isLoading &&
                     data &&
-                    data.map(({ id, name }, key) => {
-                      const className = `py-3 px-5 ${
-                        key === authorsTableData.length - 1
-                          ? ""
-                          : "border-b border-blue-gray-50"
-                      }`;
-
+                    data.map(({ id, name }) => {
+                      const className = `py-3 px-5`;
                       return (
                         <tr key={id}>
                           <td className={className}>
@@ -94,14 +102,24 @@ function AuthorPage() {
                             </Typography>
                           </td>
 
-                          <td className={className}>
-                            <Typography
-                              as="a"
-                              href="#"
-                              className="text-xs font-semibold text-blue-gray-600"
-                            >
-                              Edit
-                            </Typography>
+                          <td className={`${className} w-2/12`}>
+                            <div className="flex gap-3">
+                              <Typography
+                                onClick={() => {
+                                  setCurrentItem({ id, name });
+                                  setOpenModal(true);
+                                }}
+                                className="cursor-pointer text-xs font-semibold text-blue-gray-600"
+                              >
+                                Edit
+                              </Typography>
+                              <Typography
+                                onClick={() => deleteAuthor({ id })}
+                                className="cursor-pointer text-xs font-semibold text-red-600"
+                              >
+                                Delete
+                              </Typography>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -111,10 +129,17 @@ function AuthorPage() {
             </CardBody>
           </Card>
         </div>
-      </DashboardLayout>
-      <AuthorModal open={openModal} handleOpen={handleOpen} />
+      </>
+      <AuthorModal
+        open={openModal}
+        handleOpen={handleOpen}
+        currentItem={currentItem}
+        setCurrentItem={setCurrentItem}
+      />
     </>
   );
-}
-
+};
+AuthorPage.getLayout = (page) => {
+  return <DashboardLayout>{page}</DashboardLayout>;
+};
 export default AuthorPage;

@@ -10,14 +10,13 @@ export function DashboardLayout(props: { children: React.ReactNode }) {
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavType } = controller;
   const { data: sessionData, status } = useSession();
-
   useEffect(() => {
-    if (!sessionData) {
+    if (!sessionData && status !== "loading") {
       void router.push({
         pathname: "/",
       });
     }
-  }, [router, sessionData]);
+  }, [router, sessionData, status]);
 
   return (
     <div className="min-h-screen bg-blue-gray-50/50">

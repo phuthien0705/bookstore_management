@@ -1,15 +1,16 @@
 import Head from "next/head";
 import DashboardLayout from "@/layouts/dashboard";
+import { type NextPageWithLayout } from "../page";
 
-function BookPage() {
+const BookPage: NextPageWithLayout = () => {
   return (
     <>
       <Head>
         <title>BookManagement</title>
       </Head>
-      <DashboardLayout>this is book</DashboardLayout>
+      <div>this is book</div>
     </>
   );
-}
-
+};
+BookPage.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
 export default BookPage;

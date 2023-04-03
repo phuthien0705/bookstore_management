@@ -22,10 +22,11 @@ import {
 import { ProfileInfoCard, MessageCard } from "@/components/cards";
 import { platformSettingsData, conversationsData, projectsData } from "@/data";
 import DashboardLayout from "@/layouts/dashboard";
+import { type NextPageWithLayout } from "../page";
 
-export function Profile() {
+const Profile: NextPageWithLayout = () => {
   return (
-    <DashboardLayout>
+    <div>
       <div className="relative mt-8 h-72 w-full overflow-hidden rounded-xl bg-[url(https://images.unsplash.com/photo-1531512073830-ba890ca4eba2?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80)] bg-cover	bg-center">
         <div className="absolute inset-0 h-full w-full bg-blue-500/50" />
       </div>
@@ -214,8 +215,8 @@ export function Profile() {
           </div>
         </CardBody>
       </Card>
-    </DashboardLayout>
+    </div>
   );
-}
-
+};
+Profile.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
 export default Profile;

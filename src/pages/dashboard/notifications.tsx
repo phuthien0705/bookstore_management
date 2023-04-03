@@ -9,8 +9,9 @@ import {
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import { type color } from "@material-tailwind/react/types/components/alert";
 import DashboardLayout from "@/layouts/dashboard";
+import { type NextPageWithLayout } from "../page";
 
-export function Notifications() {
+const Notifications: NextPageWithLayout = () => {
   const [showAlerts, setShowAlerts] = React.useState<{
     [key: string]: boolean;
   }>({
@@ -30,7 +31,7 @@ export function Notifications() {
   const alerts = ["blue", "green", "orange", "red"];
 
   return (
-    <DashboardLayout>
+    <div>
       <div className="mx-auto my-20 flex max-w-screen-lg flex-col gap-8">
         <Card>
           <CardHeader
@@ -98,8 +99,8 @@ export function Notifications() {
           </CardBody>
         </Card>
       </div>
-    </DashboardLayout>
+    </div>
   );
-}
-
+};
+Notifications.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
 export default Notifications;

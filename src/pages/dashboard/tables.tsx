@@ -11,10 +11,10 @@ import {
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import { authorsTableData, projectsTableData } from "@/data";
 import DashboardLayout from "@/layouts/dashboard";
-
-export function Tables() {
+import { type NextPageWithLayout } from "../page";
+const Tables: NextPageWithLayout = () => {
   return (
-    <DashboardLayout>
+    <div>
       <div className="mt-12 mb-8 flex flex-col gap-12">
         <Card>
           <CardHeader variant="gradient" color="blue" className="mb-8 p-6">
@@ -219,8 +219,8 @@ export function Tables() {
           </CardBody>
         </Card>
       </div>
-    </DashboardLayout>
+    </div>
   );
-}
-
+};
+Tables.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
 export default Tables;

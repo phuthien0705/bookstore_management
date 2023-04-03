@@ -15,6 +15,7 @@ const config = {
         "@typescript-eslint/no-unsafe-assignment": "off",
         "@typescript-eslint/no-unsafe-argument": "off",
         "react/no-unescaped-entities": "off",
+        "@typescript-eslint/ban-types": "off",
       },
     },
   ],

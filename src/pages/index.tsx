@@ -14,8 +14,9 @@ import {
 } from "@material-tailwind/react";
 import AuthLayout from "@/layouts/auth";
 import { useRouter } from "next/router";
+import { type NextPageWithLayout } from "./page";
 
-const Login: React.FC = () => {
+const Login: NextPageWithLayout = () => {
   const [values, setValues] = useState<{
     username: string;
     password: string;
@@ -42,7 +43,7 @@ const Login: React.FC = () => {
     setValues((pre) => ({ ...pre, [name]: value }));
   };
   return (
-    <AuthLayout>
+    <div>
       <img
         alt="bg"
         src="https://images.unsplash.com/photo-1497294815431-9365093b7331?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1950&q=80"
@@ -87,8 +88,8 @@ const Login: React.FC = () => {
           </CardFooter>
         </Card>
       </form>
-    </AuthLayout>
+    </div>
   );
 };
-
+Login.getLayout = (page) => <AuthLayout>{page}</AuthLayout>;
 export default Login;
