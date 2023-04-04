@@ -14,7 +14,7 @@ import { api } from "@/utils/api";
 
 interface IAuthor {
   open: boolean;
-  handleOpen: (value?: any) => void;
+  handleOpen: (value?: boolean) => void;
   currentItem: Author | null;
   setCurrentItem: Dispatch<SetStateAction<Author | null>>;
 }
@@ -36,8 +36,8 @@ const AuthorModal: React.FC<IAuthor> = ({
   };
   const {
     mutate: createFunc,
-
     status: createStatus,
+    reset,
   } = api.author.create.useMutation({
     onSuccess() {
       executeAfter500ms(async () => {
@@ -86,8 +86,14 @@ const AuthorModal: React.FC<IAuthor> = ({
   useEffect(() => {
     if (currentItem) {
       setValue(currentItem.name);
+    } else {
+      setValue("");
     }
   }, [currentItem]);
+
+  useEffect(() => {
+    open && reset();
+  }, [open, reset]);
 
   return (
     <Dialog
@@ -95,6 +101,10 @@ const AuthorModal: React.FC<IAuthor> = ({
       open={open}
       handler={handleOpen}
       className="bg-transparent shadow-none"
+      dismiss={{
+        enabled: true,
+        bubbles: true,
+      }}
     >
       <form onSubmit={onSubmit}>
         <Card className="mx-auto w-full max-w-[24rem]">

@@ -14,26 +14,32 @@ import { LoadingScreen } from "@/components/loading/LoadingScreen";
 import { type NextPageWithLayout } from "../page";
 import { type Author } from "@prisma/client";
 import { api } from "@/utils/api";
+import useModal from "@/hook/useModal";
 const AuthorModal = dynamic(() => import("@/components/modals/AuthorModal"));
+const ConfirmModal = dynamic(() => import("@/components/modals/ConfirmModal"));
 
 const AuthorPage: NextPageWithLayout = () => {
-  const [openModal, setOpenModal] = useState<boolean>(false);
+  const { open: openAuthorModal, handleOpen: handleOpenAuthorModal } =
+    useModal();
+  const { open: openConfirmModal, handleOpen: handleOpenConfirmModal } =
+    useModal();
   const [currentItem, setCurrentItem] = useState<Author | null>(null);
-  const handleOpen = () => setOpenModal((cur) => !cur);
   const { data, isLoading, isFetching } = api.author.getAll.useQuery();
   // console.log({ data, isLoading, isFetching });
   const utils = api.useContext();
   const { mutate: deleteAuthor } = api.author.delete.useMutation({
-    async onSuccess(data: any) {
+    async onSuccess() {
       toast.success("Delete successfully");
+      setCurrentItem(null);
       await utils.author.getAll.refetch();
     },
     onError(err) {
       console.error(err);
-      handleOpen();
     },
   });
-
+  const handleConfirmDelete = () => {
+    currentItem && deleteAuthor({ id: currentItem.id });
+  };
   return (
     <>
       <Head>
@@ -53,7 +59,7 @@ const AuthorPage: NextPageWithLayout = () => {
               <Button
                 variant="outlined"
                 className="bg-white"
-                onClick={handleOpen}
+                onClick={() => handleOpenAuthorModal()}
               >
                 Add Author
               </Button>
@@ -107,14 +113,17 @@ const AuthorPage: NextPageWithLayout = () => {
                               <Typography
                                 onClick={() => {
                                   setCurrentItem({ id, name });
-                                  setOpenModal(true);
+                                  handleOpenAuthorModal(true);
                                 }}
                                 className="cursor-pointer text-xs font-semibold text-blue-gray-600"
                               >
                                 Edit
                               </Typography>
                               <Typography
-                                onClick={() => deleteAuthor({ id })}
+                                onClick={() => {
+                                  setCurrentItem({ id, name });
+                                  handleOpenConfirmModal(true);
+                                }}
                                 className="cursor-pointer text-xs font-semibold text-red-600"
                               >
                                 Delete
@@ -131,10 +140,17 @@ const AuthorPage: NextPageWithLayout = () => {
         </div>
       </>
       <AuthorModal
-        open={openModal}
-        handleOpen={handleOpen}
+        open={openAuthorModal}
+        handleOpen={handleOpenAuthorModal}
         currentItem={currentItem}
         setCurrentItem={setCurrentItem}
+      />
+      <ConfirmModal
+        open={openConfirmModal}
+        handleOpen={handleOpenConfirmModal}
+        title="Delete Author"
+        content="The author will be permanently deleted. You are sure you want to delete?"
+        cb={handleConfirmDelete}
       />
     </>
   );
