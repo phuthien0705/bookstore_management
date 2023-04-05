@@ -2,6 +2,7 @@ import {
   FilledAuthor,
   FilledBook,
   FilledCategory,
+  FilledDownSquare,
   FilledSetting,
   FilledStaff,
 } from "@/components/icons/filled";
@@ -23,6 +24,11 @@ export const routes = [
     title: "Dashboard",
     layout: "dashboard",
     pages: [
+      {
+        icon: <FilledDownSquare {...icon} />,
+        name: "Book Entry Ticket",
+        path: "/bookEntryTicket",
+      },
       {
         icon: <FilledBook {...icon} />,
         name: "Book",
