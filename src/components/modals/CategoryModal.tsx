@@ -11,15 +11,16 @@ import {
 import { executeAfter500ms } from "@/utils/executeAfter500ms";
 import { api } from "@/utils/api";
 import { type Category } from "@prisma/client";
+import { contentMapping } from "@/constant/modal";
 
-interface ICategory {
+interface ICategoryModal {
   open: boolean;
   handleOpen: (value?: boolean) => void;
   currentItem: Category | null;
   setCurrentItem: Dispatch<SetStateAction<Category | null>>;
 }
 
-const CategoryModal: React.FC<ICategory> = ({
+const CategoryModal: React.FC<ICategoryModal> = ({
   open,
   handleOpen,
   currentItem,
@@ -44,7 +45,7 @@ const CategoryModal: React.FC<ICategory> = ({
         handleOpen();
 
         clearValueAfterClose();
-        await utils.category.getAll.refetch();
+        await utils.category.getWithPagination.refetch();
       });
     },
     onError(err) {
@@ -59,7 +60,7 @@ const CategoryModal: React.FC<ICategory> = ({
           handleOpen();
           clearValueAfterClose();
           setCurrentItem(null);
-          await utils.category.getAll.refetch();
+          await utils.category.getWithPagination.refetch();
         });
       },
       onError(err) {
@@ -76,12 +77,6 @@ const CategoryModal: React.FC<ICategory> = ({
   };
 
   const status = currentItem ? updateStatus : createStatus;
-  const contentMapping = {
-    idle: currentItem ? "update" : "create",
-    success: currentItem ? "update successfully" : "create successfully",
-    error: currentItem ? "update failed" : "create failed",
-    loading: currentItem ? "updateting..." : "creating...",
-  };
 
   useEffect(() => {
     if (currentItem) {
@@ -101,10 +96,6 @@ const CategoryModal: React.FC<ICategory> = ({
       open={open}
       handler={handleOpen}
       className="bg-transparent shadow-none"
-      dismiss={{
-        enabled: true,
-        bubbles: true,
-      }}
     >
       <form onSubmit={onSubmit}>
         <Card className="mx-auto w-full max-w-[24rem]">
@@ -122,7 +113,11 @@ const CategoryModal: React.FC<ICategory> = ({
           </CardBody>
           <CardFooter className="pt-0">
             <Button variant="gradient" type="submit" fullWidth>
-              {contentMapping[status as unknown as keyof typeof contentMapping]}
+              {
+                contentMapping(!!currentItem)[
+                  status as unknown as keyof typeof contentMapping
+                ]
+              }
             </Button>
           </CardFooter>
         </Card>

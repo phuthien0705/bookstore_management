@@ -4,7 +4,6 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import DashboardLayout from "@/layouts/dashboard";
 import { type NextPageWithLayout } from "../page";
-import useModal from "@/hook/useModal";
 import { type Category } from "@prisma/client";
 import { api } from "@/utils/api";
 import {
@@ -15,31 +14,50 @@ import {
   CardBody,
 } from "@material-tailwind/react";
 import { LoadingScreen } from "@/components/loading/LoadingScreen";
+import {
+  Pagination,
+  PaginationWrapper,
+} from "@/components/pagination/pagination";
+import useModal from "@/hook/useModal";
+
 const ConfirmModal = dynamic(() => import("@/components/modals/ConfirmModal"));
 const CategoryModal = dynamic(
   () => import("@/components/modals/CategoryModal")
 );
+
 const CategoryPage: NextPageWithLayout = () => {
+  const [pageIndex, setPageIndex] = useState<number>(0);
+
   const { open: openAuthorModal, handleOpen: handleOpenCategoryModal } =
     useModal();
   const { open: openConfirmModal, handleOpen: handleOpenConfirmModal } =
     useModal();
   const [currentItem, setCurrentItem] = useState<Category | null>(null);
   const utils = api.useContext();
-  const { data, isLoading, isFetching } = api.category.getAll.useQuery();
+  const { data, isLoading, isFetching } =
+    api.category.getWithPagination.useQuery({
+      limit: 10,
+      page: pageIndex + 1,
+    });
   const { mutate: deleteCategory } = api.category.delete.useMutation({
     async onSuccess() {
-      toast.success("Delete successfully");
       setCurrentItem(null);
-      await utils.category.getAll.refetch();
+      if (data?.datas.length === 1 && pageIndex !== 0) {
+        setPageIndex((p) => p - 1);
+      } else {
+        await utils.category.getWithPagination.refetch();
+      }
+      toast.success("Delete successfully");
     },
     onError(err) {
       console.error(err);
     },
   });
+
   const handleConfirmDelete = () => {
     currentItem && deleteCategory({ id: currentItem.id });
   };
+
   return (
     <>
       <Head>
@@ -92,7 +110,7 @@ const CategoryPage: NextPageWithLayout = () => {
                 )}
                 {!isLoading &&
                   data &&
-                  data.map(({ id, name }) => {
+                  data.datas.map(({ id, name }) => {
                     const className = `py-3 px-5`;
                     return (
                       <tr key={id}>
@@ -134,6 +152,19 @@ const CategoryPage: NextPageWithLayout = () => {
                   })}
               </tbody>
             </table>
+            {data && (
+              <div className="">
+                <PaginationWrapper>
+                  <Pagination
+                    gotoPage={setPageIndex}
+                    canPreviousPage={pageIndex > 0}
+                    canNextPage={pageIndex < data.totalPages - 1}
+                    pageCount={data.totalPages}
+                    pageIndex={pageIndex}
+                  />
+                </PaginationWrapper>
+              </div>
+            )}
           </CardBody>
         </Card>
       </div>

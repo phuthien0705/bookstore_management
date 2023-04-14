@@ -57,7 +57,7 @@ model Book {
     quantity        Int
     BookEntryTicket BookEntryTicket[]
     BookAuthor      BookAuthor[]
-    CategoryAuthor  CategoryAuthor[]
+    BookCategory    BookCategory[]
     SaleDetail      SaleDetail[]
 }
 
@@ -78,9 +78,9 @@ model Author {
 }
 
 model Category {
-    id             Int              @id @default(autoincrement())
-    name           String           @db.VarChar(255)
-    CategoryAuthor CategoryAuthor[]
+    id           Int            @id @default(autoincrement())
+    name         String         @db.VarChar(255)
+    BookCategory BookCategory[]
 }
 
 model BookAuthor {
@@ -92,7 +92,7 @@ model BookAuthor {
     @@id([bookId, authorId])
 }
 
-model CategoryAuthor {
+model BookCategory {
     book       Book     @relation(fields: [bookId], references: [id])
     bookId     Int
     category   Category @relation(fields: [categoryId], references: [id])

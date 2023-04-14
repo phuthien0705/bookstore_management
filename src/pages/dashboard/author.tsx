@@ -10,36 +10,54 @@ import {
   CardHeader,
   Typography,
 } from "@material-tailwind/react";
-import { LoadingScreen } from "@/components/loading/LoadingScreen";
-import { type NextPageWithLayout } from "../page";
 import { type Author } from "@prisma/client";
-import { api } from "@/utils/api";
+import { type NextPageWithLayout } from "../page";
 import useModal from "@/hook/useModal";
+import { api } from "@/utils/api";
+import { LoadingScreen } from "@/components/loading/LoadingScreen";
+import {
+  Pagination,
+  PaginationWrapper,
+} from "@/components/pagination/pagination";
+
 const AuthorModal = dynamic(() => import("@/components/modals/AuthorModal"));
 const ConfirmModal = dynamic(() => import("@/components/modals/ConfirmModal"));
 
 const AuthorPage: NextPageWithLayout = () => {
+  const utils = api.useContext();
+  const [pageIndex, setPageIndex] = useState<number>(0);
   const { open: openAuthorModal, handleOpen: handleOpenAuthorModal } =
     useModal();
   const { open: openConfirmModal, handleOpen: handleOpenConfirmModal } =
     useModal();
   const [currentItem, setCurrentItem] = useState<Author | null>(null);
-  const utils = api.useContext();
-  const { data, isLoading, isFetching } = api.author.getAll.useQuery();
+
+  const { data, isLoading, isFetching } = api.author.getWithPagination.useQuery(
+    {
+      limit: 10,
+      page: pageIndex + 1,
+    }
+  );
 
   const { mutate: deleteAuthor } = api.author.delete.useMutation({
     async onSuccess() {
-      toast.success("Delete successfully");
       setCurrentItem(null);
-      await utils.author.getAll.refetch();
+      if (data?.datas.length === 1 && pageIndex !== 0) {
+        setPageIndex((p) => p - 1);
+      } else {
+        await utils.author.getWithPagination.refetch();
+      }
+      toast.success("Delete successfully");
     },
     onError(err) {
       console.error(err);
     },
   });
+
   const handleConfirmDelete = () => {
     currentItem && deleteAuthor({ id: currentItem.id });
   };
+
   return (
     <>
       <Head>
@@ -93,7 +111,7 @@ const AuthorPage: NextPageWithLayout = () => {
                 )}
                 {!isLoading &&
                   data &&
-                  data.map(({ id, name }) => {
+                  data.datas.map(({ id, name }) => {
                     const className = `py-3 px-5`;
                     return (
                       <tr key={id}>
@@ -135,6 +153,19 @@ const AuthorPage: NextPageWithLayout = () => {
                   })}
               </tbody>
             </table>
+            {data && (
+              <div className="">
+                <PaginationWrapper>
+                  <Pagination
+                    gotoPage={setPageIndex}
+                    canPreviousPage={pageIndex > 0}
+                    canNextPage={pageIndex < data.totalPages - 1}
+                    pageCount={data.totalPages}
+                    pageIndex={pageIndex}
+                  />
+                </PaginationWrapper>
+              </div>
+            )}
           </CardBody>
         </Card>
       </div>

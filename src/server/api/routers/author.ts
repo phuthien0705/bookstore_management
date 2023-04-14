@@ -12,10 +12,37 @@ export const authorRouter = createTRPCRouter({
         },
       });
     }),
-
   getAll: protectedProcedure.query(({ ctx }) => {
     return ctx.prisma.author.findMany();
   }),
+  getWithPagination: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number(),
+        page: z.number(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const { limit, page } = input;
+      const [records, totalCount] = await Promise.all([
+        ctx.prisma.author.findMany({
+          skip: limit * (page - 1),
+          take: limit,
+        }),
+        ctx.prisma.author.count(),
+      ]);
+
+      const totalPages = Math.ceil(totalCount / limit);
+      const havePrevPage = page > 1;
+      const haveNextPage = page < totalPages;
+
+      return {
+        datas: records,
+        havePrevPage,
+        haveNextPage,
+        totalPages,
+      };
+    }),
   delete: protectedProcedure
     .input(z.object({ id: z.number().int() }))
     .mutation(({ input, ctx }) => {

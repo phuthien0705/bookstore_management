@@ -7,45 +7,54 @@ import {
   Input,
   CardFooter,
   Button,
+  Select,
+  Option,
 } from "@material-tailwind/react";
-import { type Author } from "@prisma/client";
+import { type Book } from "@prisma/client";
 import { executeAfter500ms } from "@/utils/executeAfter500ms";
 import { api } from "@/utils/api";
 import { contentMapping } from "@/constant/modal";
 
-interface IAuthorModal {
+interface IBookModal {
   open: boolean;
   handleOpen: (value?: boolean) => void;
-  currentItem: Author | null;
-  setCurrentItem: Dispatch<SetStateAction<Author | null>>;
+  currentItem: Book | null;
+  setCurrentItem: Dispatch<SetStateAction<Book | null>>;
 }
 
-const AuthorModal: React.FC<IAuthorModal> = ({
+type TValues = Omit<Book, "id">;
+
+const defaultValues: TValues = {
+  title: "",
+  price: 0,
+  quantity: 0,
+};
+
+const BookModal: React.FC<IBookModal> = ({
   open,
   handleOpen,
   currentItem,
   setCurrentItem,
 }) => {
-  const [value, setValue] = useState("");
+  const [values, setValues] = useState<TValues>(defaultValues);
   const utils = api.useContext();
   const clearValueAfterClose = () => {
-    setValue("");
+    setValues(defaultValues);
   };
   const onChange = (e: React.FormEvent<HTMLInputElement>): void => {
-    const { value } = e.currentTarget;
-    setValue(value);
+    const { value, name } = e.currentTarget;
+    setValues((p) => ({ ...p, [name]: value }));
   };
   const {
     mutate: createFunc,
     status: createStatus,
     reset,
-  } = api.author.create.useMutation({
+  } = api.book.create.useMutation({
     onSuccess() {
       executeAfter500ms(async () => {
         handleOpen();
-
         clearValueAfterClose();
-        await utils.author.getWithPagination.refetch();
+        await utils.book.getWithPagination.refetch();
       });
     },
     onError(err) {
@@ -54,13 +63,13 @@ const AuthorModal: React.FC<IAuthorModal> = ({
     },
   });
   const { mutate: updateFunc, status: updateStatus } =
-    api.author.update.useMutation({
+    api.book.update.useMutation({
       onSuccess() {
         executeAfter500ms(async () => {
           handleOpen();
           clearValueAfterClose();
           setCurrentItem(null);
-          await utils.author.getWithPagination.refetch();
+          await utils.book.getWithPagination.refetch();
         });
       },
       onError(err) {
@@ -72,17 +81,21 @@ const AuthorModal: React.FC<IAuthorModal> = ({
   const onSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
     currentItem
-      ? updateFunc({ id: currentItem.id, name: value })
-      : createFunc({ name: value });
+      ? updateFunc({ id: currentItem.id, ...values })
+      : createFunc({ ...values, authors: [], categorys: [] });
   };
 
   const status = currentItem ? updateStatus : createStatus;
 
   useEffect(() => {
     if (currentItem) {
-      setValue(currentItem.name);
+      setValues({
+        title: currentItem.title,
+        price: currentItem.price,
+        quantity: currentItem.quantity,
+      });
     } else {
-      setValue("");
+      setValues(defaultValues);
     }
   }, [currentItem]);
 
@@ -101,15 +114,41 @@ const AuthorModal: React.FC<IAuthorModal> = ({
         <Card className="mx-auto w-full max-w-[24rem]">
           <CardBody className="flex flex-col gap-4">
             <Typography className="font-bold">
-              {currentItem ? "Update" : "Create"} Author
+              {currentItem ? "Update" : "Create"} book
             </Typography>
             <Input
-              label="Name"
+              label="Title"
               size="lg"
-              value={value}
+              name="title"
+              value={values.title}
               onChange={onChange}
               required
             />
+            <Input
+              type="number"
+              label="Price"
+              size="lg"
+              name="price"
+              value={values.price}
+              onChange={onChange}
+              required
+            />
+            <Input
+              type="number"
+              label="Quantity"
+              size="lg"
+              name="quantity"
+              value={values.quantity}
+              onChange={onChange}
+              required
+            />
+            <Select label="Authors">
+              <Option>Material Tailwind HTML</Option>
+              <Option>Material Tailwind React</Option>
+              <Option>Material Tailwind Vue</Option>
+              <Option>Material Tailwind Angular</Option>
+              <Option>Material Tailwind Svelte</Option>
+            </Select>
           </CardBody>
           <CardFooter className="pt-0">
             <Button variant="gradient" type="submit" fullWidth>
@@ -126,4 +165,4 @@ const AuthorModal: React.FC<IAuthorModal> = ({
   );
 };
 
-export default AuthorModal;
+export default BookModal;
