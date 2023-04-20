@@ -28,6 +28,8 @@ const defaultValues: TValues = {
   title: "",
   price: 0,
   quantity: 0,
+  authorId: 0,
+  categoryId: 0,
 };
 
 const BookModal: React.FC<IBookModal> = ({
@@ -38,12 +40,18 @@ const BookModal: React.FC<IBookModal> = ({
 }) => {
   const [values, setValues] = useState<TValues>(defaultValues);
   const utils = api.useContext();
+  const { data: authors, isLoading: isAuthorsLoading } =
+    api.author.getAll.useQuery();
+  const { data: categorys, isLoading: isCategorysLoading } =
+    api.category.getAll.useQuery();
   const clearValueAfterClose = () => {
     setValues(defaultValues);
   };
   const onChange = (e: React.FormEvent<HTMLInputElement>): void => {
-    const { value, name } = e.currentTarget;
-    setValues((p) => ({ ...p, [name]: value }));
+    const { value, name, type } = e.currentTarget;
+    if (type === "number")
+      setValues((p) => ({ ...p, [name]: parseInt(value) }));
+    else setValues((p) => ({ ...p, [name]: value }));
   };
   const {
     mutate: createFunc,
@@ -82,17 +90,16 @@ const BookModal: React.FC<IBookModal> = ({
     e.preventDefault();
     currentItem
       ? updateFunc({ id: currentItem.id, ...values })
-      : createFunc({ ...values, authors: [], categorys: [] });
+      : createFunc({ ...values });
   };
 
   const status = currentItem ? updateStatus : createStatus;
 
   useEffect(() => {
     if (currentItem) {
+      const { id, ...itemInfo } = currentItem;
       setValues({
-        title: currentItem.title,
-        price: currentItem.price,
-        quantity: currentItem.quantity,
+        ...itemInfo,
       });
     } else {
       setValues(defaultValues);
@@ -142,12 +149,35 @@ const BookModal: React.FC<IBookModal> = ({
               onChange={onChange}
               required
             />
-            <Select label="Authors">
-              <Option>Material Tailwind HTML</Option>
-              <Option>Material Tailwind React</Option>
-              <Option>Material Tailwind Vue</Option>
-              <Option>Material Tailwind Angular</Option>
-              <Option>Material Tailwind Svelte</Option>
+            <Select
+              label="Author"
+              disabled={isAuthorsLoading}
+              value={(values.authorId as number | null)?.toString()}
+              onChange={(e) => {
+                setValues((p) => ({ ...p, authorId: parseInt(e as string) }));
+              }}
+            >
+              {authors &&
+                authors.map((item) => (
+                  <Option key={item.id} value={item.id.toString()}>
+                    {item.name}
+                  </Option>
+                ))}
+            </Select>
+            <Select
+              label="Category"
+              disabled={isCategorysLoading}
+              value={(values.categoryId as number | null)?.toString()}
+              onChange={(e) => {
+                setValues((p) => ({ ...p, categoryId: parseInt(e as string) }));
+              }}
+            >
+              {categorys &&
+                categorys.map((item) => (
+                  <Option key={item.id} value={item.id.toString()}>
+                    {item.name}
+                  </Option>
+                ))}
             </Select>
           </CardBody>
           <CardFooter className="pt-0">

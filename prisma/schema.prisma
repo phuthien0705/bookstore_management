@@ -14,12 +14,6 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Example {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-}
-
 model Config {
     id                 Int     @id @default(autoincrement())
     minEntry           Int
@@ -55,9 +49,11 @@ model Book {
     title           String            @db.VarChar(255)
     price           Int
     quantity        Int
+    authorId        Int?
+    author          Author?           @relation(fields: [authorId], references: [id])
+    categoryId      Int?
+    category        Category?         @relation(fields: [categoryId], references: [id])
     BookEntryTicket BookEntryTicket[]
-    BookAuthor      BookAuthor[]
-    BookCategory    BookCategory[]
     SaleDetail      SaleDetail[]
 }
 
@@ -72,33 +68,15 @@ model BookEntryTicket {
 }
 
 model Author {
-    id         Int          @id @default(autoincrement())
-    name       String       @db.VarChar(255)
-    BookAuthor BookAuthor[]
+    id   Int    @id @default(autoincrement())
+    name String @db.VarChar(255)
+    Book Book[]
 }
 
 model Category {
-    id           Int            @id @default(autoincrement())
-    name         String         @db.VarChar(255)
-    BookCategory BookCategory[]
-}
-
-model BookAuthor {
-    book     Book   @relation(fields: [bookId], references: [id])
-    bookId   Int
-    author   Author @relation(fields: [authorId], references: [id])
-    authorId Int
-
-    @@id([bookId, authorId])
-}
-
-model BookCategory {
-    book       Book     @relation(fields: [bookId], references: [id])
-    bookId     Int
-    category   Category @relation(fields: [categoryId], references: [id])
-    categoryId Int
-
-    @@id([bookId, categoryId])
+    id   Int    @id @default(autoincrement())
+    name String @db.VarChar(255)
+    Book Book[]
 }
 
 model Sale {

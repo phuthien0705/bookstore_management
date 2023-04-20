@@ -7,36 +7,15 @@ export const bookRouter = createTRPCRouter({
     .input(
       z.object({
         title: z.string(),
-        price: z.number(),
-        quantity: z.number(),
-        authors: z.number().array(),
-        categorys: z.number().array(),
+        price: z.number().int(),
+        quantity: z.number().int(),
+        authorId: z.number().int().nullable(),
+        categoryId: z.number().int().nullable(),
       })
     )
     .mutation(({ input, ctx }) => {
-      const { authors, categorys, title, price, quantity } = input;
-      const authorArray = authors.map((i) => {
-        return { authorId: i };
-      });
-      const categoryArray = categorys.map((i) => {
-        return { categoryId: i };
-      });
       return ctx.prisma.book.create({
-        data: {
-          title,
-          price,
-          quantity,
-          BookAuthor: {
-            createMany: {
-              data: authorArray,
-            },
-          },
-          BookCategory: {
-            createMany: {
-              data: categoryArray,
-            },
-          },
-        },
+        data: { ...input },
       });
     }),
   delete: protectedProcedure
@@ -51,18 +30,17 @@ export const bookRouter = createTRPCRouter({
       z.object({
         id: z.number().int(),
         title: z.string(),
-        price: z.number(),
-        quantity: z.number(),
+        price: z.number().int(),
+        quantity: z.number().int(),
+        authorId: z.number().int().nullable(),
+        categoryId: z.number().int().nullable(),
       })
     )
     .mutation(({ input, ctx }) => {
+      const { id, ...req } = input;
       return ctx.prisma.book.update({
-        data: {
-          title: input.title,
-          price: input.price,
-          quantity: input.quantity,
-        },
-        where: { id: input.id },
+        data: { ...req },
+        where: { id },
       });
     }),
 

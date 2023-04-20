@@ -11,13 +11,15 @@ import {
 import { UserCircleIcon, Bars3Icon } from "@heroicons/react/24/solid";
 import { useMaterialTailwindController, setOpenSidenav } from "@/context";
 import { signOut } from "next-auth/react";
+import { useContext } from "react";
+import { DashboardContext } from "@/layouts/dashboard";
 
 export function DashboardNavbar() {
   const router = useRouter();
+  const { searchValue, setSearchValue } = useContext(DashboardContext);
   const [controller, dispatch] = useMaterialTailwindController();
   const { fixedNavbar, openSidenav } = controller;
   const [layout, page] = router.pathname.split("/").filter((el) => el !== "");
-
   return (
     <Navbar
       color={fixedNavbar ? "white" : "transparent"}
@@ -59,7 +61,11 @@ export function DashboardNavbar() {
         </div>
         <div className="flex items-center">
           <div className="mr-auto md:mr-4 md:w-56">
-            <Input label="Type here" />
+            <Input
+              label="Search here"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+            />
           </div>
           <IconButton
             variant="text"
@@ -72,19 +78,12 @@ export function DashboardNavbar() {
           <Button
             variant="text"
             color="blue-gray"
-            className="hidden items-center gap-1 px-4 xl:flex"
+            className=" flex items-center gap-1 px-4"
             onClick={() => signOut()}
           >
             <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
             Sign Out
           </Button>
-          <IconButton
-            variant="text"
-            color="blue-gray"
-            className="grid xl:hidden"
-          >
-            <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
-          </IconButton>
         </div>
       </div>
     </Navbar>

@@ -30,10 +30,18 @@ const BookPage: NextPageWithLayout = () => {
   const { open: openConfirmModal, handleOpen: handleOpenConfirmModal } =
     useModal();
   const [currentItem, setCurrentItem] = useState<Book | null>(null);
-  const { data, isLoading, isFetching } = api.book.getWithPagination.useQuery({
+  const {
+    data,
+    isLoading: isBooksLoading,
+    isFetching,
+  } = api.book.getWithPagination.useQuery({
     limit: 10,
     page: pageIndex + 1,
   });
+  const { data: authors, isLoading: isAuthorsLoading } =
+    api.author.getAll.useQuery();
+  const { data: categorys, isLoading: isCategorysLoading } =
+    api.category.getAll.useQuery();
   const { mutate: deleteBook } = api.book.delete.useMutation({
     async onSuccess() {
       setCurrentItem(null);
@@ -52,7 +60,17 @@ const BookPage: NextPageWithLayout = () => {
   const handleConfirmDelete = () => {
     currentItem && deleteBook({ id: currentItem.id });
   };
+  console.log(data);
 
+  const isLoading = isAuthorsLoading && isBooksLoading && isCategorysLoading;
+  const renderAuthor = (id: number) => {
+    const result = authors && authors.find((obj) => obj.id === id);
+    return result ? result.name : undefined;
+  };
+  const renderCategory = (id: number) => {
+    const result = categorys && categorys.find((obj) => obj.id === id);
+    return result ? result.name : undefined;
+  };
   return (
     <>
       <Head>
@@ -66,7 +84,7 @@ const BookPage: NextPageWithLayout = () => {
             className="mb-8 flex items-center justify-between px-6 py-4"
           >
             <Typography variant="h6" color="white">
-              Authors Table
+              Books Table
             </Typography>
             <Button
               variant="outlined"
@@ -80,7 +98,15 @@ const BookPage: NextPageWithLayout = () => {
             <table className="w-full min-w-[640px] table-auto">
               <thead>
                 <tr>
-                  {["ID", "title", "price", "quantity", "action"].map((el) => (
+                  {[
+                    "ID",
+                    "title",
+                    "price",
+                    "quantity",
+                    "author",
+                    "category",
+                    "action",
+                  ].map((el) => (
                     <th
                       key={el}
                       className="border-b border-blue-gray-50 py-3 px-5 text-left"
@@ -105,35 +131,45 @@ const BookPage: NextPageWithLayout = () => {
                 )}
                 {!isLoading &&
                   data &&
-                  data.datas.map(({ id, title, price, quantity }) => {
+                  data.datas.map((item) => {
                     const className = `py-3 px-5`;
                     return (
-                      <tr key={id}>
+                      <tr key={item.id}>
                         <td className={`${className} w-1/12`}>
                           <Typography className="text-xs font-semibold text-blue-gray-600">
-                            {id}
+                            {item.id}
                           </Typography>
                         </td>
                         <td className={className}>
                           <Typography className="text-xs font-semibold text-blue-gray-600">
-                            {title}
+                            {item.title}
                           </Typography>
                         </td>
                         <td className={className}>
                           <Typography className="text-xs font-semibold text-blue-gray-600">
-                            {price}
+                            {item.price}
                           </Typography>
                         </td>
                         <td className={className}>
                           <Typography className="text-xs font-semibold text-blue-gray-600">
-                            {quantity}
+                            {item.quantity}
+                          </Typography>
+                        </td>
+                        <td className={className}>
+                          <Typography className="text-xs font-semibold text-blue-gray-600">
+                            {item.authorId && renderAuthor(item.authorId)}
+                          </Typography>
+                        </td>
+                        <td className={className}>
+                          <Typography className="text-xs font-semibold text-blue-gray-600">
+                            {item.categoryId && renderCategory(item.categoryId)}
                           </Typography>
                         </td>
                         <td className={`${className} w-2/12`}>
                           <div className="flex gap-3">
                             <Typography
                               onClick={() => {
-                                setCurrentItem({ id, title, price, quantity });
+                                setCurrentItem(item);
                                 handleOpenBookModal(true);
                               }}
                               className="cursor-pointer text-xs font-semibold text-blue-gray-600"
@@ -142,7 +178,7 @@ const BookPage: NextPageWithLayout = () => {
                             </Typography>
                             <Typography
                               onClick={() => {
-                                setCurrentItem({ id, title, price, quantity });
+                                setCurrentItem(item);
                                 handleOpenConfirmModal(true);
                               }}
                               className="cursor-pointer text-xs font-semibold text-red-600"
