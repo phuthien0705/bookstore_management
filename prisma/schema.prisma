@@ -14,99 +14,179 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Config {
-    id                 Int     @id @default(autoincrement())
-    minEntry           Int
-    minStockAfterEntry Int
-    minStockAfterSale  Int
-    maxDebt            Int
-    disableAllRule     Boolean
+model TAIKHOAN {
+    MaTK          Int             @id @default(autoincrement())
+    TenDangNhap   String          @unique @db.VarChar(255)
+    MatKhau       String          @db.VarChar(255)
+    NhomNguoiDung NHOMNGUOIDUNG   @relation(fields: [MaNhom], references: [MaNhom])
+    MaNhom        Int
+    PHIEUNHAPSACH PHIEUNHAPSACH[]
+    HOADONBANSACH HOADONBANSACH[]
+    PHIEUTHUTIEN  PHIEUTHUTIEN[]
 }
 
-model Account {
-    id              Int               @id @default(autoincrement())
-    username        String            @unique @db.VarChar(255)
-    password        String            @db.VarChar(255)
-    role            String            @db.VarChar(255)
-    BookEntryTicket BookEntryTicket[]
-    Sale            Sale[]
-    Payment         Payment[]
+model NHOMNGUOIDUNG {
+    MaNhom    Int         @id @default(autoincrement())
+    TenNhom   String      @unique @db.VarChar(255)
+    PhanQuyen PHANQUYEN[]
+    TaiKhoan  TAIKHOAN[]
 }
 
-model Customer {
-    id      Int       @id @default(autoincrement())
-    name    String    @db.VarChar(255)
-    address String    @db.VarChar(255)
-    phone   String    @db.VarChar(255)
-    email   String    @unique @db.VarChar(255)
-    debt    Int
-    Sale    Sale[]
-    Payment Payment[]
+model CHUCNANG {
+    MaChucNang         Int         @id @default(autoincrement())
+    TenChucNang        String      @db.VarChar(255)
+    TenManHinhDuocLoad String      @db.VarChar(255)
+    PhanQuyen          PHANQUYEN[]
 }
 
-model Book {
-    id              Int               @id @default(autoincrement())
-    title           String            @db.VarChar(255)
-    price           Int
-    quantity        Int
-    authorId        Int?
-    author          Author?           @relation(fields: [authorId], references: [id])
-    categoryId      Int?
-    category        Category?         @relation(fields: [categoryId], references: [id])
-    BookEntryTicket BookEntryTicket[]
-    SaleDetail      SaleDetail[]
+model PHANQUYEN {
+    NhomNguoiDung NHOMNGUOIDUNG @relation(fields: [MaNhom], references: [MaNhom])
+    MaNhom        Int
+    ChucNang      CHUCNANG      @relation(fields: [MaChucNang], references: [MaChucNang])
+    MaChucNang    Int
+
+    @@id([MaNhom, MaChucNang])
 }
 
-model BookEntryTicket {
-    id        Int      @id @default(autoincrement())
-    account   Account  @relation(fields: [accountId], references: [id])
-    accountId Int
-    book      Book     @relation(fields: [bookId], references: [id])
-    bookId    Int
-    quantity  Int
-    createdAt DateTime @default(now())
+model THAMCHIEU {
+    id                   Int     @id @default(autoincrement())
+    SoLuongNhapToiThieu  Int
+    SoLuongTonToiThieu   Int
+    TonKhoToiThieuSauBan Int
+    TyLeDonGia           Decimal
+    CongNoToiDa          Int
+    SuDungQuyDinh        Boolean
 }
 
-model Author {
-    id   Int    @id @default(autoincrement())
-    name String @db.VarChar(255)
-    Book Book[]
+model TACGIA {
+    MaTG      Int         @id @default(autoincrement())
+    TenTG     String      @db.VarChar(255)
+    CT_TACGIA CT_TACGIA[]
 }
 
-model Category {
-    id   Int    @id @default(autoincrement())
-    name String @db.VarChar(255)
-    Book Book[]
+model CT_TACGIA {
+    TacGia    TACGIA  @relation(fields: [MaTG], references: [MaTG])
+    MaTG      Int
+    DauSach   DAUSACH @relation(fields: [MaDauSach], references: [MaDauSach])
+    MaDauSach Int
+
+    @@id([MaTG, MaDauSach])
 }
 
-model Sale {
-    id          Int          @id @default(autoincrement())
-    totalAmount Int
-    amountPaid  Int
-    createdAt   DateTime     @default(now())
-    customer    Customer     @relation(fields: [customerId], references: [id])
-    customerId  Int
-    acount      Account      @relation(fields: [accountId], references: [id])
-    accountId   Int
-    SaleDetail  SaleDetail[]
+model DAUSACH {
+    MaDauSach  Int         @id @default(autoincrement())
+    TenDauSach String      @db.VarChar(255)
+    TheLoai    THELOAI     @relation(fields: [MaTL], references: [MaTL])
+    MaTL       Int
+    CT_TACGIA  CT_TACGIA[]
+    SACH       SACH[]
 }
 
-model SaleDetail {
-    sale     Sale @relation(fields: [saleId], references: [id])
-    saleId   Int
-    book     Book @relation(fields: [bookId], references: [id])
-    bookId   Int
-    quantity Int
-
-    @@id([bookId, saleId])
+model THELOAI {
+    MaTL    Int       @id @default(autoincrement())
+    TenTL   String    @db.VarChar(255)
+    DAUSACH DAUSACH[]
 }
 
-model Payment {
-    id         Int      @id @default(autoincrement())
-    amountPaid Int
-    createdAt  DateTime @default(now())
-    customer   Customer @relation(fields: [customerId], references: [id])
-    customerId Int
-    acount     Account  @relation(fields: [accountId], references: [id])
-    accountId  Int
+model SACH {
+    MaSach           Int                @id @default(autoincrement())
+    NhaXuatBan       String             @db.VarChar(255)
+    NamXuatBan       String             @db.VarChar(255)
+    DonGiaBan        Decimal
+    SoLuongTon       Int
+    DauSach          DAUSACH            @relation(fields: [MaDauSach], references: [MaDauSach])
+    MaDauSach        Int
+    BAOCAOTON        BAOCAOTON[]
+    CT_PHIEUNHAPSACH CT_PHIEUNHAPSACH[]
+    CT_HOADON        CT_HOADON[]
+}
+
+model BAOCAOTON {
+    Sach     SACH    @relation(fields: [MaSach], references: [MaSach])
+    MaSach   Int     @id
+    Thang    Int
+    Nam      Int
+    TonDau   Decimal
+    PhatSinh Decimal
+    TonCuoi  Decimal
+
+    @@unique([MaSach, Thang, Nam])
+}
+
+model PHIEUNHAPSACH {
+    MaPhieuNhapSach  Int                @id @default(autoincrement())
+    NgayTao          DateTime           @default(now())
+    TongTien         Decimal
+    TaiKhoan         TAIKHOAN           @relation(fields: [MaTK], references: [MaTK])
+    MaTK             Int
+    CT_PHIEUNHAPSACH CT_PHIEUNHAPSACH[]
+}
+
+model CT_PHIEUNHAPSACH {
+    SoLuong         Int
+    DonGia          Decimal
+    ThanhTien       Decimal
+    PhieuNhapSach   PHIEUNHAPSACH @relation(fields: [MaPhieuNhapSach], references: [MaPhieuNhapSach])
+    MaPhieuNhapSach Int
+    Sach            SACH          @relation(fields: [MaSach], references: [MaSach])
+    MaSach          Int
+
+    @@id([MaPhieuNhapSach, MaSach])
+}
+
+model KHACHHANG {
+    MaKH          Int             @id @default(autoincrement())
+    HoTen         String          @db.VarChar(255)
+    DiaChi        String          @db.VarChar(255)
+    SoDienThoai   String          @db.VarChar(255)
+    Email         String          @db.VarChar(255)
+    TienNo        Decimal
+    HOADONBANSACH HOADONBANSACH[]
+    PHIEUTHUTIEN  PHIEUTHUTIEN[]
+    BAOCAOCONGNO  BAOCAOCONGNO[]
+}
+
+model HOADONBANSACH {
+    MaHD      Int         @id @default(autoincrement())
+    TongTien  Decimal
+    NgayTao   DateTime    @default(now())
+    KhachHang KHACHHANG   @relation(fields: [MaKH], references: [MaKH])
+    MaKH      Int
+    TaiKhoan  TAIKHOAN    @relation(fields: [MaTK], references: [MaTK])
+    MaTK      Int
+    CT_HOADON CT_HOADON[]
+}
+
+model CT_HOADON {
+    HoaDonBanSach HOADONBANSACH @relation(fields: [MaHD], references: [MaHD])
+    MaHD          Int
+    Sach          SACH          @relation(fields: [MaSach], references: [MaSach])
+    MaSach        Int
+    SoLuong       Int
+    DonGia        Decimal
+    ThanhThien    Decimal
+
+    @@id([MaHD, MaSach])
+}
+
+model PHIEUTHUTIEN {
+    MaPhieuThuTien Int       @id @default(autoincrement())
+    SoTien         Decimal
+    NgayTao        DateTime  @default(now())
+    KhachHang      KHACHHANG @relation(fields: [MaKH], references: [MaKH])
+    MaKH           Int
+    TaiKhoan       TAIKHOAN  @relation(fields: [MaTK], references: [MaTK])
+    MaTK           Int
+}
+
+model BAOCAOCONGNO {
+    KhachHang KHACHHANG @relation(fields: [MaKH], references: [MaKH])
+    MaKH      Int       @id
+    Thang     Int
+    Nam       Int
+    TonDau    Decimal
+    PhatSinh  Decimal
+    TonCuoi   Decimal
+
+    @@unique([MaKH, Thang, Nam])
 }
