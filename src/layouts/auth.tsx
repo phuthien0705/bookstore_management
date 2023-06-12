@@ -4,7 +4,7 @@ export function AuthLayout(props: { children: React.ReactNode }) {
   return (
     <>
       <Head>
-        <title>Login</title>
+        <title>Đăng nhập</title>
       </Head>
       <div className="relative min-h-screen w-full">{props.children}</div>
     </>

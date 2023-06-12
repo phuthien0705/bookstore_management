@@ -1,15 +1,15 @@
 import { useSession } from "next-auth/react";
-import { Sidenav, DashboardNavbar } from "@/components/layout";
-import { useMaterialTailwindController } from "@/context";
-import { routes } from "@/constant/routes";
-import { useRouter } from "next/router";
 import {
-  Dispatch,
-  SetStateAction,
+  type Dispatch,
+  type SetStateAction,
   createContext,
   useEffect,
   useState,
 } from "react";
+import { useRouter } from "next/router";
+import { useMaterialTailwindController } from "@/context";
+import { routes } from "@/constant/routes";
+import { Sidenav, DashboardNavbar } from "@/components/layout";
 
 interface IDashboardContext {
   searchValue: string;

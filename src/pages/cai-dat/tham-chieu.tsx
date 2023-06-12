@@ -6,7 +6,7 @@ const SettingPage: NextPageWithLayout = () => {
   return (
     <>
       <Head>
-        <title>Config</title>
+        <title>Thay đổi tham chiếu</title>
       </Head>
       <div>this is setting</div>
     </>

@@ -2,18 +2,18 @@ import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 
-export const authorRouter = createTRPCRouter({
+export const theLoaiIRouter = createTRPCRouter({
   create: protectedProcedure
-    .input(z.object({ name: z.string() }))
+    .input(z.object({ TenTL: z.string() }))
     .mutation(({ input, ctx }) => {
-      return ctx.prisma.author.create({
+      return ctx.prisma.tHELOAI.create({
         data: {
-          name: input.name,
+          TenTL: input.TenTL,
         },
       });
     }),
   getAll: protectedProcedure.query(({ ctx }) => {
-    return ctx.prisma.author.findMany();
+    return ctx.prisma.tHELOAI.findMany();
   }),
   getWithPagination: protectedProcedure
     .input(
@@ -25,11 +25,11 @@ export const authorRouter = createTRPCRouter({
     .query(async ({ input, ctx }) => {
       const { limit, page } = input;
       const [records, totalCount] = await Promise.all([
-        ctx.prisma.author.findMany({
+        ctx.prisma.tHELOAI.findMany({
           skip: limit * (page - 1),
           take: limit,
         }),
-        ctx.prisma.author.count(),
+        ctx.prisma.tHELOAI.count(),
       ]);
 
       const totalPages = Math.ceil(totalCount / limit);
@@ -44,18 +44,18 @@ export const authorRouter = createTRPCRouter({
       };
     }),
   delete: protectedProcedure
-    .input(z.object({ id: z.number().int() }))
+    .input(z.object({ MaTL: z.number().int() }))
     .mutation(({ input, ctx }) => {
-      return ctx.prisma.author.delete({
-        where: { id: input.id },
+      return ctx.prisma.tHELOAI.delete({
+        where: { MaTL: input.MaTL },
       });
     }),
   update: protectedProcedure
-    .input(z.object({ id: z.number().int(), name: z.string() }))
+    .input(z.object({ MaTL: z.number().int(), TenTL: z.string() }))
     .mutation(({ input, ctx }) => {
-      return ctx.prisma.author.update({
-        data: { name: input.name },
-        where: { id: input.id },
+      return ctx.prisma.tHELOAI.update({
+        data: { TenTL: input.TenTL },
+        where: { MaTL: input.MaTL },
       });
     }),
 });

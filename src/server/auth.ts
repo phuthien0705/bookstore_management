@@ -3,7 +3,7 @@ import { type GetServerSidePropsContext } from "next";
 import { getServerSession, type NextAuthOptions, type User } from "next-auth";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { type Account } from "@prisma/client";
+import { type TAIKHOAN } from "@prisma/client";
 import { prisma } from "./db";
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -13,7 +13,7 @@ import { prisma } from "./db";
  */
 declare module "next-auth" {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface User extends Account {
+  interface User extends TAIKHOAN {
     id: number;
     username: string;
     password: string;
@@ -51,10 +51,10 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials, req) {
         // Add logic here to look up the user from the credentials supplied
-        const user = await prisma.account.findUnique({
-          where: { username: credentials?.username },
+        const user = await prisma.tAIKHOAN.findUnique({
+          where: { TenDangNhap: credentials?.username },
         });
-        if (!user || user.password !== credentials?.password) {
+        if (!user || user.MatKhau !== credentials?.password) {
           throw new Error("No user found with this username and password");
         }
         return user as unknown as User;

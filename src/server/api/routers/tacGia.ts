@@ -2,18 +2,18 @@ import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 
-export const categoryRouter = createTRPCRouter({
+export const tacGiaRouter = createTRPCRouter({
   create: protectedProcedure
-    .input(z.object({ name: z.string() }))
+    .input(z.object({ tenTG: z.string() }))
     .mutation(({ input, ctx }) => {
-      return ctx.prisma.category.create({
+      return ctx.prisma.tACGIA.create({
         data: {
-          name: input.name,
+          TenTG: input.tenTG,
         },
       });
     }),
   getAll: protectedProcedure.query(({ ctx }) => {
-    return ctx.prisma.category.findMany();
+    return ctx.prisma.tACGIA.findMany();
   }),
   getWithPagination: protectedProcedure
     .input(
@@ -25,11 +25,11 @@ export const categoryRouter = createTRPCRouter({
     .query(async ({ input, ctx }) => {
       const { limit, page } = input;
       const [records, totalCount] = await Promise.all([
-        ctx.prisma.category.findMany({
+        ctx.prisma.tACGIA.findMany({
           skip: limit * (page - 1),
           take: limit,
         }),
-        ctx.prisma.category.count(),
+        ctx.prisma.tACGIA.count(),
       ]);
 
       const totalPages = Math.ceil(totalCount / limit);
@@ -44,18 +44,18 @@ export const categoryRouter = createTRPCRouter({
       };
     }),
   delete: protectedProcedure
-    .input(z.object({ id: z.number().int() }))
+    .input(z.object({ MaTG: z.number().int() }))
     .mutation(({ input, ctx }) => {
-      return ctx.prisma.category.delete({
-        where: { id: input.id },
+      return ctx.prisma.tACGIA.delete({
+        where: { MaTG: input.MaTG },
       });
     }),
   update: protectedProcedure
-    .input(z.object({ id: z.number().int(), name: z.string() }))
+    .input(z.object({ MaTG: z.number().int(), TenTG: z.string() }))
     .mutation(({ input, ctx }) => {
-      return ctx.prisma.category.update({
-        data: { name: input.name },
-        where: { id: input.id },
+      return ctx.prisma.tACGIA.update({
+        data: { TenTG: input.TenTG },
+        where: { MaTG: input.MaTG },
       });
     }),
 });

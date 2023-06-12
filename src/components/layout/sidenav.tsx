@@ -3,12 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import {
-  Avatar,
-  Button,
-  IconButton,
-  Typography,
-} from "@material-tailwind/react";
+import { Button, IconButton, Typography } from "@material-tailwind/react";
 import { useMaterialTailwindController, setOpenSidenav } from "@/context";
 
 interface ISidenav {
@@ -44,7 +39,7 @@ export function Sidenav({
           sidenavType === "dark" ? "border-white/20" : "border-blue-gray-50"
         }`}
       >
-        <Link href="/" className="flex items-center gap-4 py-6 px-8">
+        <Link href="/" className="flex items-center gap-4 px-8 py-6">
           {/* <Avatar src={brandImg} size="sm" /> */}
           <Typography
             variant="h6"
@@ -76,11 +71,11 @@ export function Sidenav({
           ) => (
             <ul key={key} className="mb-4 flex flex-col gap-1">
               {title && (
-                <li className="mx-3.5 mt-4 mb-2">
+                <li className="mx-3.5 mb-2 mt-4">
                   <Typography
                     variant="small"
                     color={sidenavType === "dark" ? "white" : "blue-gray"}
-                    className="font-black uppercase opacity-75"
+                    className="font-bold uppercase opacity-75"
                   >
                     {title}
                   </Typography>

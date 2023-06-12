@@ -62,7 +62,7 @@ export function DashboardNavbar() {
         <div className="flex items-center">
           <div className="mr-auto md:mr-4 md:w-56">
             <Input
-              label="Search here"
+              label="Tìm kiếm"
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
             />
@@ -82,7 +82,7 @@ export function DashboardNavbar() {
             onClick={() => signOut()}
           >
             <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
-            Sign Out
+            Đăng xuất
           </Button>
         </div>
       </div>
