@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 
-export const theLoaiIRouter = createTRPCRouter({
+export const theLoaiDinhTuyen = createTRPCRouter({
   create: protectedProcedure
     .input(z.object({ TenTL: z.string() }))
     .mutation(({ input, ctx }) => {

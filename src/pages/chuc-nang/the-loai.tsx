@@ -85,7 +85,7 @@ const CategoryPage: NextPageWithLayout = () => {
             <table className="w-full min-w-[640px] table-auto">
               <thead>
                 <tr>
-                  {["ID", "Name", "action"].map((el) => (
+                  {["ID", "Tên", "Thao tác"].map((el) => (
                     <th
                       key={el}
                       className="border-b border-blue-gray-50 px-5 py-3 text-left"
@@ -121,7 +121,7 @@ const CategoryPage: NextPageWithLayout = () => {
                         </td>
                         <td className={className}>
                           <Typography className="text-xs font-semibold text-blue-gray-600">
-                            {name}
+                            {TenTL}
                           </Typography>
                         </td>
 
@@ -134,7 +134,7 @@ const CategoryPage: NextPageWithLayout = () => {
                               }}
                               className="cursor-pointer text-xs font-semibold text-blue-gray-600"
                             >
-                              Edit
+                              Chỉnh sửa
                             </Typography>
                             <Typography
                               onClick={() => {
@@ -143,7 +143,7 @@ const CategoryPage: NextPageWithLayout = () => {
                               }}
                               className="cursor-pointer text-xs font-semibold text-red-600"
                             >
-                              Delete
+                              Xóa
                             </Typography>
                           </div>
                         </td>
@@ -177,8 +177,8 @@ const CategoryPage: NextPageWithLayout = () => {
       <ConfirmModal
         open={openConfirmModal}
         handleOpen={handleOpenConfirmModal}
-        title="Delete Category"
-        content="The category will be permanently deleted. You are sure you want to delete?"
+        title="Xóa thể loại"
+        content="Thể loại này sẽ hoàn toàn bị xóa khỏi cơ sở dữ liệu. Bạn có muốn xóa?"
         cb={handleConfirmDelete}
       />
     </>

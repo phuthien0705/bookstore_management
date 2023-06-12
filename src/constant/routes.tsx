@@ -5,15 +5,12 @@ import {
   FilledDownSquare,
   FilledSetting,
   FilledStaff,
+  FilledTitle,
 } from "@/components/icons/filled";
 import {
-  UserPlusIcon,
-  ArrowRightOnRectangleIcon,
   HomeIcon,
   UserCircleIcon,
   TableCellsIcon,
-  ChartPieIcon,
-  UserIcon,
 } from "@heroicons/react/24/solid";
 
 const icon = {
@@ -28,6 +25,11 @@ export const routes = [
         icon: <FilledDownSquare {...icon} />,
         name: "Phiếu nhập sách",
         path: "/phieu-nhap-sach",
+      },
+      {
+        icon: <FilledTitle {...icon} />,
+        name: "Đầu sách",
+        path: "/dau-sach",
       },
       {
         icon: <FilledBook {...icon} />,

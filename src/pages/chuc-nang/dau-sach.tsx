@@ -2,49 +2,49 @@ import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import DashboardLayout from "@/layouts/dashboard";
+import { type NextPageWithLayout } from "../page";
+import { type DAUSACH } from "@prisma/client";
+import { api } from "@/utils/api";
 import {
   Card,
   CardHeader,
-  CardBody,
   Typography,
   Button,
+  CardBody,
 } from "@material-tailwind/react";
-import { type SACH } from "@prisma/client";
-import DashboardLayout from "@/layouts/dashboard";
-import { type NextPageWithLayout } from "../page";
 import { LoadingScreen } from "@/components/loading/LoadingScreen";
 import {
   Pagination,
   PaginationWrapper,
 } from "@/components/pagination/pagination";
 import useModal from "@/hook/useModal";
-import { api } from "@/utils/api";
+import TitleModal from "@/components/modals/TitleModal";
 
-const BookModal = dynamic(() => import("@/components/modals/BookModal"));
 const ConfirmModal = dynamic(() => import("@/components/modals/ConfirmModal"));
 
-const BookPage: NextPageWithLayout = () => {
-  const utils = api.useContext();
+const DauSach: NextPageWithLayout = () => {
   const [pageIndex, setPageIndex] = useState<number>(0);
-  const { open: openBookModal, handleOpen: handleOpenBookModal } = useModal();
+
+  const { open: openTitleModal, handleOpen: handleOpenTitleModal } = useModal();
   const { open: openConfirmModal, handleOpen: handleOpenConfirmModal } =
     useModal();
-  const [currentItem, setCurrentItem] = useState<SACH | null>(null);
-  const {
-    data,
-    isLoading: isBooksLoading,
-    isFetching,
-  } = api.sach.getWithPagination.useQuery({
-    limit: 10,
-    page: pageIndex + 1,
-  });
-  const { mutate: deleteBook } = api.sach.delete.useMutation({
+  const [currentItem, setCurrentItem] = useState<DAUSACH | null>(null);
+  const utils = api.useContext();
+  const { data: categoryData, isLoading: isLoadingCategory } =
+    api.theLoai.getAll.useQuery();
+  const { data, isLoading, isFetching } =
+    api.dauSach.getWithPagination.useQuery({
+      limit: 10,
+      page: pageIndex + 1,
+    });
+  const { mutate: deleteTitle } = api.dauSach.delete.useMutation({
     async onSuccess() {
       setCurrentItem(null);
       if (data?.datas.length === 1 && pageIndex !== 0) {
         setPageIndex((p) => p - 1);
       } else {
-        await utils.tacGia.getWithPagination.refetch();
+        await utils.dauSach.getWithPagination.refetch();
       }
       toast.success("Delete successfully");
     },
@@ -54,15 +54,13 @@ const BookPage: NextPageWithLayout = () => {
   });
 
   const handleConfirmDelete = () => {
-    currentItem && deleteBook({ MaSach: currentItem.MaSach });
+    currentItem && deleteTitle({ MaDauSach: currentItem.MaDauSach });
   };
-
-  const isLoading = isBooksLoading;
 
   return (
     <>
       <Head>
-        <title>Quản lý sách</title>
+        <title>Quản lý đầu sách</title>
       </Head>
       <div className="mb-8 mt-12">
         <Card>
@@ -72,21 +70,21 @@ const BookPage: NextPageWithLayout = () => {
             className="mb-8 flex items-center justify-between px-6 py-4"
           >
             <Typography variant="h6" color="white">
-              Danh sách sách
+              Danh sách đầu sách
             </Typography>
-            {/* <Button
+            <Button
               variant="outlined"
               className="bg-white"
-              onClick={() => handleOpenBookModal()}
+              onClick={() => handleOpenTitleModal()}
             >
-              Thêm sách
-            </Button> */}
+              Thêm đầu sách
+            </Button>
           </CardHeader>
           <CardBody className="overflow-x-scroll px-0 pb-2 pt-0">
             <table className="w-full min-w-[640px] table-auto">
               <thead>
                 <tr>
-                  {["ID", "Giá", "Số lượng tồn", "Thao tác"].map((el) => (
+                  {["ID", "Tên đầu sách", "Thê loại", "Thao tác"].map((el) => (
                     <th
                       key={el}
                       className="border-b border-blue-gray-50 px-5 py-3 text-left"
@@ -111,41 +109,42 @@ const BookPage: NextPageWithLayout = () => {
                 )}
                 {!isLoading &&
                   data &&
-                  data.datas.map((item) => {
+                  data.datas.map(({ MaDauSach, TenDauSach, MaTL }) => {
                     const className = `py-3 px-5`;
                     return (
-                      <tr key={item.MaSach}>
+                      <tr key={MaDauSach}>
                         <td className={`${className} w-1/12`}>
                           <Typography className="text-xs font-semibold text-blue-gray-600">
-                            {item.MaSach}
-                          </Typography>
-                        </td>
-
-                        <td className={className}>
-                          <Typography className="text-xs font-semibold text-blue-gray-600">
-                            {item.DonGiaBan}
+                            {MaDauSach}
                           </Typography>
                         </td>
                         <td className={className}>
                           <Typography className="text-xs font-semibold text-blue-gray-600">
-                            {item.SoLuongTon}
+                            {TenDauSach}
                           </Typography>
                         </td>
-
+                        <td className={className}>
+                          <Typography className="text-xs font-semibold text-blue-gray-600">
+                            {isLoadingCategory
+                              ? "Đang tải..."
+                              : categoryData?.find((i) => i.MaTL === MaTL)
+                                  ?.TenTL}
+                          </Typography>
+                        </td>
                         <td className={`${className} w-2/12`}>
                           <div className="flex gap-3">
                             <Typography
                               onClick={() => {
-                                setCurrentItem(item);
-                                handleOpenBookModal(true);
+                                setCurrentItem({ MaDauSach, TenDauSach, MaTL });
+                                handleOpenTitleModal(true);
                               }}
                               className="cursor-pointer text-xs font-semibold text-blue-gray-600"
                             >
-                              Chỉnh sửa
+                              Cập nhật
                             </Typography>
                             <Typography
                               onClick={() => {
-                                setCurrentItem(item);
+                                setCurrentItem({ MaDauSach, TenDauSach, MaTL });
                                 handleOpenConfirmModal(true);
                               }}
                               className="cursor-pointer text-xs font-semibold text-red-600"
@@ -175,21 +174,21 @@ const BookPage: NextPageWithLayout = () => {
           </CardBody>
         </Card>
       </div>
-      <BookModal
-        open={openBookModal}
-        handleOpen={handleOpenBookModal}
+      <TitleModal
+        open={openTitleModal}
+        handleOpen={handleOpenTitleModal}
         currentItem={currentItem}
         setCurrentItem={setCurrentItem}
       />
       <ConfirmModal
         open={openConfirmModal}
         handleOpen={handleOpenConfirmModal}
-        title="Xóa sách"
-        content="Sách này sẽ bị xóa khỏi cơ sở dữ liệu. Bạn có muốn xóa?"
+        title="Xóa đầu sách"
+        content="Đầu sách này sẽ hoàn toàn bị xóa khỏi cơ sở dữ liệu. Bạn có muốn xóa?"
         cb={handleConfirmDelete}
       />
     </>
   );
 };
-BookPage.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
-export default BookPage;
+DauSach.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+export default DauSach;

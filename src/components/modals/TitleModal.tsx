@@ -7,45 +7,49 @@ import {
   Input,
   CardFooter,
   Button,
+  Select,
+  Option,
 } from "@material-tailwind/react";
+import { type DAUSACH } from "@prisma/client";
 import { executeAfter500ms } from "@/utils/executeAfter500ms";
 import { api } from "@/utils/api";
-import { type THELOAI } from "@prisma/client";
 import { contentMapping } from "@/constant/modal";
 
-interface ICategoryModal {
+interface ITitleModal {
   open: boolean;
   handleOpen: (value?: boolean) => void;
-  currentItem: THELOAI | null;
-  setCurrentItem: Dispatch<SetStateAction<THELOAI | null>>;
+  currentItem: DAUSACH | null;
+  setCurrentItem: Dispatch<SetStateAction<DAUSACH | null>>;
 }
 
-const CategoryModal: React.FC<ICategoryModal> = ({
+const TitleModal: React.FC<ITitleModal> = ({
   open,
   handleOpen,
   currentItem,
   setCurrentItem,
 }) => {
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState({ MaDauSach: 0, MaTL: 0, TenDauSach: "" });
   const utils = api.useContext();
+  const { data: categoryData, isLoading: isLoadingCategory } =
+    api.theLoai.getAll.useQuery();
   const clearValueAfterClose = () => {
-    setValue("");
+    setValue({ MaDauSach: 0, MaTL: 0, TenDauSach: "" });
   };
   const onChange = (e: React.FormEvent<HTMLInputElement>): void => {
-    const { value } = e.currentTarget;
-    setValue(value);
+    const { value, name } = e.currentTarget;
+    setValue((p) => ({ ...p, [name]: value }));
   };
   const {
     mutate: createFunc,
     status: createStatus,
     reset,
-  } = api.theLoai.create.useMutation({
+  } = api.dauSach.create.useMutation({
     onSuccess() {
       executeAfter500ms(async () => {
         handleOpen();
 
         clearValueAfterClose();
-        await utils.theLoai.getWithPagination.refetch();
+        await utils.dauSach.getWithPagination.refetch();
       });
     },
     onError(err) {
@@ -54,13 +58,13 @@ const CategoryModal: React.FC<ICategoryModal> = ({
     },
   });
   const { mutate: updateFunc, status: updateStatus } =
-    api.theLoai.update.useMutation({
+    api.dauSach.update.useMutation({
       onSuccess() {
         executeAfter500ms(async () => {
           handleOpen();
           clearValueAfterClose();
           setCurrentItem(null);
-          await utils.theLoai.getWithPagination.refetch();
+          await utils.dauSach.getWithPagination.refetch();
         });
       },
       onError(err) {
@@ -72,17 +76,21 @@ const CategoryModal: React.FC<ICategoryModal> = ({
   const onSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
     currentItem
-      ? updateFunc({ MaTL: currentItem.MaTL, TenTL: value })
-      : createFunc({ TenTL: value });
+      ? updateFunc({
+          MaDauSach: currentItem.MaDauSach,
+          TenDauSach: value.TenDauSach,
+          MaTL: value.MaTL,
+        })
+      : createFunc({ TenDauSach: value.TenDauSach, MaTL: value.MaTL });
   };
 
   const status = currentItem ? updateStatus : createStatus;
 
   useEffect(() => {
     if (currentItem) {
-      setValue(currentItem.TenTL);
+      setValue({ ...currentItem });
     } else {
-      setValue("");
+      setValue({ MaDauSach: 0, MaTL: 0, TenDauSach: "" });
     }
   }, [currentItem]);
 
@@ -101,15 +109,31 @@ const CategoryModal: React.FC<ICategoryModal> = ({
         <Card className="mx-auto w-full max-w-[24rem]">
           <CardBody className="flex flex-col gap-4">
             <Typography className="font-bold">
-              {currentItem ? "Cập nhật" : "Tạo"} thể loại
+              {currentItem ? "Cập nhật" : "Tạo"} đầu sách
             </Typography>
             <Input
-              label="Tên thể loại"
+              label="Tên đầu sách"
               size="lg"
-              value={value}
+              name="TenDauSach"
+              value={value.TenDauSach}
               onChange={onChange}
               required
             />
+            <Select
+              label="Thể loại"
+              disabled={isLoadingCategory}
+              value={(value.MaTL as number | null)?.toString()}
+              onChange={(e) => {
+                setValue((p) => ({ ...p, MaTL: parseInt(e as string) }));
+              }}
+            >
+              {categoryData &&
+                categoryData.map((item) => (
+                  <Option key={item.MaTL} value={item.MaTL.toString()}>
+                    {item.TenTL}
+                  </Option>
+                ))}
+            </Select>
           </CardBody>
           <CardFooter className="pt-0">
             <Button variant="gradient" type="submit" fullWidth>
@@ -126,4 +150,4 @@ const CategoryModal: React.FC<ICategoryModal> = ({
   );
 };
 
-export default CategoryModal;
+export default TitleModal;

@@ -86,7 +86,7 @@ const AuthorPage: NextPageWithLayout = () => {
             <table className="w-full min-w-[640px] table-auto">
               <thead>
                 <tr>
-                  {["ID", "Name", "action"].map((el) => (
+                  {["ID", "Tên", "Thao tác"].map((el) => (
                     <th
                       key={el}
                       className="border-b border-blue-gray-50 px-5 py-3 text-left"
@@ -122,7 +122,7 @@ const AuthorPage: NextPageWithLayout = () => {
                         </td>
                         <td className={className}>
                           <Typography className="text-xs font-semibold text-blue-gray-600">
-                            {name}
+                            {TenTG}
                           </Typography>
                         </td>
 
@@ -135,7 +135,7 @@ const AuthorPage: NextPageWithLayout = () => {
                               }}
                               className="cursor-pointer text-xs font-semibold text-blue-gray-600"
                             >
-                              Edit
+                              Chỉnh sửa
                             </Typography>
                             <Typography
                               onClick={() => {
@@ -144,7 +144,7 @@ const AuthorPage: NextPageWithLayout = () => {
                               }}
                               className="cursor-pointer text-xs font-semibold text-red-600"
                             >
-                              Delete
+                              Xóa
                             </Typography>
                           </div>
                         </td>
@@ -179,8 +179,8 @@ const AuthorPage: NextPageWithLayout = () => {
       <ConfirmModal
         open={openConfirmModal}
         handleOpen={handleOpenConfirmModal}
-        title="Delete Author"
-        content="The author will be permanently deleted. You are sure you want to delete?"
+        title="Xóa tác giả"
+        content="Tác giả này sẽ hoàn toàn bị xóa khỏi cơ sở dữ liệu. Bạn có muốn xóa?"
         cb={handleConfirmDelete}
       />
     </>

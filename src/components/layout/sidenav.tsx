@@ -14,7 +14,7 @@ interface ISidenav {
 
 export function Sidenav({
   brandImg = "",
-  brandName = "BookStore Management",
+  brandName = "Quản lý nhà sách",
   routes,
 }: ISidenav) {
   const router = useRouter();
