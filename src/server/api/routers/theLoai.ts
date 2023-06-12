@@ -20,16 +20,28 @@ export const theLoaiDinhTuyen = createTRPCRouter({
       z.object({
         limit: z.number(),
         page: z.number(),
+        searchValue: z.string(),
       })
     )
     .query(async ({ input, ctx }) => {
-      const { limit, page } = input;
+      const { limit, page, searchValue } = input;
       const [records, totalCount] = await Promise.all([
         ctx.prisma.tHELOAI.findMany({
           skip: limit * (page - 1),
           take: limit,
+          where: {
+            TenTL: {
+              contains: searchValue,
+            },
+          },
         }),
-        ctx.prisma.tHELOAI.count(),
+        ctx.prisma.tHELOAI.count({
+          where: {
+            TenTL: {
+              contains: searchValue,
+            },
+          },
+        }),
       ]);
 
       const totalPages = Math.ceil(totalCount / limit);

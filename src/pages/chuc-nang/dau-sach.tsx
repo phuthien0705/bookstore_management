@@ -1,6 +1,6 @@
 import dynamic from "next/dynamic";
 import Head from "next/head";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import DashboardLayout from "@/layouts/dashboard";
 import { type NextPageWithLayout } from "../page";
@@ -12,6 +12,7 @@ import {
   Typography,
   Button,
   CardBody,
+  Input,
 } from "@material-tailwind/react";
 import { LoadingScreen } from "@/components/loading/LoadingScreen";
 import {
@@ -20,11 +21,17 @@ import {
 } from "@/components/pagination/pagination";
 import useModal from "@/hook/useModal";
 import TitleModal from "@/components/modals/TitleModal";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import useDebounce from "@/hook/useDebounce";
 
 const ConfirmModal = dynamic(() => import("@/components/modals/ConfirmModal"));
 
 const DauSach: NextPageWithLayout = () => {
   const [pageIndex, setPageIndex] = useState<number>(0);
+
+  const [searchValueDebounced, setSearchValueDebounced] = useState<string>("");
+  const [searchValue, setSearchValue] = useState<string>("");
+  const debounced = useDebounce({ value: searchValue, delay: 500 });
 
   const { open: openTitleModal, handleOpen: handleOpenTitleModal } = useModal();
   const { open: openConfirmModal, handleOpen: handleOpenConfirmModal } =
@@ -37,6 +44,7 @@ const DauSach: NextPageWithLayout = () => {
     api.dauSach.getWithPagination.useQuery({
       limit: 10,
       page: pageIndex + 1,
+      searchValue: searchValueDebounced,
     });
   const { mutate: deleteTitle } = api.dauSach.delete.useMutation({
     async onSuccess() {
@@ -57,6 +65,11 @@ const DauSach: NextPageWithLayout = () => {
     currentItem && deleteTitle({ MaDauSach: currentItem.MaDauSach });
   };
 
+  useEffect(() => {
+    setSearchValueDebounced(searchValue);
+    setPageIndex(0);
+  }, [debounced]);
+
   return (
     <>
       <Head>
@@ -67,7 +80,7 @@ const DauSach: NextPageWithLayout = () => {
           <CardHeader
             variant="gradient"
             color="blue"
-            className="mb-8 flex items-center justify-between px-6 py-4"
+            className=" flex items-center justify-between px-6 py-4"
           >
             <Typography variant="h6" color="white">
               Danh sách đầu sách
@@ -81,6 +94,16 @@ const DauSach: NextPageWithLayout = () => {
             </Button>
           </CardHeader>
           <CardBody className="overflow-x-scroll px-0 pb-2 pt-0">
+            <div className="m-4 flex justify-end">
+              <div className="w-full md:w-56">
+                <Input
+                  label="Tìm kiếm"
+                  icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                />
+              </div>
+            </div>
             <table className="w-full min-w-[640px] table-auto">
               <thead>
                 <tr>

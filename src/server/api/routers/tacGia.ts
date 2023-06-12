@@ -20,16 +20,28 @@ export const tacGiaDinhTuyen = createTRPCRouter({
       z.object({
         limit: z.number(),
         page: z.number(),
+        searchValue: z.string(),
       })
     )
     .query(async ({ input, ctx }) => {
-      const { limit, page } = input;
+      const { limit, page, searchValue } = input;
       const [records, totalCount] = await Promise.all([
         ctx.prisma.tACGIA.findMany({
           skip: limit * (page - 1),
           take: limit,
+          where: {
+            TenTG: {
+              contains: searchValue,
+            },
+          },
         }),
-        ctx.prisma.tACGIA.count(),
+        ctx.prisma.tACGIA.count({
+          where: {
+            TenTG: {
+              contains: searchValue,
+            },
+          },
+        }),
       ]);
 
       const totalPages = Math.ceil(totalCount / limit);
