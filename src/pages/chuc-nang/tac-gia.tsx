@@ -86,7 +86,7 @@ const AuthorPage: NextPageWithLayout = () => {
             <table className="w-full min-w-[640px] table-auto">
               <thead>
                 <tr>
-                  {["ID", "Name", "action"].map((el) => (
+                  {["ID", "Tên", "Thao tác"].map((el) => (
                     <th
                       key={el}
                       className="border-b border-blue-gray-50 px-5 py-3 text-left"
@@ -135,7 +135,7 @@ const AuthorPage: NextPageWithLayout = () => {
                               }}
                               className="cursor-pointer text-xs font-semibold text-blue-gray-600"
                             >
-                              Edit
+                              Chỉnh sửa
                             </Typography>
                             <Typography
                               onClick={() => {
@@ -144,7 +144,7 @@ const AuthorPage: NextPageWithLayout = () => {
                               }}
                               className="cursor-pointer text-xs font-semibold text-red-600"
                             >
-                              Delete
+                              Xóa
                             </Typography>
                           </div>
                         </td>

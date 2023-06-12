@@ -2,45 +2,42 @@ import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 
-export const sachDinhTuyen = createTRPCRouter({
+export const dauSachDinhTuyen = createTRPCRouter({
   create: protectedProcedure
     .input(
       z.object({
-        NhaXuatBan: z.string(),
-        NamXuatBan: z.string(),
-        DonGiaBan: z.number(),
-        SoLuongTon: z.number().int(),
-        MaDauSach: z.number().int(),
+        TenDauSach: z.string(),
+        MaTL: z.number().int(),
       })
     )
     .mutation(({ input, ctx }) => {
-      return ctx.prisma.sACH.create({
+      return ctx.prisma.dAUSACH.create({
         data: { ...input },
       });
     }),
+  getAll: protectedProcedure.query(({ ctx }) => {
+    return ctx.prisma.dAUSACH.findMany();
+  }),
   delete: protectedProcedure
-    .input(z.object({ MaSach: z.number().int() }))
+    .input(z.object({ MaDauSach: z.number().int() }))
     .mutation(({ input, ctx }) => {
-      return ctx.prisma.sACH.delete({
-        where: { MaSach: input.MaSach },
+      return ctx.prisma.dAUSACH.delete({
+        where: { MaDauSach: input.MaDauSach },
       });
     }),
   update: protectedProcedure
     .input(
       z.object({
-        MaSach: z.number().int(),
-        NhaXuatBan: z.string(),
-        NamXuatBan: z.string(),
-        DonGiaBan: z.number(),
-        SoLuongTon: z.number().int(),
         MaDauSach: z.number().int(),
+        TenDauSach: z.string(),
+        MaTL: z.number().int(),
       })
     )
     .mutation(({ input, ctx }) => {
-      const { MaSach, ...req } = input;
-      return ctx.prisma.sACH.update({
+      const { MaDauSach, ...req } = input;
+      return ctx.prisma.dAUSACH.update({
         data: { ...req },
-        where: { MaSach },
+        where: { MaDauSach },
       });
     }),
 
@@ -54,11 +51,11 @@ export const sachDinhTuyen = createTRPCRouter({
     .query(async ({ input, ctx }) => {
       const { limit, page } = input;
       const [records, totalCount] = await Promise.all([
-        ctx.prisma.sACH.findMany({
+        ctx.prisma.dAUSACH.findMany({
           skip: limit * (page - 1),
           take: limit,
         }),
-        ctx.prisma.sACH.count(),
+        ctx.prisma.dAUSACH.count(),
       ]);
 
       const totalPages = Math.ceil(totalCount / limit);

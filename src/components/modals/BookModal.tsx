@@ -10,7 +10,7 @@ import {
   Select,
   Option,
 } from "@material-tailwind/react";
-import { type Book } from "@prisma/client";
+import { type SACH } from "@prisma/client";
 import { executeAfter500ms } from "@/utils/executeAfter500ms";
 import { api } from "@/utils/api";
 import { contentMapping } from "@/constant/modal";
@@ -18,18 +18,24 @@ import { contentMapping } from "@/constant/modal";
 interface IBookModal {
   open: boolean;
   handleOpen: (value?: boolean) => void;
-  currentItem: Book | null;
-  setCurrentItem: Dispatch<SetStateAction<Book | null>>;
+  currentItem: SACH | null;
+  setCurrentItem: Dispatch<SetStateAction<SACH | null>>;
 }
-
-type TValues = Omit<Book, "id">;
-
+type TValues = {
+  MaSach: number;
+  NhaXuatBan: string;
+  NamXuatBan: string;
+  DonGiaBan: string;
+  SoLuongTon: string;
+  MaDauSach: number;
+};
 const defaultValues: TValues = {
-  title: "",
-  price: 0,
-  quantity: 0,
-  authorId: 0,
-  categoryId: 0,
+  MaSach: 0,
+  NhaXuatBan: "",
+  NamXuatBan: "",
+  DonGiaBan: "0",
+  SoLuongTon: "0",
+  MaDauSach: 0,
 };
 
 const BookModal: React.FC<IBookModal> = ({
@@ -40,44 +46,25 @@ const BookModal: React.FC<IBookModal> = ({
 }) => {
   const [values, setValues] = useState<TValues>(defaultValues);
   const utils = api.useContext();
-  const { data: authors, isLoading: isAuthorsLoading } =
-    api.author.getAll.useQuery();
-  const { data: categorys, isLoading: isCategorysLoading } =
-    api.category.getAll.useQuery();
+  const { data: titles, isLoading: isLoadingTitles } =
+    api.dauSach.getAll.useQuery();
+
   const clearValueAfterClose = () => {
     setValues(defaultValues);
   };
   const onChange = (e: React.FormEvent<HTMLInputElement>): void => {
-    const { value, name, type } = e.currentTarget;
-    if (type === "number")
-      setValues((p) => ({ ...p, [name]: parseInt(value) }));
-    else setValues((p) => ({ ...p, [name]: value }));
+    const { value, name } = e.currentTarget;
+    setValues((p) => ({ ...p, [name]: value }));
   };
-  const {
-    mutate: createFunc,
-    status: createStatus,
-    reset,
-  } = api.book.create.useMutation({
-    onSuccess() {
-      executeAfter500ms(async () => {
-        handleOpen();
-        clearValueAfterClose();
-        await utils.book.getWithPagination.refetch();
-      });
-    },
-    onError(err) {
-      console.error(err);
-      handleOpen();
-    },
-  });
+
   const { mutate: updateFunc, status: updateStatus } =
-    api.book.update.useMutation({
+    api.sach.update.useMutation({
       onSuccess() {
         executeAfter500ms(async () => {
           handleOpen();
           clearValueAfterClose();
           setCurrentItem(null);
-          await utils.book.getWithPagination.refetch();
+          await utils.sach.getWithPagination.refetch();
         });
       },
       onError(err) {
@@ -88,27 +75,34 @@ const BookModal: React.FC<IBookModal> = ({
 
   const onSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
-    currentItem
-      ? updateFunc({ id: currentItem.id, ...values })
-      : createFunc({ ...values });
+    const req = {
+      MaSach: values.MaSach,
+      MaDauSach: values.MaDauSach,
+      NamXuatBan: values.NamXuatBan,
+      NhaXuatBan: values.NhaXuatBan,
+      DonGiaBan: Number.parseFloat(values.DonGiaBan),
+      SoLuongTon: Number.parseInt(values.SoLuongTon),
+    };
+    updateFunc(req);
   };
 
-  const status = currentItem ? updateStatus : createStatus;
+  const status = updateStatus;
 
   useEffect(() => {
     if (currentItem) {
-      const { id, ...itemInfo } = currentItem;
+      const { MaSach, MaDauSach, NhaXuatBan, NamXuatBan } = currentItem;
       setValues({
-        ...itemInfo,
+        MaSach,
+        MaDauSach,
+        NhaXuatBan,
+        NamXuatBan,
+        SoLuongTon: currentItem.SoLuongTon.toString(),
+        DonGiaBan: currentItem.DonGiaBan.toString(),
       });
     } else {
       setValues(defaultValues);
     }
   }, [currentItem]);
-
-  useEffect(() => {
-    open && reset();
-  }, [open, reset]);
 
   return (
     <Dialog
@@ -120,65 +114,57 @@ const BookModal: React.FC<IBookModal> = ({
       <form onSubmit={onSubmit}>
         <Card className="mx-auto w-full max-w-[24rem]">
           <CardBody className="flex flex-col gap-4">
-            <Typography className="font-bold">
-              {currentItem ? "Update" : "Create"} book
-            </Typography>
-            <Input
-              label="Title"
-              size="lg"
-              name="title"
-              value={values.title}
-              onChange={onChange}
-              required
-            />
-            <Input
-              type="number"
-              label="Price"
-              size="lg"
-              name="price"
-              value={values.price}
-              onChange={onChange}
-              required
-            />
-            <Input
-              type="number"
-              label="Quantity"
-              size="lg"
-              name="quantity"
-              value={values.quantity}
-              onChange={onChange}
-              required
-            />
+            <Typography className="font-bold">Cập nhật sách</Typography>{" "}
             <Select
-              label="Author"
-              disabled={isAuthorsLoading}
-              value={(values.authorId as number | null)?.toString()}
+              label="Đầu sách"
+              disabled={isLoadingTitles}
+              value={(values.MaDauSach as number | null)?.toString()}
               onChange={(e) => {
-                setValues((p) => ({ ...p, authorId: parseInt(e as string) }));
+                setValues((p) => ({ ...p, MaDauSach: parseInt(e as string) }));
               }}
             >
-              {authors &&
-                authors.map((item) => (
-                  <Option key={item.id} value={item.id.toString()}>
-                    {item.name}
+              {titles &&
+                titles.map((item) => (
+                  <Option
+                    key={item.MaDauSach}
+                    value={item.MaDauSach.toString()}
+                  >
+                    {item.TenDauSach}
                   </Option>
                 ))}
             </Select>
-            <Select
-              label="Category"
-              disabled={isCategorysLoading}
-              value={(values.categoryId as number | null)?.toString()}
-              onChange={(e) => {
-                setValues((p) => ({ ...p, categoryId: parseInt(e as string) }));
-              }}
-            >
-              {categorys &&
-                categorys.map((item) => (
-                  <Option key={item.id} value={item.id.toString()}>
-                    {item.name}
-                  </Option>
-                ))}
-            </Select>
+            <Input
+              label="Nhà xuất bản"
+              size="lg"
+              name="NhaXuatBan"
+              value={values.NhaXuatBan}
+              onChange={onChange}
+              required
+            />
+            <Input
+              label="Năm xuất bản"
+              size="lg"
+              name="NamXuatBan"
+              value={values.NamXuatBan}
+              onChange={onChange}
+              required
+            />
+            <Input
+              label="Đơn giá bán"
+              size="lg"
+              name="GonGiaBan"
+              value={values.DonGiaBan}
+              onChange={onChange}
+              required
+            />
+            <Input
+              label="Số lượng tồn"
+              size="lg"
+              name="SoLuongTon"
+              value={values.SoLuongTon}
+              onChange={onChange}
+              required
+            />
           </CardBody>
           <CardFooter className="pt-0">
             <Button variant="gradient" type="submit" fullWidth>

@@ -1,7 +1,8 @@
 import { createTRPCRouter } from "@/server/api/trpc";
-import { tacGiaRouter } from "./routers/tacGia";
-import { theLoaiIRouter } from "./routers/theLoai";
-import { sachRouter } from "./routers/sach";
+import { tacGiaDinhTuyen } from "./routers/tacGia";
+import { theLoaiDinhTuyen } from "./routers/theLoai";
+import { sachDinhTuyen } from "./routers/sach";
+import { dauSachDinhTuyen } from "./routers/dauSach";
 
 /**
  * This is the primary router for your server.
@@ -9,9 +10,10 @@ import { sachRouter } from "./routers/sach";
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
-  tacGia: tacGiaRouter,
-  theLoai: theLoaiIRouter,
-  sach: sachRouter,
+  tacGia: tacGiaDinhTuyen,
+  theLoai: theLoaiDinhTuyen,
+  sach: sachDinhTuyen,
+  dauSach: dauSachDinhTuyen,
 });
 
 // export type definition of API

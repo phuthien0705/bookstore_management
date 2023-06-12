@@ -15,14 +15,14 @@ import { type NextPageWithLayout } from "../page";
 const Tables: NextPageWithLayout = () => {
   return (
     <div>
-      <div className="mt-12 mb-8 flex flex-col gap-12">
+      <div className="mb-8 mt-12 flex flex-col gap-12">
         <Card>
           <CardHeader variant="gradient" color="blue" className="mb-8 p-6">
             <Typography variant="h6" color="white">
-              Authors Table
+              Danh sách tác giả
             </Typography>
           </CardHeader>
-          <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
+          <CardBody className="overflow-x-scroll px-0 pb-2 pt-0">
             <table className="w-full min-w-[640px] table-auto">
               <thead>
                 <tr>
@@ -30,7 +30,7 @@ const Tables: NextPageWithLayout = () => {
                     (el) => (
                       <th
                         key={el}
-                        className="border-b border-blue-gray-50 py-3 px-5 text-left"
+                        className="border-b border-blue-gray-50 px-5 py-3 text-left"
                       >
                         <Typography
                           variant="small"
@@ -84,7 +84,7 @@ const Tables: NextPageWithLayout = () => {
                             variant="gradient"
                             color={online ? "green" : "blue-gray"}
                             value={online ? "online" : "offline"}
-                            className="py-0.5 px-2 text-[11px] font-medium"
+                            className="px-2 py-0.5 text-[11px] font-medium"
                           />
                         </td>
                         <td className={className}>
@@ -115,7 +115,7 @@ const Tables: NextPageWithLayout = () => {
               Projects Table
             </Typography>
           </CardHeader>
-          <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
+          <CardBody className="overflow-x-scroll px-0 pb-2 pt-0">
             <table className="w-full min-w-[640px] table-auto">
               <thead>
                 <tr>
@@ -123,7 +123,7 @@ const Tables: NextPageWithLayout = () => {
                     (el) => (
                       <th
                         key={el}
-                        className="border-b border-blue-gray-50 py-3 px-5 text-left"
+                        className="border-b border-blue-gray-50 px-5 py-3 text-left"
                       >
                         <Typography
                           variant="small"

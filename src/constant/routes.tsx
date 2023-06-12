@@ -5,6 +5,7 @@ import {
   FilledDownSquare,
   FilledSetting,
   FilledStaff,
+  FilledTitle,
 } from "@/components/icons/filled";
 import {
   HomeIcon,
@@ -24,6 +25,11 @@ export const routes = [
         icon: <FilledDownSquare {...icon} />,
         name: "Phiếu nhập sách",
         path: "/phieu-nhap-sach",
+      },
+      {
+        icon: <FilledTitle {...icon} />,
+        name: "Đầu sách",
+        path: "/dau-sach",
       },
       {
         icon: <FilledBook {...icon} />,
