@@ -10,7 +10,7 @@ import {
   CardHeader,
   Typography,
 } from "@material-tailwind/react";
-import { type Author } from "@prisma/client";
+import { type TACGIA } from "@prisma/client";
 import { type NextPageWithLayout } from "../page";
 import useModal from "@/hook/useModal";
 import { api } from "@/utils/api";
@@ -30,22 +30,22 @@ const AuthorPage: NextPageWithLayout = () => {
     useModal();
   const { open: openConfirmModal, handleOpen: handleOpenConfirmModal } =
     useModal();
-  const [currentItem, setCurrentItem] = useState<Author | null>(null);
+  const [currentItem, setCurrentItem] = useState<TACGIA | null>(null);
 
-  const { data, isLoading, isFetching } = api.author.getWithPagination.useQuery(
+  const { data, isLoading, isFetching } = api.tacGia.getWithPagination.useQuery(
     {
       limit: 10,
       page: pageIndex + 1,
     }
   );
 
-  const { mutate: deleteAuthor } = api.author.delete.useMutation({
+  const { mutate: deleteAuthor } = api.tacGia.delete.useMutation({
     async onSuccess() {
       setCurrentItem(null);
       if (data?.datas.length === 1 && pageIndex !== 0) {
         setPageIndex((p) => p - 1);
       } else {
-        await utils.author.getWithPagination.refetch();
+        await utils.tacGia.getWithPagination.refetch();
       }
       toast.success("Delete successfully");
     },
@@ -55,16 +55,16 @@ const AuthorPage: NextPageWithLayout = () => {
   });
 
   const handleConfirmDelete = () => {
-    currentItem && deleteAuthor({ id: currentItem.id });
+    currentItem && deleteAuthor({ MaTG: currentItem.MaTG });
   };
 
   return (
     <>
       <Head>
-        <title>AuthorManagement</title>
+        <title>Quản lý tác giả</title>
       </Head>
 
-      <div className="mt-12 mb-8">
+      <div className="mb-8 mt-12">
         <Card>
           <CardHeader
             variant="gradient"
@@ -72,24 +72,24 @@ const AuthorPage: NextPageWithLayout = () => {
             className="mb-8 flex items-center justify-between px-6 py-4"
           >
             <Typography variant="h6" color="white">
-              Authors Table
+              Danh sách tác giả
             </Typography>
             <Button
               variant="outlined"
               className="bg-white"
               onClick={() => handleOpenAuthorModal()}
             >
-              Add Author
+              Thêm tác giả
             </Button>
           </CardHeader>
-          <CardBody className="overflow-x-scroll px-0 pt-0 pb-2">
+          <CardBody className="overflow-x-scroll px-0 pb-2 pt-0">
             <table className="w-full min-w-[640px] table-auto">
               <thead>
                 <tr>
                   {["ID", "Name", "action"].map((el) => (
                     <th
                       key={el}
-                      className="border-b border-blue-gray-50 py-3 px-5 text-left"
+                      className="border-b border-blue-gray-50 px-5 py-3 text-left"
                     >
                       <Typography
                         variant="small"
@@ -111,13 +111,13 @@ const AuthorPage: NextPageWithLayout = () => {
                 )}
                 {!isLoading &&
                   data &&
-                  data.datas.map(({ id, name }) => {
+                  data.datas.map(({ MaTG, TenTG }) => {
                     const className = `py-3 px-5`;
                     return (
-                      <tr key={id}>
+                      <tr key={MaTG}>
                         <td className={`${className} w-1/12`}>
                           <Typography className="text-xs font-semibold text-blue-gray-600">
-                            {id}
+                            {MaTG}
                           </Typography>
                         </td>
                         <td className={className}>
@@ -130,7 +130,7 @@ const AuthorPage: NextPageWithLayout = () => {
                           <div className="flex gap-3">
                             <Typography
                               onClick={() => {
-                                setCurrentItem({ id, name });
+                                setCurrentItem({ MaTG, TenTG });
                                 handleOpenAuthorModal(true);
                               }}
                               className="cursor-pointer text-xs font-semibold text-blue-gray-600"
@@ -139,7 +139,7 @@ const AuthorPage: NextPageWithLayout = () => {
                             </Typography>
                             <Typography
                               onClick={() => {
-                                setCurrentItem({ id, name });
+                                setCurrentItem({ MaTG, TenTG });
                                 handleOpenConfirmModal(true);
                               }}
                               className="cursor-pointer text-xs font-semibold text-red-600"

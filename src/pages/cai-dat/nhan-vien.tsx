@@ -6,7 +6,7 @@ const StaffPage: NextPageWithLayout = () => {
   return (
     <>
       <Head>
-        <title>StaffManagement</title>
+        <title>Quản lý nhân viên</title>
       </Head>
       <div>this is settign page</div>
     </>

@@ -31,7 +31,7 @@ const Login: NextPageWithLayout = () => {
         password: values.password,
       });
       if (result && result.ok) {
-        void router.push({ pathname: "/dashboard/book" });
+        void router.push({ pathname: "/chuc-nang/sach" });
       }
       console.log(result);
     } catch (error) {
@@ -51,19 +51,19 @@ const Login: NextPageWithLayout = () => {
       />
       <div className="absolute inset-0 z-0 h-full w-full bg-black/50" />
       <form onSubmit={onSubmit} className="container mx-auto p-4">
-        <Card className="absolute top-2/4 left-2/4 w-full max-w-[24rem] -translate-y-2/4 -translate-x-2/4">
+        <Card className="absolute left-2/4 top-2/4 w-full max-w-[24rem] -translate-x-2/4 -translate-y-2/4">
           <CardHeader
             variant="gradient"
             color="blue"
             className="mb-4 grid h-28 place-items-center"
           >
             <Typography variant="h3" color="white">
-              Sign In
+              Đăng nhập
             </Typography>
           </CardHeader>
           <CardBody className="flex flex-col gap-4">
             <Input
-              label="Username"
+              label="Tên đăng nhập"
               size="lg"
               name="username"
               value={values.username}
@@ -71,19 +71,16 @@ const Login: NextPageWithLayout = () => {
             />
             <Input
               type="password"
-              label="Password"
+              label="Mật khẩu"
               size="lg"
               name="password"
               value={values.password}
               onChange={onChange}
             />
-            <div className="-ml-2.5">
-              <Checkbox label="Remember Me" />
-            </div>
           </CardBody>
           <CardFooter className="pt-0">
             <Button type="submit" variant="gradient" fullWidth>
-              Sign In
+              Đăng nhập
             </Button>
           </CardFooter>
         </Card>

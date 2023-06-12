@@ -6,7 +6,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
   return (
     <>
       <Head>
-        <title>BookEntryTicket</title>
+        <title>Phiếu nhập sách</title>
       </Head>
       <div>this is book entry ticket page</div>
     </>

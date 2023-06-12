@@ -2,45 +2,45 @@ import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 
-export const bookRouter = createTRPCRouter({
+export const sachRouter = createTRPCRouter({
   create: protectedProcedure
     .input(
       z.object({
-        title: z.string(),
-        price: z.number().int(),
-        quantity: z.number().int(),
-        authorId: z.number().int().nullable(),
-        categoryId: z.number().int().nullable(),
+        NhaXuatBan: z.string(),
+        NamXuatBan: z.string(),
+        DonGiaBan: z.number(),
+        SoLuongTon: z.number().int(),
+        MaDauSach: z.number().int(),
       })
     )
     .mutation(({ input, ctx }) => {
-      return ctx.prisma.book.create({
+      return ctx.prisma.sACH.create({
         data: { ...input },
       });
     }),
   delete: protectedProcedure
-    .input(z.object({ id: z.number().int() }))
+    .input(z.object({ MaSach: z.number().int() }))
     .mutation(({ input, ctx }) => {
-      return ctx.prisma.book.delete({
-        where: { id: input.id },
+      return ctx.prisma.sACH.delete({
+        where: { MaSach: input.MaSach },
       });
     }),
   update: protectedProcedure
     .input(
       z.object({
-        id: z.number().int(),
-        title: z.string(),
-        price: z.number().int(),
-        quantity: z.number().int(),
-        authorId: z.number().int().nullable(),
-        categoryId: z.number().int().nullable(),
+        MaSach: z.number().int(),
+        NhaXuatBan: z.string(),
+        NamXuatBan: z.string(),
+        DonGiaBan: z.number(),
+        SoLuongTon: z.number().int(),
+        MaDauSach: z.number().int(),
       })
     )
     .mutation(({ input, ctx }) => {
-      const { id, ...req } = input;
-      return ctx.prisma.book.update({
+      const { MaSach, ...req } = input;
+      return ctx.prisma.sACH.update({
         data: { ...req },
-        where: { id },
+        where: { MaSach },
       });
     }),
 
@@ -54,11 +54,11 @@ export const bookRouter = createTRPCRouter({
     .query(async ({ input, ctx }) => {
       const { limit, page } = input;
       const [records, totalCount] = await Promise.all([
-        ctx.prisma.book.findMany({
+        ctx.prisma.sACH.findMany({
           skip: limit * (page - 1),
           take: limit,
         }),
-        ctx.prisma.book.count(),
+        ctx.prisma.sACH.count(),
       ]);
 
       const totalPages = Math.ceil(totalCount / limit);

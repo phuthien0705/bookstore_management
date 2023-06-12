@@ -21,28 +21,28 @@ const icon = {
 };
 export const routes = [
   {
-    title: "Dashboard",
-    layout: "dashboard",
+    title: "Chức năng",
+    layout: "chuc-nang",
     pages: [
       {
         icon: <FilledDownSquare {...icon} />,
-        name: "Book Entry Ticket",
-        path: "/bookEntryTicket",
+        name: "Phiếu nhập sách",
+        path: "/phieu-nhap-sach",
       },
       {
         icon: <FilledBook {...icon} />,
-        name: "Book",
-        path: "/book",
+        name: "Sách",
+        path: "/sach",
       },
       {
         icon: <FilledAuthor {...icon} />,
-        name: "Author",
-        path: "/author",
+        name: "Tác giả",
+        path: "/tac-gia",
       },
       {
         icon: <FilledCategory {...icon} />,
-        name: "Category",
-        path: "/category",
+        name: "Thể loại",
+        path: "/the-loai",
       },
       {
         icon: <HomeIcon {...icon} />,
@@ -62,42 +62,19 @@ export const routes = [
     ],
   },
   {
-    title: "Setting",
-    layout: "setting",
+    title: "Cài đặt",
+    layout: "/cai-dat",
     pages: [
       {
         icon: <FilledSetting {...icon} />,
-        name: "config",
-        path: "/config",
+        name: "Tham chiếu",
+        path: "/tham-chieu",
       },
       {
         icon: <FilledStaff {...icon} />,
-        name: "staff",
-        path: "/staff",
+        name: "Nhân viên",
+        path: "/nhan-vien",
       },
     ],
-  },
-];
-
-export const navbarRoutes = [
-  {
-    name: "dashboard",
-    path: "/dashboard/home",
-    icon: ChartPieIcon,
-  },
-  {
-    name: "profile",
-    path: "/dashboard/home",
-    icon: UserIcon,
-  },
-  {
-    name: "sign up",
-    path: "/auth/sign-up",
-    icon: UserPlusIcon,
-  },
-  {
-    name: "sign in",
-    path: "/auth/sign-in",
-    icon: ArrowRightOnRectangleIcon,
   },
 ];
