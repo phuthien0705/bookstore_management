@@ -7,13 +7,9 @@ import {
   FilledStaff,
 } from "@/components/icons/filled";
 import {
-  UserPlusIcon,
-  ArrowRightOnRectangleIcon,
   HomeIcon,
   UserCircleIcon,
   TableCellsIcon,
-  ChartPieIcon,
-  UserIcon,
 } from "@heroicons/react/24/solid";
 
 const icon = {
