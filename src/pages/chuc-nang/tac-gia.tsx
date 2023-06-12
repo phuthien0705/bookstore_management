@@ -122,7 +122,7 @@ const AuthorPage: NextPageWithLayout = () => {
                         </td>
                         <td className={className}>
                           <Typography className="text-xs font-semibold text-blue-gray-600">
-                            {name}
+                            {TenTG}
                           </Typography>
                         </td>
 
@@ -179,8 +179,8 @@ const AuthorPage: NextPageWithLayout = () => {
       <ConfirmModal
         open={openConfirmModal}
         handleOpen={handleOpenConfirmModal}
-        title="Delete Author"
-        content="The author will be permanently deleted. You are sure you want to delete?"
+        title="Xóa tác giả"
+        content="Tác giả này sẽ hoàn toàn bị xóa khỏi cơ sở dữ liệu. Bạn có muốn xóa?"
         cb={handleConfirmDelete}
       />
     </>

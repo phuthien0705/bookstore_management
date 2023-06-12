@@ -185,8 +185,8 @@ const BookPage: NextPageWithLayout = () => {
       <ConfirmModal
         open={openConfirmModal}
         handleOpen={handleOpenConfirmModal}
-        title="Delete Author"
-        content="The author will be permanently deleted. You are sure you want to delete?"
+        title="Xóa sách"
+        content="Sách này sẽ bị xóa khỏi cơ sở dữ liệu. Bạn có muốn xóa?"
         cb={handleConfirmDelete}
       />
     </>

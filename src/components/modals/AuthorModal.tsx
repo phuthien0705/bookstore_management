@@ -8,7 +8,7 @@ import {
   CardFooter,
   Button,
 } from "@material-tailwind/react";
-import { type Author } from "@prisma/client";
+import { type TACGIA } from "@prisma/client";
 import { executeAfter500ms } from "@/utils/executeAfter500ms";
 import { api } from "@/utils/api";
 import { contentMapping } from "@/constant/modal";
@@ -16,8 +16,8 @@ import { contentMapping } from "@/constant/modal";
 interface IAuthorModal {
   open: boolean;
   handleOpen: (value?: boolean) => void;
-  currentItem: Author | null;
-  setCurrentItem: Dispatch<SetStateAction<Author | null>>;
+  currentItem: TACGIA | null;
+  setCurrentItem: Dispatch<SetStateAction<TACGIA | null>>;
 }
 
 const AuthorModal: React.FC<IAuthorModal> = ({
@@ -39,13 +39,13 @@ const AuthorModal: React.FC<IAuthorModal> = ({
     mutate: createFunc,
     status: createStatus,
     reset,
-  } = api.author.create.useMutation({
+  } = api.tacGia.create.useMutation({
     onSuccess() {
       executeAfter500ms(async () => {
         handleOpen();
 
         clearValueAfterClose();
-        await utils.author.getWithPagination.refetch();
+        await utils.tacGia.getWithPagination.refetch();
       });
     },
     onError(err) {
@@ -54,13 +54,13 @@ const AuthorModal: React.FC<IAuthorModal> = ({
     },
   });
   const { mutate: updateFunc, status: updateStatus } =
-    api.author.update.useMutation({
+    api.tacGia.update.useMutation({
       onSuccess() {
         executeAfter500ms(async () => {
           handleOpen();
           clearValueAfterClose();
           setCurrentItem(null);
-          await utils.author.getWithPagination.refetch();
+          await utils.tacGia.getWithPagination.refetch();
         });
       },
       onError(err) {
@@ -72,15 +72,15 @@ const AuthorModal: React.FC<IAuthorModal> = ({
   const onSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
     currentItem
-      ? updateFunc({ id: currentItem.id, name: value })
-      : createFunc({ name: value });
+      ? updateFunc({ MaTG: currentItem.MaTG, TenTG: value })
+      : createFunc({ TenTG: value });
   };
 
   const status = currentItem ? updateStatus : createStatus;
 
   useEffect(() => {
     if (currentItem) {
-      setValue(currentItem.name);
+      setValue(currentItem.TenTG);
     } else {
       setValue("");
     }
@@ -101,10 +101,10 @@ const AuthorModal: React.FC<IAuthorModal> = ({
         <Card className="mx-auto w-full max-w-[24rem]">
           <CardBody className="flex flex-col gap-4">
             <Typography className="font-bold">
-              {currentItem ? "Update" : "Create"} Author
+              {currentItem ? "Cập nhật" : "Tạo"} tác giả
             </Typography>
             <Input
-              label="Name"
+              label="Tên tác giả"
               size="lg"
               value={value}
               onChange={onChange}

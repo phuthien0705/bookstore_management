@@ -4,11 +4,11 @@ import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 
 export const tacGiaRouter = createTRPCRouter({
   create: protectedProcedure
-    .input(z.object({ tenTG: z.string() }))
+    .input(z.object({ TenTG: z.string() }))
     .mutation(({ input, ctx }) => {
       return ctx.prisma.tACGIA.create({
         data: {
-          TenTG: input.tenTG,
+          TenTG: input.TenTG,
         },
       });
     }),

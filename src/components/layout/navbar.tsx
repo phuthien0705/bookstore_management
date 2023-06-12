@@ -16,7 +16,7 @@ interface INavbar {
 }
 
 export function Navbar({
-  brandName = "BookStore Management",
+  brandName = "Quản lý nhà sách",
   routes,
   action = (
     <a

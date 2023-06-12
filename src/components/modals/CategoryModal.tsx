@@ -10,14 +10,14 @@ import {
 } from "@material-tailwind/react";
 import { executeAfter500ms } from "@/utils/executeAfter500ms";
 import { api } from "@/utils/api";
-import { type Category } from "@prisma/client";
+import { type THELOAI } from "@prisma/client";
 import { contentMapping } from "@/constant/modal";
 
 interface ICategoryModal {
   open: boolean;
   handleOpen: (value?: boolean) => void;
-  currentItem: Category | null;
-  setCurrentItem: Dispatch<SetStateAction<Category | null>>;
+  currentItem: THELOAI | null;
+  setCurrentItem: Dispatch<SetStateAction<THELOAI | null>>;
 }
 
 const CategoryModal: React.FC<ICategoryModal> = ({
@@ -39,13 +39,13 @@ const CategoryModal: React.FC<ICategoryModal> = ({
     mutate: createFunc,
     status: createStatus,
     reset,
-  } = api.category.create.useMutation({
+  } = api.theLoai.create.useMutation({
     onSuccess() {
       executeAfter500ms(async () => {
         handleOpen();
 
         clearValueAfterClose();
-        await utils.category.getWithPagination.refetch();
+        await utils.theLoai.getWithPagination.refetch();
       });
     },
     onError(err) {
@@ -54,13 +54,13 @@ const CategoryModal: React.FC<ICategoryModal> = ({
     },
   });
   const { mutate: updateFunc, status: updateStatus } =
-    api.category.update.useMutation({
+    api.theLoai.update.useMutation({
       onSuccess() {
         executeAfter500ms(async () => {
           handleOpen();
           clearValueAfterClose();
           setCurrentItem(null);
-          await utils.category.getWithPagination.refetch();
+          await utils.theLoai.getWithPagination.refetch();
         });
       },
       onError(err) {
@@ -72,15 +72,15 @@ const CategoryModal: React.FC<ICategoryModal> = ({
   const onSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
     currentItem
-      ? updateFunc({ id: currentItem.id, name: value })
-      : createFunc({ name: value });
+      ? updateFunc({ MaTL: currentItem.MaTL, TenTL: value })
+      : createFunc({ TenTL: value });
   };
 
   const status = currentItem ? updateStatus : createStatus;
 
   useEffect(() => {
     if (currentItem) {
-      setValue(currentItem.name);
+      setValue(currentItem.TenTL);
     } else {
       setValue("");
     }

@@ -177,8 +177,8 @@ const CategoryPage: NextPageWithLayout = () => {
       <ConfirmModal
         open={openConfirmModal}
         handleOpen={handleOpenConfirmModal}
-        title="Delete Category"
-        content="The category will be permanently deleted. You are sure you want to delete?"
+        title="Xóa thể loại"
+        content="Thể loại này sẽ hoàn toàn bị xóa khỏi cơ sở dữ liệu. Bạn có muốn xóa?"
         cb={handleConfirmDelete}
       />
     </>
