@@ -8,6 +8,7 @@ import {
   CardBody,
   Typography,
   Button,
+  Input,
 } from "@material-tailwind/react";
 import { type SACH } from "@prisma/client";
 import DashboardLayout from "@/layouts/dashboard";
@@ -19,6 +20,7 @@ import {
 } from "@/components/pagination/pagination";
 import useModal from "@/hook/useModal";
 import { api } from "@/utils/api";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
 const BookModal = dynamic(() => import("@/components/modals/BookModal"));
 const ConfirmModal = dynamic(() => import("@/components/modals/ConfirmModal"));
@@ -69,20 +71,21 @@ const BookPage: NextPageWithLayout = () => {
           <CardHeader
             variant="gradient"
             color="blue"
-            className="mb-8 flex items-center justify-between px-6 py-4"
+            className="mb-0 flex items-center justify-between px-6 py-4"
           >
             <Typography variant="h6" color="white">
               Danh sách sách
             </Typography>
-            {/* <Button
-              variant="outlined"
-              className="bg-white"
-              onClick={() => handleOpenBookModal()}
-            >
-              Thêm sách
-            </Button> */}
           </CardHeader>
           <CardBody className="overflow-x-scroll px-0 pb-2 pt-0">
+            <div className="m-4 flex justify-end">
+              <div className="w-full md:w-56">
+                <Input
+                  label="Tìm kiếm"
+                  icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                />
+              </div>
+            </div>
             <table className="w-full min-w-[640px] table-auto">
               <thead>
                 <tr>

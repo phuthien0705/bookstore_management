@@ -1,6 +1,6 @@
 import dynamic from "next/dynamic";
 import Head from "next/head";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import DashboardLayout from "@/layouts/dashboard";
 import {
@@ -8,6 +8,7 @@ import {
   Card,
   CardBody,
   CardHeader,
+  Input,
   Typography,
 } from "@material-tailwind/react";
 import { type TACGIA } from "@prisma/client";
@@ -19,6 +20,8 @@ import {
   Pagination,
   PaginationWrapper,
 } from "@/components/pagination/pagination";
+import useDebounce from "@/hook/useDebounce";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
 const AuthorModal = dynamic(() => import("@/components/modals/AuthorModal"));
 const ConfirmModal = dynamic(() => import("@/components/modals/ConfirmModal"));
@@ -31,11 +34,14 @@ const AuthorPage: NextPageWithLayout = () => {
   const { open: openConfirmModal, handleOpen: handleOpenConfirmModal } =
     useModal();
   const [currentItem, setCurrentItem] = useState<TACGIA | null>(null);
-
+  const [searchValueDebounced, setSearchValueDebounced] = useState<string>("");
+  const [searchValue, setSearchValue] = useState<string>("");
+  const debounced = useDebounce({ value: searchValue, delay: 500 });
   const { data, isLoading, isFetching } = api.tacGia.getWithPagination.useQuery(
     {
       limit: 10,
       page: pageIndex + 1,
+      searchValue: searchValueDebounced,
     }
   );
 
@@ -57,7 +63,10 @@ const AuthorPage: NextPageWithLayout = () => {
   const handleConfirmDelete = () => {
     currentItem && deleteAuthor({ MaTG: currentItem.MaTG });
   };
-
+  useEffect(() => {
+    setSearchValueDebounced(searchValue);
+    setPageIndex(0);
+  }, [debounced]);
   return (
     <>
       <Head>
@@ -69,7 +78,7 @@ const AuthorPage: NextPageWithLayout = () => {
           <CardHeader
             variant="gradient"
             color="blue"
-            className="mb-8 flex items-center justify-between px-6 py-4"
+            className="flex items-center justify-between px-6 py-4"
           >
             <Typography variant="h6" color="white">
               Danh sách tác giả
@@ -83,6 +92,16 @@ const AuthorPage: NextPageWithLayout = () => {
             </Button>
           </CardHeader>
           <CardBody className="overflow-x-scroll px-0 pb-2 pt-0">
+            <div className="m-4 flex justify-end">
+              <div className="w-full md:w-56">
+                <Input
+                  label="Tìm kiếm"
+                  icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                />
+              </div>
+            </div>
             <table className="w-full min-w-[640px] table-auto">
               <thead>
                 <tr>
