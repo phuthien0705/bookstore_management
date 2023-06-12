@@ -92,7 +92,7 @@ const BookPage: NextPageWithLayout = () => {
                   {["ID", "Giá", "Số lượng tồn", "Thao tác"].map((el) => (
                     <th
                       key={el}
-                      className="border-b border-blue-gray-50 px-5 py-3 text-left"
+                      className="border-b border-blue-gray-100 bg-blue-gray-50 px-5 py-3 text-left"
                     >
                       <Typography
                         variant="small"
