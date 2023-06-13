@@ -31,7 +31,7 @@ const TitleModal: React.FC<ITitleModal> = ({
   const [value, setValue] = useState({ MaDauSach: 0, MaTL: 0, TenDauSach: "" });
   const utils = api.useContext();
   const { data: categoryData, isLoading: isLoadingCategory } =
-    api.theLoai.getAll.useQuery();
+    api.category.getAll.useQuery();
   const clearValueAfterClose = () => {
     setValue({ MaDauSach: 0, MaTL: 0, TenDauSach: "" });
   };
@@ -43,13 +43,13 @@ const TitleModal: React.FC<ITitleModal> = ({
     mutate: createFunc,
     status: createStatus,
     reset,
-  } = api.dauSach.create.useMutation({
+  } = api.title.create.useMutation({
     onSuccess() {
       executeAfter500ms(async () => {
         handleOpen();
 
         clearValueAfterClose();
-        await utils.dauSach.getWithPagination.refetch();
+        await utils.title.getWithPagination.refetch();
       });
     },
     onError(err) {
@@ -58,13 +58,13 @@ const TitleModal: React.FC<ITitleModal> = ({
     },
   });
   const { mutate: updateFunc, status: updateStatus } =
-    api.dauSach.update.useMutation({
+    api.title.update.useMutation({
       onSuccess() {
         executeAfter500ms(async () => {
           handleOpen();
           clearValueAfterClose();
           setCurrentItem(null);
-          await utils.dauSach.getWithPagination.refetch();
+          await utils.title.getWithPagination.refetch();
         });
       },
       onError(err) {

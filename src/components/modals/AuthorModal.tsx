@@ -39,13 +39,13 @@ const AuthorModal: React.FC<IAuthorModal> = ({
     mutate: createFunc,
     status: createStatus,
     reset,
-  } = api.tacGia.create.useMutation({
+  } = api.author.create.useMutation({
     onSuccess() {
       executeAfter500ms(async () => {
         handleOpen();
 
         clearValueAfterClose();
-        await utils.tacGia.getWithPagination.refetch();
+        await utils.author.getWithPagination.refetch();
       });
     },
     onError(err) {
@@ -54,13 +54,13 @@ const AuthorModal: React.FC<IAuthorModal> = ({
     },
   });
   const { mutate: updateFunc, status: updateStatus } =
-    api.tacGia.update.useMutation({
+    api.author.update.useMutation({
       onSuccess() {
         executeAfter500ms(async () => {
           handleOpen();
           clearValueAfterClose();
           setCurrentItem(null);
-          await utils.tacGia.getWithPagination.refetch();
+          await utils.author.getWithPagination.refetch();
         });
       },
       onError(err) {

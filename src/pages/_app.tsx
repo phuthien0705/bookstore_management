@@ -2,11 +2,11 @@ import { type AppProps, type AppType } from "next/app";
 import { type Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "@material-tailwind/react";
+import { Toaster } from "react-hot-toast";
 import { MaterialTailwindControllerProvider } from "@/context";
 import { api } from "@/utils/api";
 import { type NextPageWithLayout } from "./page";
 import "@/styles/globals.css";
-import { Toaster } from "react-hot-toast";
 
 type Props = AppProps & {
   Component: NextPageWithLayout;
