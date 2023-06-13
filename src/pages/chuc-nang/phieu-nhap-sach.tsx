@@ -159,7 +159,13 @@ const TABLE_ROWS = [
               <Input variant="outlined" label="Đơn giá nhập"/>
             </div>
             <div className="flex flex-col gap-6" style={{width: "100%"}}>
-              <Card className="overflow-hidden transition-all" style={{ maxHeight: tableHeight }}>
+              <Card 
+                className="overflow-hidden" 
+                style={{ 
+                  maxHeight: tableHeight,
+                  transition: isTableOpen ? 'max-height 0.5s ease-in-out' : 'none',
+                  overflow: 'hidden'
+                }}>
                 <table className="w-full min-w-max table-auto text-left" ref={tableRef}>
                   <thead>
                     <tr>
