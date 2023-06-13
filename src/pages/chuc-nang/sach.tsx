@@ -1,6 +1,6 @@
 import dynamic from "next/dynamic";
 import Head from "next/head";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import {
   Card,
@@ -26,6 +26,7 @@ import {
   PencilIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
+import useDebounce from "@/hook/useDebounce";
 
 const BookModal = dynamic(() => import("@/components/modals/BookModal"));
 const ConfirmModal = dynamic(() => import("@/components/modals/ConfirmModal"));
@@ -36,15 +37,16 @@ const BookPage: NextPageWithLayout = () => {
   const { open: openBookModal, handleOpen: handleOpenBookModal } = useModal();
   const { open: openConfirmModal, handleOpen: handleOpenConfirmModal } =
     useModal();
+  const [searchValueDebounced, setSearchValueDebounced] = useState<string>("");
+  const [searchValue, setSearchValue] = useState<string>("");
+  const debounced = useDebounce({ value: searchValue, delay: 500 });
   const [currentItem, setCurrentItem] = useState<SACH | null>(null);
-  const {
-    data,
-    isLoading: isBooksLoading,
-    isFetching,
-  } = api.book.getWithPagination.useQuery({
-    limit: 10,
-    page: pageIndex + 1,
-  });
+  const { data, isLoading: isBooksLoading } =
+    api.book.getWithPagination.useQuery({
+      limit: 10,
+      page: pageIndex + 1,
+      searchValue: searchValueDebounced,
+    });
   const { mutate: deleteBook } = api.book.delete.useMutation({
     async onSuccess() {
       setCurrentItem(null);
@@ -65,6 +67,11 @@ const BookPage: NextPageWithLayout = () => {
   };
 
   const isLoading = isBooksLoading;
+
+  useEffect(() => {
+    setSearchValueDebounced(searchValue);
+    setPageIndex(0);
+  }, [debounced]);
 
   return (
     <>
