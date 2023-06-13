@@ -3,67 +3,12 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Card, CardHeader, CardBody, Typography, Input, Select, Option, Button } from "@material-tailwind/react";
 import DashboardLayout from "@/layouts/dashboard";
 import { type NextPageWithLayout } from "../page";
+import { dauSachDinhTuyen } from "@/server/api/routers/dauSach";
+import { api } from "@/utils/api";
+import { DAUSACH } from "@prisma/client";
 
 const TABLE_HEAD = ["ID", "Tên sách", "Thể loại", "Nhà xuất bản", "Năm xuất bản", "Số lượng", "Đơn giá"];
- 
-const TABLE_ROWS = [
-  {
-    name: "Harry Potter",
-    genre: "Huyền bí",
-    publisher: "Bloomsbury",
-    published_year: "2009/01/02",
-    quantity: 1200,
-    price: 80000
-  },
-  {
-    name: "Harry Potter",
-    genre: "Huyền bí",
-    publisher: "Bloomsbury",
-    published_year: "2009/01/02",
-    quantity: 1200,
-    price: 80000
-  },
-  {
-    name: "Harry Potter",
-    genre: "Huyền bí",
-    publisher: "Bloomsbury",
-    published_year: "2009/01/02",
-    quantity: 1200,
-    price: 80000
-  },
-  {
-    name: "Harry Potter",
-    genre: "Huyền bí",
-    publisher: "Bloomsbury",
-    published_year: "2009/01/02",
-    quantity: 1200,
-    price: 80000
-  },
-  {
-    name: "Harry Potter",
-    genre: "Huyền bí",
-    publisher: "Bloomsbury",
-    published_year: "2009/01/02",
-    quantity: 1200,
-    price: 80000
-  },
-  {
-    name: "Harry Potter",
-    genre: "Huyền bí",
-    publisher: "Bloomsbury",
-    published_year: "2009/01/02",
-    quantity: 1200,
-    price: 80000
-  },
-  {
-    name: "Harry Potter",
-    genre: "Huyền bí",
-    publisher: "Bloomsbury",
-    published_year: "2009/01/02",
-    quantity: 1200,
-    price: 80000
-  },
-];
+
 
 const BookEntryTicket: NextPageWithLayout = () => {
 
@@ -75,10 +20,11 @@ const BookEntryTicket: NextPageWithLayout = () => {
   const [isTableOpen, setIsTableOpen] = useState(true); // Thêm state để theo dõi trạng thái của bảng sách
   const [tableHeight, setTableHeight] = useState(0);
   const tableRef = useRef(null);
-  const [bookList, setBookList] = useState<any[]>(TABLE_ROWS);
+  const [bookList, setBookList] = useState<any[]>([]);
   const [totalPrice, setTotalPrice] = useState(0);
-  const [selectedBookId, setSelectedBookId] = useState<number | null>(null); // State to store the selected book ID
-
+  const [bookSerieList, setBoookSerieList] = useState<DAUSACH[]>([]);
+  const [searchValue, setSearchValue] = useState("");
+  var temp: DAUSACH[] | null | undefined = null
 
 
 
@@ -87,6 +33,20 @@ const BookEntryTicket: NextPageWithLayout = () => {
     // Add your logic here to handle form submission
 
   };
+
+  const fetchBookSerie = async () => {
+    try {
+      const { data, isLoading, isFetching } = api.dauSach.getAll.useQuery({});
+      setBoookSerieList(data ?? [] as DAUSACH[]); // Ép kiểu data thành DAUSACH[]
+      temp = data
+    } catch (error) {
+      console.error('Error fetching dauSach:', error);
+    }
+  };
+  
+  useEffect(() => {
+    fetchBookSerie();  // Gọi hàm fetchDauSach khi component được tạo
+  }, []);
 
   const calculateTotalPrice = () => {
     const totalPrice = bookList.reduce(
@@ -156,18 +116,24 @@ const BookEntryTicket: NextPageWithLayout = () => {
           </CardHeader>
           <CardBody className="flex flex-col gap-6">
             <div className="flex flex-row gap-10">
-              <div className="flex flex-col gap-6" style={{width: "100%"}}>
+              <div className="flex flex-col gap-6 w-full">
                 <Select 
                   label="Tên đầu sách" 
-                  onChange={(e) => setBookTitle(e)}
+                  value={searchValue}
+                  onChange={(e) => {
+                    setBookTitle(e);
+                  }}
                 >
-                  <Option value="Harry Potter">Harry Potter</Option>
-                  <Option value="Điệp viên 007">Điệp viên 007</Option>
+                  {bookSerieList.map((book) => (
+                    <Option key={book.MaDauSach} value={book.TenDauSach}>
+                      {book.TenDauSach}
+                    </Option>
+                  ))}
                 </Select>
                 <Input variant="outlined" label="Năm xuất bản" onChange={(e) => setPublishedYear(e.target.value)}/>
                 <Input variant="outlined" label="Đơn giá nhập" onChange={(e) => setPrice(parseInt(e.target.value))}/>
               </div>
-              <div className="flex flex-col gap-6" style={{width: "100%"}}>
+              <div className="flex flex-col gap-6 w-full">
                 <Input variant="outlined" label="Nhà xuất bản" onChange={(e) => setPublisher(e.target.value)}/>
                 <Input variant="outlined" label="Số lượng" onChange={(e) => setQuantity(e.target.value)}/>
                 <div className="flex flex-row gap-10 justify-end">
@@ -191,7 +157,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
             </Typography>
           </CardHeader>
           <CardBody className="flex flex-col gap-6">
-            <div className="flex flex-row gap-10" style={{width: "100%"}}>
+            <div className="flex flex-row gap-10 w-full">
             <div className="flex-grow">
               <Input variant="outlined" label="Ngày nhập sách" type="date" />
             </div>
@@ -206,7 +172,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
               </Typography>
             </div>
             </div>
-            <div className="flex flex-col gap-6" style={{width: "100%"}}>
+            <div className="flex flex-col gap-6 w-full">
               <Card 
                 className="overflow-hidden" 
                 style={{ 
@@ -233,7 +199,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
                   </thead>
                   <tbody> 
                     {bookList.map(({ id, name, genre, publisher, published_year, quantity, price }, index) => {
-                      const isLast = index === TABLE_ROWS.length - 1;
+                      const isLast = index === TABLE_HEAD.length - 1;
                       const classes = isLast ? "p-4" : "p-4 border-b border-blue-gray-50";
                       return (
                         <tr key={id}>
@@ -269,7 +235,10 @@ const BookEntryTicket: NextPageWithLayout = () => {
                           </td>
                           <td className={classes}>
                             <Typography variant="small" color="blue-gray" className="font-normal">
-                              {price}
+                              {price.toLocaleString("vi-VN", {
+                                  style: "currency",
+                                  currency: "VND"
+                              })}
                             </Typography>
                           </td>
                           <td className={classes}>
@@ -289,9 +258,9 @@ const BookEntryTicket: NextPageWithLayout = () => {
                 </table>
               </Card>
             </div>
-            <div className="flex flex-row gap-3 justify-end" style={{width: "100%"}}>
+            <div className="flex flex-row gap-3 justify-end w-full">
               <Button onClick={toggleTable}>{isTableOpen ? "Ẩn danh sách sách" : "Hiển thị danh sách sách"}</Button>
-              <Button>Lưu phiếu</Button>
+              <Button onClick={() => console.log(temp)}>Lưu phiếu</Button>
             </div>
           </CardBody>
         </Card>
