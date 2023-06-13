@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card, CardHeader, CardBody, Typography, Input, Select, Option, Button } from "@material-tailwind/react";
 import DashboardLayout from "@/layouts/dashboard";
 import { type NextPageWithLayout } from "../page";
@@ -9,6 +9,9 @@ const BookEntryTicket: NextPageWithLayout = () => {
   const [author, setAuthor] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [isTableOpen, setIsTableOpen] = useState(false); // Thêm state để theo dõi trạng thái của bảng sách
+  const [tableHeight, setTableHeight] = useState(0);
+  const tableRef = useRef(null);
 
   const handleFormSubmit = (e: { preventDefault: () => void; }) => {
     e.preventDefault();
@@ -100,6 +103,16 @@ const TABLE_ROWS = [
   },
 ];
 
+  const toggleTable = () => {
+    setIsTableOpen(!isTableOpen); // Thay đổi trạng thái của bảng khi nhấn vào nút "Hiển thị danh sách sách"
+  };
+
+  useEffect(() => {
+    if (tableRef.current) {
+      setTableHeight(isTableOpen ? (tableRef.current as HTMLTableElement)?.scrollHeight ?? 0 : 0);
+    }
+  }, [isTableOpen]);
+
   return (
     <>
       <Head>
@@ -146,8 +159,8 @@ const TABLE_ROWS = [
               <Input variant="outlined" label="Đơn giá nhập"/>
             </div>
             <div className="flex flex-col gap-6" style={{width: "100%"}}>
-              <Card className="overflow-y-auto">
-                <table className="w-full min-w-max table-auto text-left">
+              <Card className="overflow-hidden transition-all" style={{ maxHeight: tableHeight }}>
+                <table className="w-full min-w-max table-auto text-left" ref={tableRef}>
                   <thead>
                     <tr>
                       {TABLE_HEAD.map((head) => (
@@ -212,7 +225,8 @@ const TABLE_ROWS = [
                 </table>
               </Card>
             </div>
-            <div className="flex flex-row gap-10 justify-end" style={{width: "100%"}}>
+            <div className="flex flex-row gap-3 justify-end" style={{width: "100%"}}>
+              <Button onClick={toggleTable}>{isTableOpen ? "Ẩn danh sách sách" : "Hiển thị danh sách sách"}</Button>
               <Button>Thêm phiếu</Button>
             </div>
           </CardBody>
