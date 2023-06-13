@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { useState } from "react";
-import { Card, CardHeader, CardBody, Typography, Input, Select, Option } from "@material-tailwind/react";
+import { Card, CardHeader, CardBody, Typography, Input, Select, Option, Button } from "@material-tailwind/react";
 import DashboardLayout from "@/layouts/dashboard";
 import { type NextPageWithLayout } from "../page";
 
@@ -18,6 +18,54 @@ const BookEntryTicket: NextPageWithLayout = () => {
   const TABLE_HEAD = ["ID", "Tên sách", "Thể loại", "Nhà xuất bản", "Năm xuất bản", "Số lượng", "Đơn giá"];
  
 const TABLE_ROWS = [
+  {
+    name: "Harry Potter",
+    genre: "Huyền bí",
+    publisher: "Bloomsbury",
+    published_year: "2009/01/02",
+    quantity: 1200,
+    price: 80000
+  },
+  {
+    name: "Harry Potter",
+    genre: "Huyền bí",
+    publisher: "Bloomsbury",
+    published_year: "2009/01/02",
+    quantity: 1200,
+    price: 80000
+  },
+  {
+    name: "Harry Potter",
+    genre: "Huyền bí",
+    publisher: "Bloomsbury",
+    published_year: "2009/01/02",
+    quantity: 1200,
+    price: 80000
+  },
+  {
+    name: "Harry Potter",
+    genre: "Huyền bí",
+    publisher: "Bloomsbury",
+    published_year: "2009/01/02",
+    quantity: 1200,
+    price: 80000
+  },
+  {
+    name: "Harry Potter",
+    genre: "Huyền bí",
+    publisher: "Bloomsbury",
+    published_year: "2009/01/02",
+    quantity: 1200,
+    price: 80000
+  },
+  {
+    name: "Harry Potter",
+    genre: "Huyền bí",
+    publisher: "Bloomsbury",
+    published_year: "2009/01/02",
+    quantity: 1200,
+    price: 80000
+  },
   {
     name: "Harry Potter",
     genre: "Huyền bí",
@@ -95,74 +143,77 @@ const TABLE_ROWS = [
           <CardBody className="flex flex-col gap-6">
             <div className="flex flex-row gap-10" style={{width: "100%"}}>
               <Input variant="outlined" label="Ngày nhập sách" type="date"/>
-              <Input variant="outlined" label="Tổng tiền"/>
+              <Input variant="outlined" label="Đơn giá nhập"/>
             </div>
             <div className="flex flex-col gap-6" style={{width: "100%"}}>
-            <Card className="overflow-scroll">
-              <table className="w-full min-w-max table-auto text-left">
-                <thead>
-                  <tr>
-                    {TABLE_HEAD.map((head) => (
-                      <th key={head} className="border-b border-blue-gray-100 bg-blue-gray-50 p-4">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal leading-none opacity-70"
-                        >
-                          {head}
-                        </Typography>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {TABLE_ROWS.map(({ name, genre, publisher, published_year, quantity, price }, index) => {
-                    const isLast = index === TABLE_ROWS.length - 1;
-                    const classes = isLast ? "p-4" : "p-4 border-b border-blue-gray-50";
-        
-                    return (
-                      <tr key={name}>
-                        <td className={classes}>
-                          <Typography variant="small" color="blue-gray" className="font-normal">
-                            {index + 1}
+              <Card className="overflow-y-auto">
+                <table className="w-full min-w-max table-auto text-left">
+                  <thead>
+                    <tr>
+                      {TABLE_HEAD.map((head) => (
+                        <th key={head} className="border-b border-blue-gray-100 bg-blue-gray-50 p-4">
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal leading-none opacity-70"
+                          >
+                            {head}
                           </Typography>
-                        </td>
-                        <td className={classes}>
-                          <Typography variant="small" color="blue-gray" className="font-normal">
-                            {name}
-                          </Typography>
-                        </td>
-                        <td className={classes}>
-                          <Typography variant="small" color="blue-gray" className="font-normal">
-                            {genre}
-                          </Typography>
-                        </td>
-                        <td className={classes}>
-                          <Typography variant="small" color="blue-gray" className="font-normal">
-                            {publisher}
-                          </Typography>
-                        </td>
-                        <td className={classes}>
-                          <Typography variant="small" color="blue-gray" className="font-normal">
-                            {published_year}
-                          </Typography>
-                        </td>
-                        <td className={classes}>
-                          <Typography variant="small" color="blue-gray" className="font-normal">
-                            {quantity}
-                          </Typography>
-                        </td>
-                        <td className={classes}>
-                          <Typography variant="small" color="blue-gray" className="font-normal">
-                            {price}
-                          </Typography>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </Card>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody> 
+                    {TABLE_ROWS.map(({ name, genre, publisher, published_year, quantity, price }, index) => {
+                      const isLast = index === TABLE_ROWS.length - 1;
+                      const classes = isLast ? "p-4" : "p-4 border-b border-blue-gray-50";
+          
+                      return (
+                        <tr key={name}>
+                          <td className={classes}>
+                            <Typography variant="small" color="blue-gray" className="font-normal">
+                              {index + 1}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <Typography variant="small" color="blue-gray" className="font-normal">
+                              {name}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <Typography variant="small" color="blue-gray" className="font-normal">
+                              {genre}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <Typography variant="small" color="blue-gray" className="font-normal">
+                              {publisher}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <Typography variant="small" color="blue-gray" className="font-normal">
+                              {published_year}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <Typography variant="small" color="blue-gray" className="font-normal">
+                              {quantity}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <Typography variant="small" color="blue-gray" className="font-normal">
+                              {price}
+                            </Typography>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </Card>
+            </div>
+            <div className="flex flex-row gap-10 justify-end" style={{width: "100%"}}>
+              <Button>Thêm phiếu</Button>
             </div>
           </CardBody>
         </Card>
