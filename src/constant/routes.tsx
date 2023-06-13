@@ -7,11 +7,6 @@ import {
   FilledStaff,
   FilledTitle,
 } from "@/components/icons/filled";
-import {
-  HomeIcon,
-  UserCircleIcon,
-  TableCellsIcon,
-} from "@heroicons/react/24/solid";
 
 const icon = {
   className: "w-5 h-5 text-inherit",
@@ -45,21 +40,6 @@ export const routes = [
         icon: <FilledCategory {...icon} />,
         name: "Thể loại",
         path: "/the-loai",
-      },
-      {
-        icon: <HomeIcon {...icon} />,
-        name: "dashboard",
-        path: "/home",
-      },
-      {
-        icon: <UserCircleIcon {...icon} />,
-        name: "profile",
-        path: "/profile",
-      },
-      {
-        icon: <TableCellsIcon {...icon} />,
-        name: "tables",
-        path: "/tables",
       },
     ],
   },

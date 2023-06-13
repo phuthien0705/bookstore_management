@@ -13,6 +13,7 @@ import {
   Button,
   CardBody,
   Input,
+  IconButton,
 } from "@material-tailwind/react";
 import { LoadingScreen } from "@/components/loading/LoadingScreen";
 import {
@@ -21,7 +22,11 @@ import {
 } from "@/components/pagination/pagination";
 import useModal from "@/hook/useModal";
 import useDebounce from "@/hook/useDebounce";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import {
+  MagnifyingGlassIcon,
+  PencilIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
 
 const ConfirmModal = dynamic(() => import("@/components/modals/ConfirmModal"));
 const CategoryModal = dynamic(
@@ -40,19 +45,18 @@ const CategoryPage: NextPageWithLayout = () => {
   const [searchValueDebounced, setSearchValueDebounced] = useState<string>("");
   const [searchValue, setSearchValue] = useState<string>("");
   const debounced = useDebounce({ value: searchValue, delay: 500 });
-  const { data, isLoading, isFetching } =
-    api.theLoai.getWithPagination.useQuery({
-      limit: 10,
-      page: pageIndex + 1,
-      searchValue: searchValueDebounced,
-    });
-  const { mutate: deleteCategory } = api.theLoai.delete.useMutation({
+  const { data, isLoading } = api.category.getWithPagination.useQuery({
+    limit: 10,
+    page: pageIndex + 1,
+    searchValue: searchValueDebounced,
+  });
+  const { mutate: deleteCategory } = api.category.delete.useMutation({
     async onSuccess() {
       setCurrentItem(null);
       if (data?.datas.length === 1 && pageIndex !== 0) {
         setPageIndex((p) => p - 1);
       } else {
-        await utils.theLoai.getWithPagination.refetch();
+        await utils.category.getWithPagination.refetch();
       }
       toast.success("Delete successfully");
     },
@@ -102,19 +106,20 @@ const CategoryPage: NextPageWithLayout = () => {
                 />
               </div>
             </div>
-            <table className="w-full min-w-[640px] table-auto">
+            <table className="w-full min-w-max table-auto text-left">
               <thead>
                 <tr>
-                  {["ID", "Tên", "Thao tác"].map((el) => (
+                  {["ID", "Tên", "Thao tác"].map((head) => (
                     <th
-                      key={el}
-                      className="border-b border-blue-gray-100 bg-blue-gray-50 px-5 py-3 text-left"
+                      key={head}
+                      className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"
                     >
                       <Typography
                         variant="small"
-                        className="text-[11px] font-bold uppercase text-blue-gray-400"
+                        color="blue-gray"
+                        className="font-normal leading-none opacity-70"
                       >
-                        {el}
+                        {head}
                       </Typography>
                     </th>
                   ))}
@@ -130,11 +135,15 @@ const CategoryPage: NextPageWithLayout = () => {
                 )}
                 {!isLoading &&
                   data &&
-                  data.datas.map(({ MaTL, TenTL }) => {
-                    const className = `py-3 px-5`;
+                  data.datas.map(({ MaTL, TenTL }, index) => {
+                    const isLast = index === data.datas.length - 1;
+                    const className = isLast
+                      ? "p-4 "
+                      : "p-4 border-b border-blue-gray-50";
+
                     return (
                       <tr key={MaTL}>
-                        <td className={`${className} w-1/12`}>
+                        <td className={`${className}`}>
                           <Typography className="text-xs font-semibold text-blue-gray-600">
                             {MaTL}
                           </Typography>
@@ -146,25 +155,27 @@ const CategoryPage: NextPageWithLayout = () => {
                         </td>
 
                         <td className={`${className} w-2/12`}>
-                          <div className="flex gap-3">
-                            <Typography
+                          <div className="flex w-max">
+                            <IconButton
+                              variant="text"
+                              color="blue-gray"
                               onClick={() => {
                                 setCurrentItem({ MaTL, TenTL });
                                 handleOpenCategoryModal(true);
                               }}
-                              className="cursor-pointer text-xs font-semibold text-blue-gray-600"
                             >
-                              Chỉnh sửa
-                            </Typography>
-                            <Typography
+                              <PencilIcon className="h-4 w-4" />
+                            </IconButton>
+                            <IconButton
+                              variant="text"
+                              color="red"
                               onClick={() => {
                                 setCurrentItem({ MaTL, TenTL });
                                 handleOpenConfirmModal(true);
                               }}
-                              className="cursor-pointer text-xs font-semibold text-red-600"
                             >
-                              Xóa
-                            </Typography>
+                              <TrashIcon className="h-4 w-4" />
+                            </IconButton>
                           </div>
                         </td>
                       </tr>

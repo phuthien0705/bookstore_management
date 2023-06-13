@@ -39,13 +39,13 @@ const CategoryModal: React.FC<ICategoryModal> = ({
     mutate: createFunc,
     status: createStatus,
     reset,
-  } = api.theLoai.create.useMutation({
+  } = api.category.create.useMutation({
     onSuccess() {
       executeAfter500ms(async () => {
         handleOpen();
 
         clearValueAfterClose();
-        await utils.theLoai.getWithPagination.refetch();
+        await utils.category.getWithPagination.refetch();
       });
     },
     onError(err) {
@@ -54,13 +54,13 @@ const CategoryModal: React.FC<ICategoryModal> = ({
     },
   });
   const { mutate: updateFunc, status: updateStatus } =
-    api.theLoai.update.useMutation({
+    api.category.update.useMutation({
       onSuccess() {
         executeAfter500ms(async () => {
           handleOpen();
           clearValueAfterClose();
           setCurrentItem(null);
-          await utils.theLoai.getWithPagination.refetch();
+          await utils.category.getWithPagination.refetch();
         });
       },
       onError(err) {

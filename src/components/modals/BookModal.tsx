@@ -47,7 +47,7 @@ const BookModal: React.FC<IBookModal> = ({
   const [values, setValues] = useState<TValues>(defaultValues);
   const utils = api.useContext();
   const { data: titles, isLoading: isLoadingTitles } =
-    api.dauSach.getAll.useQuery();
+    api.title.getAll.useQuery();
 
   const clearValueAfterClose = () => {
     setValues(defaultValues);
@@ -58,13 +58,13 @@ const BookModal: React.FC<IBookModal> = ({
   };
 
   const { mutate: updateFunc, status: updateStatus } =
-    api.sach.update.useMutation({
+    api.book.update.useMutation({
       onSuccess() {
         executeAfter500ms(async () => {
           handleOpen();
           clearValueAfterClose();
           setCurrentItem(null);
-          await utils.sach.getWithPagination.refetch();
+          await utils.book.getWithPagination.refetch();
         });
       },
       onError(err) {

@@ -9,6 +9,7 @@ import {
   Typography,
   Button,
   Input,
+  IconButton,
 } from "@material-tailwind/react";
 import { type SACH } from "@prisma/client";
 import DashboardLayout from "@/layouts/dashboard";
@@ -20,7 +21,11 @@ import {
 } from "@/components/pagination/pagination";
 import useModal from "@/hook/useModal";
 import { api } from "@/utils/api";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import {
+  MagnifyingGlassIcon,
+  PencilIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
 
 const BookModal = dynamic(() => import("@/components/modals/BookModal"));
 const ConfirmModal = dynamic(() => import("@/components/modals/ConfirmModal"));
@@ -36,17 +41,17 @@ const BookPage: NextPageWithLayout = () => {
     data,
     isLoading: isBooksLoading,
     isFetching,
-  } = api.sach.getWithPagination.useQuery({
+  } = api.book.getWithPagination.useQuery({
     limit: 10,
     page: pageIndex + 1,
   });
-  const { mutate: deleteBook } = api.sach.delete.useMutation({
+  const { mutate: deleteBook } = api.book.delete.useMutation({
     async onSuccess() {
       setCurrentItem(null);
       if (data?.datas.length === 1 && pageIndex !== 0) {
         setPageIndex((p) => p - 1);
       } else {
-        await utils.tacGia.getWithPagination.refetch();
+        await utils.book.getWithPagination.refetch();
       }
       toast.success("Delete successfully");
     },
@@ -86,19 +91,20 @@ const BookPage: NextPageWithLayout = () => {
                 />
               </div>
             </div>
-            <table className="w-full min-w-[640px] table-auto">
+            <table className="w-full min-w-max table-auto text-left">
               <thead>
                 <tr>
-                  {["ID", "Giá", "Số lượng tồn", "Thao tác"].map((el) => (
+                  {["ID", "Giá", "Số lượng tồn", "Thao tác"].map((head) => (
                     <th
-                      key={el}
-                      className="border-b border-blue-gray-100 bg-blue-gray-50 px-5 py-3 text-left"
+                      key={head}
+                      className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"
                     >
                       <Typography
                         variant="small"
-                        className="text-[11px] font-bold uppercase text-blue-gray-400"
+                        color="blue-gray"
+                        className="font-normal leading-none opacity-70"
                       >
-                        {el}
+                        {head}
                       </Typography>
                     </th>
                   ))}
@@ -114,8 +120,11 @@ const BookPage: NextPageWithLayout = () => {
                 )}
                 {!isLoading &&
                   data &&
-                  data.datas.map((item) => {
-                    const className = `py-3 px-5`;
+                  data.datas.map((item, index) => {
+                    const isLast = index === data.datas.length - 1;
+                    const className = isLast
+                      ? "p-4 "
+                      : "p-4 border-b border-blue-gray-50";
                     return (
                       <tr key={item.MaSach}>
                         <td className={`${className} w-1/12`}>
@@ -136,25 +145,27 @@ const BookPage: NextPageWithLayout = () => {
                         </td>
 
                         <td className={`${className} w-2/12`}>
-                          <div className="flex gap-3">
-                            <Typography
+                          <div className="flex w-max">
+                            <IconButton
+                              variant="text"
+                              color="blue-gray"
                               onClick={() => {
                                 setCurrentItem(item);
                                 handleOpenBookModal(true);
                               }}
-                              className="cursor-pointer text-xs font-semibold text-blue-gray-600"
                             >
-                              Chỉnh sửa
-                            </Typography>
-                            <Typography
+                              <PencilIcon className="h-4 w-4" />
+                            </IconButton>
+                            <IconButton
+                              variant="text"
+                              color="red"
                               onClick={() => {
                                 setCurrentItem(item);
                                 handleOpenConfirmModal(true);
                               }}
-                              className="cursor-pointer text-xs font-semibold text-red-600"
                             >
-                              Xóa
-                            </Typography>
+                              <TrashIcon className="h-4 w-4" />
+                            </IconButton>
                           </div>
                         </td>
                       </tr>

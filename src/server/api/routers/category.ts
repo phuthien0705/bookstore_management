@@ -2,18 +2,18 @@ import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 
-export const tacGiaDinhTuyen = createTRPCRouter({
+export const categoryRouter = createTRPCRouter({
   create: protectedProcedure
-    .input(z.object({ TenTG: z.string() }))
+    .input(z.object({ TenTL: z.string() }))
     .mutation(({ input, ctx }) => {
-      return ctx.prisma.tACGIA.create({
+      return ctx.prisma.tHELOAI.create({
         data: {
-          TenTG: input.TenTG,
+          TenTL: input.TenTL,
         },
       });
     }),
   getAll: protectedProcedure.query(({ ctx }) => {
-    return ctx.prisma.tACGIA.findMany();
+    return ctx.prisma.tHELOAI.findMany();
   }),
   getWithPagination: protectedProcedure
     .input(
@@ -26,18 +26,18 @@ export const tacGiaDinhTuyen = createTRPCRouter({
     .query(async ({ input, ctx }) => {
       const { limit, page, searchValue } = input;
       const [records, totalCount] = await Promise.all([
-        ctx.prisma.tACGIA.findMany({
+        ctx.prisma.tHELOAI.findMany({
           skip: limit * (page - 1),
           take: limit,
           where: {
-            TenTG: {
+            TenTL: {
               contains: searchValue,
             },
           },
         }),
-        ctx.prisma.tACGIA.count({
+        ctx.prisma.tHELOAI.count({
           where: {
-            TenTG: {
+            TenTL: {
               contains: searchValue,
             },
           },
@@ -56,18 +56,18 @@ export const tacGiaDinhTuyen = createTRPCRouter({
       };
     }),
   delete: protectedProcedure
-    .input(z.object({ MaTG: z.number().int() }))
+    .input(z.object({ MaTL: z.number().int() }))
     .mutation(({ input, ctx }) => {
-      return ctx.prisma.tACGIA.delete({
-        where: { MaTG: input.MaTG },
+      return ctx.prisma.tHELOAI.delete({
+        where: { MaTL: input.MaTL },
       });
     }),
   update: protectedProcedure
-    .input(z.object({ MaTG: z.number().int(), TenTG: z.string() }))
+    .input(z.object({ MaTL: z.number().int(), TenTL: z.string() }))
     .mutation(({ input, ctx }) => {
-      return ctx.prisma.tACGIA.update({
-        data: { TenTG: input.TenTG },
-        where: { MaTG: input.MaTG },
+      return ctx.prisma.tHELOAI.update({
+        data: { TenTL: input.TenTL },
+        where: { MaTL: input.MaTL },
       });
     }),
 });

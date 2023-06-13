@@ -36,7 +36,7 @@ export function DashboardLayout(props: { children: React.ReactNode }) {
       });
     }
   }, [router, sessionData, status]);
-
+  console.log(sessionData);
   return (
     <DashboardContext.Provider value={{ searchValue, setSearchValue }}>
       <div className="min-h-screen bg-blue-gray-50/50">
