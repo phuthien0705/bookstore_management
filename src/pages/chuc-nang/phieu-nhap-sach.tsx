@@ -70,13 +70,15 @@ const BookEntryTicket: NextPageWithLayout = () => {
   const [bookTitle, setBookTitle] = useState<any>();
   const [publisher, setPublisher] = useState("");
   const [publishedYear, setPublishedYear] = useState("");
-  const [price, setPrice] = useState("");
+  const [price, setPrice] = useState(0);
   const [quantity, setQuantity] = useState("");
   const [isTableOpen, setIsTableOpen] = useState(true); // Thêm state để theo dõi trạng thái của bảng sách
   const [tableHeight, setTableHeight] = useState(0);
   const tableRef = useRef(null);
   const [bookList, setBookList] = useState<any[]>(TABLE_ROWS);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [selectedBookId, setSelectedBookId] = useState<number | null>(null); // State to store the selected book ID
+
 
 
 
@@ -98,12 +100,12 @@ const BookEntryTicket: NextPageWithLayout = () => {
     calculateTotalPrice();
   }, [bookList]);
   
-  
 
   const hanldeAddBook = (e: { preventDefault: () => void; }) => {
     e.preventDefault();
 
     const newBook = {
+      id: bookList.length + 1,
       name: bookTitle,
       genre: "Kinh dị",
       publisher,
@@ -124,6 +126,17 @@ const BookEntryTicket: NextPageWithLayout = () => {
       setTableHeight(isTableOpen ? (tableRef.current as HTMLTableElement)?.scrollHeight ?? 0 : 0);
     }
   }, [isTableOpen]);
+
+  useEffect(() => {
+    if (tableRef.current) {
+      setTableHeight(isTableOpen ? (tableRef.current as HTMLTableElement)?.scrollHeight ?? 0 : 0);
+    }
+  }, [isTableOpen, bookList]); 
+  
+  const handleDeleteBook = (bookId: number) => {
+    setBookList((prevBookList) => prevBookList.filter((book) => book.id !== bookId));
+  };
+  
 
   return (
     <>
@@ -152,7 +165,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
                   <Option value="Điệp viên 007">Điệp viên 007</Option>
                 </Select>
                 <Input variant="outlined" label="Năm xuất bản" onChange={(e) => setPublishedYear(e.target.value)}/>
-                <Input variant="outlined" label="Đơn giá nhập"/>
+                <Input variant="outlined" label="Đơn giá nhập" onChange={(e) => setPrice(parseInt(e.target.value))}/>
               </div>
               <div className="flex flex-col gap-6" style={{width: "100%"}}>
                 <Input variant="outlined" label="Nhà xuất bản" onChange={(e) => setPublisher(e.target.value)}/>
@@ -215,14 +228,15 @@ const BookEntryTicket: NextPageWithLayout = () => {
                           </Typography>
                         </th>
                       ))}
+                      <th className="border-b border-blue-gray-100 bg-blue-gray-50 p-4"></th> {/* Add new column for delete button */}
                     </tr>
                   </thead>
                   <tbody> 
-                    {bookList.map(({ name, genre, publisher, published_year, quantity, price }, index) => {
+                    {bookList.map(({ id, name, genre, publisher, published_year, quantity, price }, index) => {
                       const isLast = index === TABLE_ROWS.length - 1;
                       const classes = isLast ? "p-4" : "p-4 border-b border-blue-gray-50";
                       return (
-                        <tr key={index}>
+                        <tr key={id}>
                           <td className={classes}>
                             <Typography variant="small" color="blue-gray" className="font-normal">
                               {index + 1}
@@ -257,6 +271,16 @@ const BookEntryTicket: NextPageWithLayout = () => {
                             <Typography variant="small" color="blue-gray" className="font-normal">
                               {price}
                             </Typography>
+                          </td>
+                          <td className={classes}>
+                          <Typography
+                            variant="small"
+                            color="red"
+                            className="cursor-pointer"
+                            onClick={() => handleDeleteBook(id)} // Add onClick event for delete action
+                          >
+                            Xóa
+                          </Typography>
                           </td>
                         </tr>
                       );
