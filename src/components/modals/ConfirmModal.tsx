@@ -32,7 +32,7 @@ const ConfirmModal: React.FC<IConfirmModal> = ({
           onClick={() => handleOpen()}
           className="mr-1"
         >
-          <span>Cancel</span>
+          <span>Quay lại</span>
         </Button>
         <Button
           variant="gradient"
@@ -42,7 +42,7 @@ const ConfirmModal: React.FC<IConfirmModal> = ({
             handleOpen();
           }}
         >
-          <span>Delete</span>
+          <span>Xóa</span>
         </Button>
       </DialogFooter>
     </Dialog>

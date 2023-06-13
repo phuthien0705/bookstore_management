@@ -8,7 +8,6 @@ import {
   CardBody,
   CardFooter,
   Input,
-  Checkbox,
   Button,
   Typography,
 } from "@material-tailwind/react";

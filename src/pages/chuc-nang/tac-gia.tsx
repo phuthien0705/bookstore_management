@@ -8,6 +8,7 @@ import {
   Card,
   CardBody,
   CardHeader,
+  IconButton,
   Input,
   Typography,
 } from "@material-tailwind/react";
@@ -21,7 +22,11 @@ import {
   PaginationWrapper,
 } from "@/components/pagination/pagination";
 import useDebounce from "@/hook/useDebounce";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import {
+  MagnifyingGlassIcon,
+  PencilIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
 
 const AuthorModal = dynamic(() => import("@/components/modals/AuthorModal"));
 const ConfirmModal = dynamic(() => import("@/components/modals/ConfirmModal"));
@@ -37,7 +42,7 @@ const AuthorPage: NextPageWithLayout = () => {
   const [searchValueDebounced, setSearchValueDebounced] = useState<string>("");
   const [searchValue, setSearchValue] = useState<string>("");
   const debounced = useDebounce({ value: searchValue, delay: 500 });
-  const { data, isLoading, isFetching } = api.tacGia.getWithPagination.useQuery(
+  const { data, isLoading, isFetching } = api.author.getWithPagination.useQuery(
     {
       limit: 10,
       page: pageIndex + 1,
@@ -45,13 +50,13 @@ const AuthorPage: NextPageWithLayout = () => {
     }
   );
 
-  const { mutate: deleteAuthor } = api.tacGia.delete.useMutation({
+  const { mutate: deleteAuthor } = api.author.delete.useMutation({
     async onSuccess() {
       setCurrentItem(null);
       if (data?.datas.length === 1 && pageIndex !== 0) {
         setPageIndex((p) => p - 1);
       } else {
-        await utils.tacGia.getWithPagination.refetch();
+        await utils.author.getWithPagination.refetch();
       }
       toast.success("Delete successfully");
     },
@@ -102,19 +107,20 @@ const AuthorPage: NextPageWithLayout = () => {
                 />
               </div>
             </div>
-            <table className="w-full min-w-[640px] table-auto">
+            <table className="w-full min-w-max table-auto text-left">
               <thead>
                 <tr>
-                  {["ID", "Tên", "Thao tác"].map((el) => (
+                  {["ID", "Tên", "Thao tác"].map((head) => (
                     <th
-                      key={el}
-                      className="border-b border-blue-gray-50 px-5 py-3 text-left"
+                      key={head}
+                      className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"
                     >
                       <Typography
                         variant="small"
-                        className="text-[11px] font-bold uppercase text-blue-gray-400"
+                        color="blue-gray"
+                        className="font-normal leading-none opacity-70"
                       >
-                        {el}
+                        {head}
                       </Typography>
                     </th>
                   ))}
@@ -130,11 +136,14 @@ const AuthorPage: NextPageWithLayout = () => {
                 )}
                 {!isLoading &&
                   data &&
-                  data.datas.map(({ MaTG, TenTG }) => {
-                    const className = `py-3 px-5`;
+                  data.datas.map(({ MaTG, TenTG }, index) => {
+                    const isLast = index === data.datas.length - 1;
+                    const className = isLast
+                      ? "p-4 "
+                      : "p-4 border-b border-blue-gray-50";
                     return (
                       <tr key={MaTG}>
-                        <td className={`${className} w-1/12`}>
+                        <td className={`${className}`}>
                           <Typography className="text-xs font-semibold text-blue-gray-600">
                             {MaTG}
                           </Typography>
@@ -146,25 +155,27 @@ const AuthorPage: NextPageWithLayout = () => {
                         </td>
 
                         <td className={`${className} w-2/12`}>
-                          <div className="flex gap-3">
-                            <Typography
+                          <div className="flex w-max">
+                            <IconButton
+                              variant="text"
+                              color="blue-gray"
                               onClick={() => {
                                 setCurrentItem({ MaTG, TenTG });
                                 handleOpenAuthorModal(true);
                               }}
-                              className="cursor-pointer text-xs font-semibold text-blue-gray-600"
                             >
-                              Chỉnh sửa
-                            </Typography>
-                            <Typography
+                              <PencilIcon className="h-4 w-4" />
+                            </IconButton>
+                            <IconButton
+                              variant="text"
+                              color="red"
                               onClick={() => {
                                 setCurrentItem({ MaTG, TenTG });
                                 handleOpenConfirmModal(true);
                               }}
-                              className="cursor-pointer text-xs font-semibold text-red-600"
                             >
-                              Xóa
-                            </Typography>
+                              <TrashIcon className="h-4 w-4" />
+                            </IconButton>
                           </div>
                         </td>
                       </tr>
@@ -199,7 +210,7 @@ const AuthorPage: NextPageWithLayout = () => {
         open={openConfirmModal}
         handleOpen={handleOpenConfirmModal}
         title="Xóa tác giả"
-        content="Tác giả này sẽ hoàn toàn bị xóa khỏi cơ sở dữ liệu. Bạn có muốn xóa?"
+        content="Tác giả này và những đầu sách thuộc tác giả đó sẽ hoàn toàn bị xóa khỏi cơ sở dữ liệu. Bạn có muốn xóa?"
         cb={handleConfirmDelete}
       />
     </>

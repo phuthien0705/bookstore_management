@@ -13,6 +13,7 @@ import {
   Button,
   CardBody,
   Input,
+  IconButton,
 } from "@material-tailwind/react";
 import { LoadingScreen } from "@/components/loading/LoadingScreen";
 import {
@@ -21,7 +22,11 @@ import {
 } from "@/components/pagination/pagination";
 import useModal from "@/hook/useModal";
 import TitleModal from "@/components/modals/TitleModal";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import {
+  MagnifyingGlassIcon,
+  PencilIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
 import useDebounce from "@/hook/useDebounce";
 
 const ConfirmModal = dynamic(() => import("@/components/modals/ConfirmModal"));
@@ -39,20 +44,19 @@ const DauSach: NextPageWithLayout = () => {
   const [currentItem, setCurrentItem] = useState<DAUSACH | null>(null);
   const utils = api.useContext();
   const { data: categoryData, isLoading: isLoadingCategory } =
-    api.theLoai.getAll.useQuery();
-  const { data, isLoading, isFetching } =
-    api.dauSach.getWithPagination.useQuery({
-      limit: 10,
-      page: pageIndex + 1,
-      searchValue: searchValueDebounced,
-    });
-  const { mutate: deleteTitle } = api.dauSach.delete.useMutation({
+    api.category.getAll.useQuery();
+  const { data, isLoading, isFetching } = api.title.getWithPagination.useQuery({
+    limit: 10,
+    page: pageIndex + 1,
+    searchValue: searchValueDebounced,
+  });
+  const { mutate: deleteTitle } = api.title.delete.useMutation({
     async onSuccess() {
       setCurrentItem(null);
       if (data?.datas.length === 1 && pageIndex !== 0) {
         setPageIndex((p) => p - 1);
       } else {
-        await utils.dauSach.getWithPagination.refetch();
+        await utils.title.getWithPagination.refetch();
       }
       toast.success("Delete successfully");
     },
@@ -104,22 +108,25 @@ const DauSach: NextPageWithLayout = () => {
                 />
               </div>
             </div>
-            <table className="w-full min-w-[640px] table-auto">
+            <table className="w-full min-w-max table-auto text-left">
               <thead>
                 <tr>
-                  {["ID", "Tên đầu sách", "Thê loại", "Thao tác"].map((el) => (
-                    <th
-                      key={el}
-                      className="border-b border-blue-gray-50 px-5 py-3 text-left"
-                    >
-                      <Typography
-                        variant="small"
-                        className="text-[11px] font-bold uppercase text-blue-gray-400"
+                  {["ID", "Tên đầu sách", "Thê loại", "Thao tác"].map(
+                    (head) => (
+                      <th
+                        key={head}
+                        className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"
                       >
-                        {el}
-                      </Typography>
-                    </th>
-                  ))}
+                        <Typography
+                          variant="small"
+                          color="blue-gray"
+                          className="font-normal leading-none opacity-70"
+                        >
+                          {head}
+                        </Typography>
+                      </th>
+                    )
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -132,8 +139,11 @@ const DauSach: NextPageWithLayout = () => {
                 )}
                 {!isLoading &&
                   data &&
-                  data.datas.map(({ MaDauSach, TenDauSach, MaTL }) => {
-                    const className = `py-3 px-5`;
+                  data.datas.map(({ MaDauSach, TenDauSach, MaTL }, index) => {
+                    const isLast = index === data.datas.length - 1;
+                    const className = isLast
+                      ? "p-4 "
+                      : "p-4 border-b border-blue-gray-50";
                     return (
                       <tr key={MaDauSach}>
                         <td className={`${className} w-1/12`}>
@@ -155,25 +165,27 @@ const DauSach: NextPageWithLayout = () => {
                           </Typography>
                         </td>
                         <td className={`${className} w-2/12`}>
-                          <div className="flex gap-3">
-                            <Typography
+                          <div className="flex w-max">
+                            <IconButton
+                              variant="text"
+                              color="blue-gray"
                               onClick={() => {
                                 setCurrentItem({ MaDauSach, TenDauSach, MaTL });
                                 handleOpenTitleModal(true);
                               }}
-                              className="cursor-pointer text-xs font-semibold text-blue-gray-600"
                             >
-                              Cập nhật
-                            </Typography>
-                            <Typography
+                              <PencilIcon className="h-4 w-4" />
+                            </IconButton>
+                            <IconButton
+                              variant="text"
+                              color="red"
                               onClick={() => {
                                 setCurrentItem({ MaDauSach, TenDauSach, MaTL });
                                 handleOpenConfirmModal(true);
                               }}
-                              className="cursor-pointer text-xs font-semibold text-red-600"
                             >
-                              Xóa
-                            </Typography>
+                              <TrashIcon className="h-4 w-4" />
+                            </IconButton>
                           </div>
                         </td>
                       </tr>
