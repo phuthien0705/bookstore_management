@@ -42,17 +42,17 @@ const SettingPage: NextPageWithLayout = () => {
             </div>
             <div className="flex flex-col gap-6" style={{width: "100%"}}>
               <Input variant="outlined" label="Tồn tối thiểu sau bán"/>
-              <Checkbox label={
-                <Typography color="blue-gray" className="font-medium flex">Sử dụng
-                  <Typography as="a" href="#" color="blue" className="font-medium hover:text-blue-700 transition-colors">
-                    &nbsp;quy định này
-                  </Typography>.
-                </Typography>
-              } />
             </div>
           </CardBody>
         </Card>
         <div className="flex justify-end mt-8">
+          <Checkbox label={
+            <Typography color="blue-gray" className="font-medium flex">Sử dụng
+              <Typography as="a" href="#" color="blue" className="font-medium hover:text-blue-700 transition-colors mr-5">
+                &nbsp;quy định này.
+              </Typography>
+            </Typography>
+          } />
           <Button color="gray" className="mr-4">
             Mặc định
           </Button>

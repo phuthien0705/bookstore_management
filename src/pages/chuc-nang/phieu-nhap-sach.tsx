@@ -77,30 +77,6 @@ const TABLE_ROWS = [
     quantity: 1200,
     price: 80000
   },
-  {
-    name: "Harry Potter",
-    genre: "Huyền bí",
-    publisher: "Bloomsbury",
-    published_year: "2009/01/02",
-    quantity: 1200,
-    price: 80000
-  },
-  {
-    name: "Harry Potter",
-    genre: "Huyền bí",
-    publisher: "Bloomsbury",
-    published_year: "2009/01/02",
-    quantity: 1200,
-    price: 80000
-  },
-  {
-    name: "Harry Potter",
-    genre: "Huyền bí",
-    publisher: "Bloomsbury",
-    published_year: "2009/01/02",
-    quantity: 1200,
-    price: 80000
-  },
 ];
 
   const toggleTable = () => {
@@ -129,17 +105,22 @@ const TABLE_ROWS = [
               Thông tin sách
             </Typography>
           </CardHeader>
-          <CardBody className="flex flex-row gap-10">
-            <div className="flex flex-col gap-6" style={{width: "100%"}}>
-            <Select label="Tên đầu sách">
-              <Option>Harry Potter</Option>
-              <Option>Điệp viên 007</Option>
-            </Select>
-              <Input variant="outlined" label="Năm xuất bản"/>
+          <CardBody className="flex flex-col gap-6">
+            <div className="flex flex-row gap-10">
+              <div className="flex flex-col gap-6" style={{width: "100%"}}>
+                <Select label="Tên đầu sách">
+                  <Option>Harry Potter</Option>
+                  <Option>Điệp viên 007</Option>
+                </Select>
+                <Input variant="outlined" label="Năm xuất bản"/>
+              </div>
+              <div className="flex flex-col gap-6" style={{width: "100%"}}>
+                <Input variant="outlined" label="Ngày xuất bản"/>
+                <Input variant="outlined" label="Số lượng"/>
+              </div>
             </div>
-            <div className="flex flex-col gap-6" style={{width: "100%"}}>
-              <Input variant="outlined" label="Ngày xuất bản"/>
-              <Input variant="outlined" label="Số lượng"/>
+            <div className="flex flex-row gap-10 justify-end">
+              <Button>Thêm sách</Button>
             </div>
           </CardBody>
         </Card>
@@ -233,7 +214,7 @@ const TABLE_ROWS = [
             </div>
             <div className="flex flex-row gap-3 justify-end" style={{width: "100%"}}>
               <Button onClick={toggleTable}>{isTableOpen ? "Ẩn danh sách sách" : "Hiển thị danh sách sách"}</Button>
-              <Button>Thêm phiếu</Button>
+              <Button>Lưu phiếu</Button>
             </div>
           </CardBody>
         </Card>
