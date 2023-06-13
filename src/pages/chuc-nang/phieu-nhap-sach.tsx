@@ -1,24 +1,10 @@
 import Head from "next/head";
-import { useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Card, CardHeader, CardBody, Typography, Input, Select, Option, Button } from "@material-tailwind/react";
 import DashboardLayout from "@/layouts/dashboard";
 import { type NextPageWithLayout } from "../page";
 
-const BookEntryTicket: NextPageWithLayout = () => {
-  const [bookTitle, setBookTitle] = useState("");
-  const [author, setAuthor] = useState("");
-  const [price, setPrice] = useState("");
-  const [quantity, setQuantity] = useState("");
-  const [isTableOpen, setIsTableOpen] = useState(true); // Thêm state để theo dõi trạng thái của bảng sách
-  const [tableHeight, setTableHeight] = useState(0);
-  const tableRef = useRef(null);
-
-  const handleFormSubmit = (e: { preventDefault: () => void; }) => {
-    e.preventDefault();
-    // Add your logic here to handle form submission
-  };
-
-  const TABLE_HEAD = ["ID", "Tên sách", "Thể loại", "Nhà xuất bản", "Năm xuất bản", "Số lượng", "Đơn giá"];
+const TABLE_HEAD = ["ID", "Tên sách", "Thể loại", "Nhà xuất bản", "Năm xuất bản", "Số lượng", "Đơn giá"];
  
 const TABLE_ROWS = [
   {
@@ -79,6 +65,56 @@ const TABLE_ROWS = [
   },
 ];
 
+const BookEntryTicket: NextPageWithLayout = () => {
+
+  const [bookTitle, setBookTitle] = useState<any>();
+  const [publisher, setPublisher] = useState("");
+  const [publishedYear, setPublishedYear] = useState("");
+  const [price, setPrice] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [isTableOpen, setIsTableOpen] = useState(true); // Thêm state để theo dõi trạng thái của bảng sách
+  const [tableHeight, setTableHeight] = useState(0);
+  const tableRef = useRef(null);
+  const [bookList, setBookList] = useState<any[]>(TABLE_ROWS);
+  const [totalPrice, setTotalPrice] = useState(0);
+
+
+
+  const handleFormSubmit = (e: { preventDefault: () => void; }) => {
+    e.preventDefault();
+    // Add your logic here to handle form submission
+
+  };
+
+  const calculateTotalPrice = () => {
+    const totalPrice = bookList.reduce(
+      (accumulator, book) => accumulator + book.quantity * book.price,
+      0
+    );
+    setTotalPrice(totalPrice);
+  };
+
+  useEffect(() => {
+    calculateTotalPrice();
+  }, [bookList]);
+  
+  
+
+  const hanldeAddBook = (e: { preventDefault: () => void; }) => {
+    e.preventDefault();
+
+    const newBook = {
+      name: bookTitle,
+      genre: "Kinh dị",
+      publisher,
+      published_year: publishedYear,
+      quantity,
+      price,
+    };
+  
+    setBookList((prevBookList) => [...prevBookList, newBook]);
+  }
+
   const toggleTable = () => {
     setIsTableOpen(!isTableOpen); // Thay đổi trạng thái của bảng khi nhấn vào nút "Hiển thị danh sách sách"
   };
@@ -108,20 +144,27 @@ const TABLE_ROWS = [
           <CardBody className="flex flex-col gap-6">
             <div className="flex flex-row gap-10">
               <div className="flex flex-col gap-6" style={{width: "100%"}}>
-                <Select label="Tên đầu sách">
-                  <Option>Harry Potter</Option>
-                  <Option>Điệp viên 007</Option>
+                <Select 
+                  label="Tên đầu sách" 
+                  onChange={(e) => setBookTitle(e)}
+                >
+                  <Option value="Harry Potter">Harry Potter</Option>
+                  <Option value="Điệp viên 007">Điệp viên 007</Option>
                 </Select>
-                <Input variant="outlined" label="Năm xuất bản"/>
+                <Input variant="outlined" label="Năm xuất bản" onChange={(e) => setPublishedYear(e.target.value)}/>
+                <Input variant="outlined" label="Đơn giá nhập"/>
               </div>
               <div className="flex flex-col gap-6" style={{width: "100%"}}>
-                <Input variant="outlined" label="Ngày xuất bản"/>
-                <Input variant="outlined" label="Số lượng"/>
+                <Input variant="outlined" label="Nhà xuất bản" onChange={(e) => setPublisher(e.target.value)}/>
+                <Input variant="outlined" label="Số lượng" onChange={(e) => setQuantity(e.target.value)}/>
+                <div className="flex flex-row gap-10 justify-end">
+                  <Button onClick={hanldeAddBook}>Thêm sách</Button>
+                </div>
               </div>
             </div>
-            <div className="flex flex-row gap-10 justify-end">
-              <Button>Thêm sách</Button>
-            </div>
+            {/* <div className="flex flex-row gap-10 justify-end">
+              <Button onClick={hanldeAddBook}>Thêm sách</Button>
+            </div> */}
           </CardBody>
         </Card>
         <Card className="mt-10">
@@ -136,8 +179,19 @@ const TABLE_ROWS = [
           </CardHeader>
           <CardBody className="flex flex-col gap-6">
             <div className="flex flex-row gap-10" style={{width: "100%"}}>
-              <Input variant="outlined" label="Ngày nhập sách" type="date"/>
-              <Input variant="outlined" label="Đơn giá nhập"/>
+            <div className="flex-grow">
+              <Input variant="outlined" label="Ngày nhập sách" type="date" />
+            </div>
+            <div className="flex-grow flex items-center">
+              <Typography variant="h6" color="blue-gray">
+                Tổng tiền: {
+                  totalPrice.toLocaleString("vi-VN", {
+                    style: "currency",
+                    currency: "VND",
+                  }
+                )}
+              </Typography>
+            </div>
             </div>
             <div className="flex flex-col gap-6" style={{width: "100%"}}>
               <Card 
@@ -164,12 +218,11 @@ const TABLE_ROWS = [
                     </tr>
                   </thead>
                   <tbody> 
-                    {TABLE_ROWS.map(({ name, genre, publisher, published_year, quantity, price }, index) => {
+                    {bookList.map(({ name, genre, publisher, published_year, quantity, price }, index) => {
                       const isLast = index === TABLE_ROWS.length - 1;
                       const classes = isLast ? "p-4" : "p-4 border-b border-blue-gray-50";
-          
                       return (
-                        <tr key={name}>
+                        <tr key={index}>
                           <td className={classes}>
                             <Typography variant="small" color="blue-gray" className="font-normal">
                               {index + 1}
