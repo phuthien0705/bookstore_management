@@ -30,16 +30,34 @@ export const categoryRouter = createTRPCRouter({
           skip: limit * (page - 1),
           take: limit,
           where: {
-            TenTL: {
-              contains: searchValue,
-            },
+            OR: [
+              {
+                MaTL: {
+                  equals: parseInt(searchValue, 10) || undefined,
+                },
+              },
+              {
+                TenTL: {
+                  contains: searchValue,
+                },
+              },
+            ],
           },
         }),
         ctx.prisma.tHELOAI.count({
           where: {
-            TenTL: {
-              contains: searchValue,
-            },
+            OR: [
+              {
+                MaTL: {
+                  equals: parseInt(searchValue, 10) || undefined,
+                },
+              },
+              {
+                TenTL: {
+                  contains: searchValue,
+                },
+              },
+            ],
           },
         }),
       ]);
@@ -57,7 +75,12 @@ export const categoryRouter = createTRPCRouter({
     }),
   delete: protectedProcedure
     .input(z.object({ MaTL: z.number().int() }))
-    .mutation(({ input, ctx }) => {
+    .mutation(async ({ input, ctx }) => {
+      await ctx.prisma.dAUSACH.deleteMany({
+        where: {
+          MaTL: input.MaTL,
+        },
+      });
       return ctx.prisma.tHELOAI.delete({
         where: { MaTL: input.MaTL },
       });
