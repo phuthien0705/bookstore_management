@@ -9,7 +9,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
   const [author, setAuthor] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
-  const [isTableOpen, setIsTableOpen] = useState(false); // Thêm state để theo dõi trạng thái của bảng sách
+  const [isTableOpen, setIsTableOpen] = useState(true); // Thêm state để theo dõi trạng thái của bảng sách
   const [tableHeight, setTableHeight] = useState(0);
   const tableRef = useRef(null);
 
