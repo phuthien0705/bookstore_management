@@ -15,7 +15,7 @@ export const titleRouter = createTRPCRouter({
         data: { ...input },
       });
     }),
-  getAll: protectedProcedure
+    getAll: protectedProcedure
     .input(
       z
         .object({
@@ -44,6 +44,8 @@ export const titleRouter = createTRPCRouter({
       }
       return ctx.prisma.dAUSACH.findMany();
     }),
+  
+
 
   delete: protectedProcedure
     .input(z.object({ MaDauSach: z.number().int() }))
