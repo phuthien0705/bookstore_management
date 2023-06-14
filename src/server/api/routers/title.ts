@@ -71,7 +71,7 @@ export const titleRouter = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }) => {
       const { MaDauSach, TacGia, ...req } = input;
-      
+
       await ctx.prisma.cT_TACGIA.deleteMany({
         where: {
           MaDauSach,
@@ -85,7 +85,7 @@ export const titleRouter = createTRPCRouter({
         })),
       });
 
-      return  ctx.prisma.dAUSACH.update({
+      return ctx.prisma.dAUSACH.update({
         data: { ...req },
         where: { MaDauSach },
       });

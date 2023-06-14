@@ -1,33 +1,21 @@
 import { useSession } from "next-auth/react";
-import {
-  type Dispatch,
-  type SetStateAction,
-  createContext,
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, createContext, useState } from "react";
 import { useRouter } from "next/router";
-import { useMaterialTailwindController } from "@/context";
-import { routes } from "@/constant/routes";
+import { managerRoutes, staffRoutes } from "@/constant/routes";
 import { Sidenav, DashboardNavbar } from "@/components/layout";
+import { UserRole } from "@/constant/constant";
 
 interface IDashboardContext {
-  searchValue: string;
-  setSearchValue: Dispatch<SetStateAction<string>>;
+  isManager: boolean;
 }
-const dashboardContextDefaultValue: IDashboardContext = {
-  searchValue: "",
-  setSearchValue: () => undefined,
-};
-export const DashboardContext = createContext<IDashboardContext>(
-  dashboardContextDefaultValue
-);
+
+export const DashboardContext = createContext<IDashboardContext>({
+  isManager: false,
+});
 
 export function DashboardLayout(props: { children: React.ReactNode }) {
   const router = useRouter();
-  const [searchValue, setSearchValue] = useState<string>("");
-  const [controller, dispatch] = useMaterialTailwindController();
-  const { sidenavType } = controller;
+  const [isManager, setIsManager] = useState(false);
   const { data: sessionData, status } = useSession();
   useEffect(() => {
     if (!sessionData && status !== "loading") {
@@ -35,12 +23,20 @@ export function DashboardLayout(props: { children: React.ReactNode }) {
         pathname: "/",
       });
     }
+    if (
+      sessionData &&
+      sessionData.user.NhomNguoiDung.TenNhom === UserRole.manager
+    ) {
+      setIsManager(true);
+    } else {
+      setIsManager(false);
+    }
   }, [router, sessionData, status]);
-  console.log(sessionData);
+  console.log(isManager);
   return (
-    <DashboardContext.Provider value={{ searchValue, setSearchValue }}>
+    <DashboardContext.Provider value={{ isManager }}>
       <div className="min-h-screen bg-blue-gray-50/50">
-        <Sidenav routes={routes} />
+        <Sidenav managerRoutes={managerRoutes} staffRoutes={staffRoutes} />
         <div className="p-4 xl:ml-80">
           <DashboardNavbar />
           {props.children}
