@@ -109,7 +109,8 @@ export const bookRouter = createTRPCRouter({
         totalPages,
       };
     }),
-  getAllWithTitleAndCategory: protectedProcedure.query(
+  getAllWithTitleAndCategory: protectedProcedure
+  .query(
     async ({ input, ctx }) => {
       const books = await ctx.prisma.sACH.findMany({
         include: {

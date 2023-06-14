@@ -16,4 +16,15 @@ export const bookEntryTicketRouter = createTRPCRouter({
             data: { ...input },
         });
     }),
+    getLast: protectedProcedure
+    .input(z.object({}))
+    .query(
+    async ({ ctx }) => {
+        const lastBookEntryTicket = await ctx.prisma.pHIEUNHAPSACH.findFirst({
+            orderBy: { MaPhieuNhapSach: "desc" },
+        });
+            
+        return lastBookEntryTicket;
+    } 
+)
 })

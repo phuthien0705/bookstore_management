@@ -39,11 +39,34 @@ const BookEntryTicket: NextPageWithLayout = () => {
   const tableRef = useRef(null);
   const [bookList, setBookList] = useState<any[]>([]);
   const [totalPrice, setTotalPrice] = useState(0);
-  const [countCreatedBook, setCountCreatedBook] = useState(0)
   const { data: titles, isLoading: isLoadingTitles } = api.title.getAll.useQuery({});
+  const [currentTicketId, setCurrentTicketId] = useState<number>(0);
+  const { mutate: createBookEntryDetail } = api.bookEntryDetail.create.useMutation({
+    onSuccess(data) {
+      console.log("Successfully saved book entry detail")
+    },
+    onError(err) {
+      console.error(err);
+    },
+  });
   const { mutate: createTicket } = api.bookEntryTicket.create.useMutation({
-    async onSuccess() {
+    onSuccess(data) {
+
+      setCurrentTicketId(data.MaPhieuNhapSach); 
+
+      bookList.forEach((book, index) => {
+        createBook({
+            MaDauSach: parseInt(book.title_id),
+            NhaXuatBan: book.publisher,
+            NamXuatBan: book.published_year,
+            SoLuongTon: book.quantity,
+            DonGiaBan: book.price
+        })
+      })
+
       toast.success("Lưu phiếu thành công !");
+
+      
     },
     onError(err) {  
       console.error(err);
@@ -51,8 +74,15 @@ const BookEntryTicket: NextPageWithLayout = () => {
   })
 
   const { mutate: createBook } = api.book.create.useMutation({
-    async onSuccess() {
-      setCountCreatedBook(countCreatedBook + 1);
+    onSuccess(data) {
+      console.log("Successfully saved book")
+      createBookEntryDetail({
+        MaPhieuNhapSach: currentTicketId,
+        MaSach: data.MaSach,
+        SoLuong: data.SoLuongTon,
+        DonGia: Number(data.DonGiaBan),
+        ThanhTien: data.SoLuongTon * Number(data.DonGiaBan)
+      })
     },
     onError(err) {
       console.error(err);
@@ -91,7 +121,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
     setIsTableOpen(!isTableOpen); // Thay đổi trạng thái của bảng khi nhấn vào nút "Hiển thị danh sách sách"
   };
 
-  const handleSaveTicket = () => {
+  const handleSaveTicket = async () => {
 
     // Tạo mới phiếu nhập
     const entryDateObject = new Date(entryDate);
@@ -108,19 +138,8 @@ const BookEntryTicket: NextPageWithLayout = () => {
       MaTK: 3,
     });
 
-
-    // Lưu danh sách sách
-    bookList.forEach((book, index) => {
-      createBook({
-          MaDauSach: parseInt(book.title_id),
-          NhaXuatBan: book.publisher,
-          NamXuatBan: book.published_year,
-          SoLuongTon: book.quantity,
-          DonGiaBan: book.price
-      })
-    })
-
   }
+  
 
   useEffect(() => {
     if (tableRef.current) {
@@ -391,10 +410,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
                 {isTableOpen ? "Ẩn danh sách sách" : "Hiển thị danh sách sách"}
               </Button>
               <Button 
-                onClick={() => {
-                  handleSaveTicket();
-                  toast.success(`Đã thêm ${countCreatedBook} sách mới !`)
-               }}>Lưu phiếu
+                onClick={handleSaveTicket}>Lưu phiếu
               </Button>
             </div>
           </CardBody>

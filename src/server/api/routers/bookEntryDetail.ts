@@ -1,0 +1,21 @@
+import { z } from "zod";
+
+import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+
+export const bookEntryDetailRouter = createTRPCRouter({
+    create: protectedProcedure
+    .input(
+        z.object({
+            MaSach: z.number().int(),
+            SoLuong: z.number(),
+            MaPhieuNhapSach: z.number().int(),
+            DonGia: z.number(),
+            ThanhTien: z.number(),
+        })
+    )
+    .mutation(({ input, ctx }) => {
+            return ctx.prisma.cT_PHIEUNHAPSACH.create({
+            data: { ...input },
+        });
+    }),
+})
