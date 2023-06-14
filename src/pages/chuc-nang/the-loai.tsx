@@ -58,7 +58,7 @@ const CategoryPage: NextPageWithLayout = () => {
       } else {
         await utils.category.getWithPagination.refetch();
       }
-      toast.success("Delete successfully");
+      toast.success("Xóa thành công");
     },
     onError(err) {
       console.error(err);

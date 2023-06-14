@@ -3,16 +3,9 @@ import {
   CardHeader,
   CardBody,
   Typography,
-  Avatar,
-  Chip,
-  Tooltip,
-  Progress,
   Button,
-  Input,
   Select,
-  Checkbox,
   Option,
-  ButtonGroup,
   IconButton,
 } from "@material-tailwind/react";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
@@ -146,7 +139,6 @@ const HoaDon: NextPageWithLayout = () => {
                         color="blue-gray"
                         onClick={(e) => {
                           setQuantity(quantity + 1);
-                          console.log(`quantity: `, quantity);
                         }}
                       >
                         <ChevronUpIcon
@@ -160,7 +152,6 @@ const HoaDon: NextPageWithLayout = () => {
                         disabled={quantity === 1}
                         onClick={(e) => {
                           setQuantity(quantity - 1);
-                          console.log(`quantity: `, quantity);
                         }}
                       >
                         <ChevronDownIcon

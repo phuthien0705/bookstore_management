@@ -8,11 +8,19 @@ export const titleRouter = createTRPCRouter({
       z.object({
         TenDauSach: z.string(),
         MaTL: z.number().int(),
+        TacGia: z.array(z.number()),
       })
     )
-    .mutation(({ input, ctx }) => {
-      return ctx.prisma.dAUSACH.create({
-        data: { ...input },
+    .mutation(async ({ input, ctx }) => {
+      const title = await ctx.prisma.dAUSACH.create({
+        data: { TenDauSach: input.TenDauSach, MaTL: input.MaTL },
+      });
+
+      return ctx.prisma.cT_TACGIA.createMany({
+        data: input.TacGia.map((i) => ({
+          MaDauSach: title.MaDauSach,
+          MaTG: i,
+        })),
       });
     }),
   getAll: protectedProcedure
@@ -58,11 +66,26 @@ export const titleRouter = createTRPCRouter({
         MaDauSach: z.number().int(),
         TenDauSach: z.string(),
         MaTL: z.number().int(),
+        TacGia: z.array(z.number()),
       })
     )
-    .mutation(({ input, ctx }) => {
-      const { MaDauSach, ...req } = input;
-      return ctx.prisma.dAUSACH.update({
+    .mutation(async ({ input, ctx }) => {
+      const { MaDauSach, TacGia, ...req } = input;
+      
+      await ctx.prisma.cT_TACGIA.deleteMany({
+        where: {
+          MaDauSach,
+        },
+      });
+
+      await ctx.prisma.cT_TACGIA.createMany({
+        data: TacGia.map((i) => ({
+          MaDauSach,
+          MaTG: i,
+        })),
+      });
+
+      return  ctx.prisma.dAUSACH.update({
         data: { ...req },
         where: { MaDauSach },
       });
@@ -95,6 +118,9 @@ export const titleRouter = createTRPCRouter({
                 },
               },
             ],
+          },
+          include: {
+            CT_TACGIA: true,
           },
         }),
         ctx.prisma.dAUSACH.count({
