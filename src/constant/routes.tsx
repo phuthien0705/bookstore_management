@@ -6,6 +6,8 @@ import {
   FilledSetting,
   FilledStaff,
   FilledTitle,
+  FilledInvoice,
+  FilledReceipt,
 } from "@/components/icons/filled";
 
 const icon = {
@@ -20,6 +22,16 @@ export const routes = [
         icon: <FilledDownSquare {...icon} />,
         name: "Phiếu nhập sách",
         path: "/phieu-nhap-sach",
+      },
+      {
+        icon: <FilledInvoice {...icon} />,
+        name: "Lập hóa đơn",
+        path: "/hoa-don",
+      },
+      {
+        icon: <FilledReceipt {...icon} />,
+        name: "Phiếu thu tiền",
+        path: "/thu-tien",
       },
       {
         icon: <FilledTitle {...icon} />,
