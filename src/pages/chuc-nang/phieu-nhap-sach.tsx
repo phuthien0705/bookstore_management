@@ -61,7 +61,6 @@ const BookEntryTicket: NextPageWithLayout = () => {
     const newBook = {
       id: bookList.length + 1,
       title_id: bookTitle,
-      genre: "Kinh dị",
       publisher,
       published_year: publishedYear,
       quantity,
@@ -94,6 +93,11 @@ const BookEntryTicket: NextPageWithLayout = () => {
   const getTitleNameById = (id: number) => {
     const foundTitle = titles?.find((title) => title.MaDauSach === id)
     return foundTitle ? foundTitle.TenDauSach : "";
+  }
+
+  const getCategoryNameById = (id: number) => {
+    const category = titles?.find((title) => title.MaDauSach === id)
+    return category ? category.TheLoai.TenTL : "";
   }
 
   return (
@@ -229,7 +233,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
                           {
                             id,
                             title_id,
-                            genre,
+                            category,
                             publisher,
                             published_year,
                             quantity,
@@ -242,6 +246,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
                             ? "p-4"
                             : "p-4 border-b border-blue-gray-50";
                           const titleName = getTitleNameById(parseInt(title_id))
+                          const categoryName = getCategoryNameById(parseInt(title_id))
                           return (
                             <tr key={id}>
                               <td className={classes}>
@@ -268,7 +273,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
                                   color="blue-gray"
                                   className="font-normal"
                                 >
-                                  {genre}
+                                  {categoryName}
                                 </Typography>
                               </td>
                               <td className={classes}>
