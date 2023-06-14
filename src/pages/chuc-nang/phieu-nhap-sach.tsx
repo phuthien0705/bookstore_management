@@ -98,13 +98,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
                     setBookTitle(e);
                   }}
                 >
-                  {/* {data && data?.map((book) => (
-                    <Option key={book.MaDauSach} value={book.TenDauSach}>
-                      {book.TenDauSach}
-                    </Option>
-                  ))} */}
-                  <Option value="Harry Potter">Harry Potter</Option>
-                  <Option value="Điệp viên 007">Điệp viên 007</Option>
+                  
                 </Select>
                 <Input variant="outlined" label="Năm xuất bản" onChange={(e) => setPublishedYear(e.target.value)}/>
                 <Input variant="outlined" label="Đơn giá nhập" onChange={(e) => setPrice(parseInt(e.target.value))}/>
