@@ -3,29 +3,25 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Card, CardHeader, CardBody, Typography, Input, Select, Option, Button } from "@material-tailwind/react";
 import DashboardLayout from "@/layouts/dashboard";
 import { type NextPageWithLayout } from "../page";
-import { dauSachDinhTuyen } from "@/server/api/routers/dauSach";
 import { api } from "@/utils/api";
-import { DAUSACH } from "@prisma/client";
 
-const TABLE_HEAD = ["ID", "Tên sách", "Thể loại", "Nhà xuất bản", "Năm xuất bản", "Số lượng", "Đơn giá"];
 
 
 const BookEntryTicket: NextPageWithLayout = () => {
+
+  const TABLE_HEAD = ["ID", "Tên sách", "Thể loại", "Nhà xuất bản", "Năm xuất bản", "Số lượng", "Đơn giá"];
 
   const [bookTitle, setBookTitle] = useState<any>();
   const [publisher, setPublisher] = useState("");
   const [publishedYear, setPublishedYear] = useState("");
   const [price, setPrice] = useState(0);
-  const [quantity, setQuantity] = useState("");
+  const [quantity, setQuantity] = useState(0);
   const [isTableOpen, setIsTableOpen] = useState(true); // Thêm state để theo dõi trạng thái của bảng sách
   const [tableHeight, setTableHeight] = useState(0);
   const tableRef = useRef(null);
   const [bookList, setBookList] = useState<any[]>([]);
   const [totalPrice, setTotalPrice] = useState(0);
-  const [bookSerieList, setBoookSerieList] = useState<DAUSACH[]>([]);
-  const [searchValue, setSearchValue] = useState("");
-  var temp: DAUSACH[] | null | undefined = null
-
+  const { data, isLoading, isFetching } = api.title.getAll.useQuery({});
 
 
   const handleFormSubmit = (e: { preventDefault: () => void; }) => {
@@ -33,20 +29,6 @@ const BookEntryTicket: NextPageWithLayout = () => {
     // Add your logic here to handle form submission
 
   };
-
-  const fetchBookSerie = async () => {
-    try {
-      const { data, isLoading, isFetching } = api.dauSach.getAll.useQuery({});
-      setBoookSerieList(data ?? [] as DAUSACH[]); // Ép kiểu data thành DAUSACH[]
-      temp = data
-    } catch (error) {
-      console.error('Error fetching dauSach:', error);
-    }
-  };
-  
-  useEffect(() => {
-    fetchBookSerie();  // Gọi hàm fetchDauSach khi component được tạo
-  }, []);
 
   const calculateTotalPrice = () => {
     const totalPrice = bookList.reduce(
@@ -85,19 +67,12 @@ const BookEntryTicket: NextPageWithLayout = () => {
     if (tableRef.current) {
       setTableHeight(isTableOpen ? (tableRef.current as HTMLTableElement)?.scrollHeight ?? 0 : 0);
     }
-  }, [isTableOpen]);
-
-  useEffect(() => {
-    if (tableRef.current) {
-      setTableHeight(isTableOpen ? (tableRef.current as HTMLTableElement)?.scrollHeight ?? 0 : 0);
-    }
   }, [isTableOpen, bookList]); 
   
   const handleDeleteBook = (bookId: number) => {
     setBookList((prevBookList) => prevBookList.filter((book) => book.id !== bookId));
   };
   
-
   return (
     <>
       <Head>
@@ -119,31 +94,29 @@ const BookEntryTicket: NextPageWithLayout = () => {
               <div className="flex flex-col gap-6 w-full">
                 <Select 
                   label="Tên đầu sách" 
-                  value={searchValue}
                   onChange={(e) => {
                     setBookTitle(e);
                   }}
                 >
-                  {bookSerieList.map((book) => (
+                  {/* {data && data?.map((book) => (
                     <Option key={book.MaDauSach} value={book.TenDauSach}>
                       {book.TenDauSach}
                     </Option>
-                  ))}
+                  ))} */}
+                  <Option value="Harry Potter">Harry Potter</Option>
+                  <Option value="Điệp viên 007">Điệp viên 007</Option>
                 </Select>
                 <Input variant="outlined" label="Năm xuất bản" onChange={(e) => setPublishedYear(e.target.value)}/>
                 <Input variant="outlined" label="Đơn giá nhập" onChange={(e) => setPrice(parseInt(e.target.value))}/>
               </div>
               <div className="flex flex-col gap-6 w-full">
                 <Input variant="outlined" label="Nhà xuất bản" onChange={(e) => setPublisher(e.target.value)}/>
-                <Input variant="outlined" label="Số lượng" onChange={(e) => setQuantity(e.target.value)}/>
+                <Input variant="outlined" label="Số lượng" onChange={(e) => setQuantity(parseInt(e.target.value))}/>
                 <div className="flex flex-row gap-10 justify-end">
                   <Button onClick={hanldeAddBook}>Thêm sách</Button>
                 </div>
               </div>
             </div>
-            {/* <div className="flex flex-row gap-10 justify-end">
-              <Button onClick={hanldeAddBook}>Thêm sách</Button>
-            </div> */}
           </CardBody>
         </Card>
         <Card className="mt-10">
@@ -198,8 +171,8 @@ const BookEntryTicket: NextPageWithLayout = () => {
                     </tr>
                   </thead>
                   <tbody> 
-                    {bookList.map(({ id, name, genre, publisher, published_year, quantity, price }, index) => {
-                      const isLast = index === TABLE_HEAD.length - 1;
+                    {bookList && bookList?.map(({ id, name, genre, publisher, published_year, quantity, price }, index) => {
+                      const isLast = index === (TABLE_HEAD.length - 1);
                       const classes = isLast ? "p-4" : "p-4 border-b border-blue-gray-50";
                       return (
                         <tr key={id}>
@@ -260,7 +233,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
             </div>
             <div className="flex flex-row gap-3 justify-end w-full">
               <Button onClick={toggleTable}>{isTableOpen ? "Ẩn danh sách sách" : "Hiển thị danh sách sách"}</Button>
-              <Button onClick={() => console.log(temp)}>Lưu phiếu</Button>
+              <Button>Lưu phiếu</Button>
             </div>
           </CardBody>
         </Card>
