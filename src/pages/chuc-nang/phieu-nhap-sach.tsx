@@ -39,10 +39,20 @@ const BookEntryTicket: NextPageWithLayout = () => {
   const tableRef = useRef(null);
   const [bookList, setBookList] = useState<any[]>([]);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [countCreatedBook, setCountCreatedBook] = useState(0)
   const { data: titles, isLoading: isLoadingTitles } = api.title.getAll.useQuery({});
   const { mutate: createTicket } = api.bookEntryTicket.create.useMutation({
     async onSuccess() {
       toast.success("Lưu phiếu thành công !");
+    },
+    onError(err) {  
+      console.error(err);
+    },
+  })
+
+  const { mutate: createBook } = api.book.create.useMutation({
+    async onSuccess() {
+      setCountCreatedBook(countCreatedBook + 1);
     },
     onError(err) {
       console.error(err);
@@ -83,10 +93,11 @@ const BookEntryTicket: NextPageWithLayout = () => {
 
   const handleSaveTicket = () => {
 
+    // Tạo mới phiếu nhập
     const entryDateObject = new Date(entryDate);
     if (isNaN(entryDateObject.getTime())) {
       // Xử lý khi đối tượng Date không hợp lệ (ví dụ: hiển thị thông báo lỗi)
-      console.error("Ngày nhập sách không hợp lệ");
+      alert("Ngày nhập sách không hợp lệ");
       return;
     }
     const formattedEntryDate = entryDateObject.toISOString(); // "YYYY-MM-DDTHH:mm:ss.sssZ"    
@@ -96,6 +107,19 @@ const BookEntryTicket: NextPageWithLayout = () => {
       TongTien: totalPrice,
       MaTK: 3,
     });
+
+
+    // Lưu danh sách sách
+    bookList.forEach((book, index) => {
+      createBook({
+          MaDauSach: parseInt(book.title_id),
+          NhaXuatBan: book.publisher,
+          NamXuatBan: book.published_year,
+          SoLuongTon: book.quantity,
+          DonGiaBan: book.price
+      })
+    })
+
   }
 
   useEffect(() => {
@@ -366,7 +390,12 @@ const BookEntryTicket: NextPageWithLayout = () => {
               <Button onClick={toggleTable}>
                 {isTableOpen ? "Ẩn danh sách sách" : "Hiển thị danh sách sách"}
               </Button>
-              <Button onClick={handleSaveTicket}>Lưu phiếu</Button>
+              <Button 
+                onClick={() => {
+                  handleSaveTicket();
+                  toast.success(`Đã thêm ${countCreatedBook} sách mới !`)
+               }}>Lưu phiếu
+              </Button>
             </div>
           </CardBody>
         </Card>
