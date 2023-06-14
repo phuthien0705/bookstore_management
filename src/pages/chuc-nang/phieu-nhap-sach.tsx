@@ -60,7 +60,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
 
     const newBook = {
       id: bookList.length + 1,
-      name: bookTitle,
+      title_id: bookTitle,
       genre: "Kinh dị",
       publisher,
       published_year: publishedYear,
@@ -91,6 +91,11 @@ const BookEntryTicket: NextPageWithLayout = () => {
     );
   };
 
+  const getTitleNameById = (id: number) => {
+    const foundTitle = titles?.find((title) => title.MaDauSach === id)
+    return foundTitle ? foundTitle.TenDauSach : "";
+  }
+
   return (
     <>
       <Head>
@@ -119,16 +124,14 @@ const BookEntryTicket: NextPageWithLayout = () => {
                   {isLoadingTitles ? (
                     <Option>Đang tải đầu sách ...</Option>
                   ) : titles ? (
-                    titles.map((book) => (
-                      <Option key={book.MaDauSach} value={book.TenDauSach}>
-                        {book.TenDauSach}
+                    titles.map((title) => (
+                      <Option key={title.MaDauSach} value={title.MaDauSach.toString()}>
+                        {title.TenDauSach}
                       </Option>
                     ))
                   ) : (
                     <Option>Không có đầu sách nào</Option>
                   )}
-                  {/* <Option value="Harry Potter">Harry Potter</Option>
-                  <Option value="Điệp viên 007">Điệp viên 007</Option> */}
                 </Select>
                 <Input
                   variant="outlined"
@@ -225,7 +228,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
                         (
                           {
                             id,
-                            name,
+                            title_id,
                             genre,
                             publisher,
                             published_year,
@@ -238,6 +241,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
                           const classes = isLast
                             ? "p-4"
                             : "p-4 border-b border-blue-gray-50";
+                          const titleName = getTitleNameById(parseInt(title_id))
                           return (
                             <tr key={id}>
                               <td className={classes}>
@@ -255,7 +259,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
                                   color="blue-gray"
                                   className="font-normal"
                                 >
-                                  {name}
+                                  {titleName}
                                 </Typography>
                               </td>
                               <td className={classes}>
