@@ -27,9 +27,18 @@ export const titleRouter = createTRPCRouter({
       if (input?.searchValue) {
         return ctx.prisma.dAUSACH.findMany({
           where: {
-            TenDauSach: {
-              contains: input?.searchValue,
-            },
+            OR: [
+              {
+                MaDauSach: {
+                  equals: parseInt(input.searchValue, 10) || undefined,
+                },
+              },
+              {
+                TenDauSach: {
+                  contains: input.searchValue,
+                },
+              },
+            ],
           },
         });
       }
@@ -76,16 +85,34 @@ export const titleRouter = createTRPCRouter({
           skip: limit * (page - 1),
           take: limit,
           where: {
-            TenDauSach: {
-              contains: searchValue,
-            },
+            OR: [
+              {
+                MaDauSach: {
+                  equals: parseInt(searchValue, 10) || undefined,
+                },
+              },
+              {
+                TenDauSach: {
+                  contains: searchValue,
+                },
+              },
+            ],
           },
         }),
         ctx.prisma.dAUSACH.count({
           where: {
-            TenDauSach: {
-              contains: searchValue,
-            },
+            OR: [
+              {
+                MaDauSach: {
+                  equals: parseInt(searchValue, 10) || undefined,
+                },
+              },
+              {
+                TenDauSach: {
+                  contains: searchValue,
+                },
+              },
+            ],
           },
         }),
       ]);

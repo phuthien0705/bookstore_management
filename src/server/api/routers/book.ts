@@ -49,14 +49,51 @@ export const bookRouter = createTRPCRouter({
       z.object({
         limit: z.number(),
         page: z.number(),
+        searchValue: z.string(),
       })
     )
     .query(async ({ input, ctx }) => {
-      const { limit, page } = input;
+      const { limit, page, searchValue } = input;
       const [records, totalCount] = await Promise.all([
         ctx.prisma.sACH.findMany({
           skip: limit * (page - 1),
           take: limit,
+          where: {
+            OR: [
+              {
+                MaSach: {
+                  equals: parseInt(searchValue, 10) || undefined,
+                },
+              },
+              {
+                NhaXuatBan: {
+                  contains: searchValue,
+                },
+              },
+              {
+                NamXuatBan: {
+                  contains: searchValue,
+                },
+              },
+              {
+                SoLuongTon: {
+                  equals: parseInt(searchValue, 10) || undefined,
+                },
+              },
+              {
+                DonGiaBan: {
+                  equals: parseInt(searchValue, 10) || undefined,
+                },
+              },
+            ],
+          },
+          include: {
+            DauSach: {
+              include: {
+                TheLoai: true,
+              },
+            },
+          },
         }),
         ctx.prisma.sACH.count(),
       ]);
@@ -72,4 +109,19 @@ export const bookRouter = createTRPCRouter({
         totalPages,
       };
     }),
+  getAllWithTitleAndCategory: protectedProcedure.query(
+    async ({ input, ctx }) => {
+      const books = await ctx.prisma.sACH.findMany({
+        include: {
+          DauSach: {
+            include: {
+              TheLoai: true,
+            },
+          },
+        },
+      });
+
+      return books;
+    }
+  ),
 });

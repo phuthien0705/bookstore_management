@@ -30,16 +30,34 @@ export const authorRouter = createTRPCRouter({
           skip: limit * (page - 1),
           take: limit,
           where: {
-            TenTG: {
-              contains: searchValue,
-            },
+            OR: [
+              {
+                MaTG: {
+                  equals: parseInt(searchValue, 10) || undefined,
+                },
+              },
+              {
+                TenTG: {
+                  contains: searchValue,
+                },
+              },
+            ],
           },
         }),
         ctx.prisma.tACGIA.count({
           where: {
-            TenTG: {
-              contains: searchValue,
-            },
+            OR: [
+              {
+                MaTG: {
+                  equals: parseInt(searchValue, 10) || undefined,
+                },
+              },
+              {
+                TenTG: {
+                  contains: searchValue,
+                },
+              },
+            ],
           },
         }),
       ]);

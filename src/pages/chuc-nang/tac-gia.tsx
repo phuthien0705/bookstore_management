@@ -68,10 +68,12 @@ const AuthorPage: NextPageWithLayout = () => {
   const handleConfirmDelete = () => {
     currentItem && deleteAuthor({ MaTG: currentItem.MaTG });
   };
+
   useEffect(() => {
     setSearchValueDebounced(searchValue);
     setPageIndex(0);
   }, [debounced]);
+
   return (
     <>
       <Head>
