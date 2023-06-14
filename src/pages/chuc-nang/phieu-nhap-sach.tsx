@@ -10,9 +10,12 @@ import {
   Option,
   Button,
 } from "@material-tailwind/react";
+import { useMutation } from "@tanstack/react-query";
 import DashboardLayout from "@/layouts/dashboard";
 import { type NextPageWithLayout } from "../page";
 import { api } from "@/utils/api";
+import toast from "react-hot-toast";
+
 
 const BookEntryTicket: NextPageWithLayout = () => {
   const TABLE_HEAD = [
@@ -30,18 +33,22 @@ const BookEntryTicket: NextPageWithLayout = () => {
   const [publishedYear, setPublishedYear] = useState("");
   const [price, setPrice] = useState(0);
   const [quantity, setQuantity] = useState(0);
+  const [entryDate, setEntryDate] = useState("");
   const [isTableOpen, setIsTableOpen] = useState(true); // Thêm state để theo dõi trạng thái của bảng sách
   const [tableHeight, setTableHeight] = useState(0);
   const tableRef = useRef(null);
   const [bookList, setBookList] = useState<any[]>([]);
   const [totalPrice, setTotalPrice] = useState(0);
-  const { data: titles, isLoading: isLoadingTitles } =
-    api.title.getAll.useQuery({});
-
-  const handleFormSubmit = (e: { preventDefault: () => void }) => {
-    e.preventDefault();
-    // Add your logic here to handle form submission
-  };
+  const { data: titles, isLoading: isLoadingTitles } = api.title.getAll.useQuery({});
+  const { mutate: createTicket } = api.bookEntryTicket.create.useMutation({
+    async onSuccess() {
+      toast.success("Lưu phiếu thành công !");
+    },
+    onError(err) {
+      console.error(err);
+    },
+  })
+  
 
   const calculateTotalPrice = () => {
     const totalPrice = bookList.reduce(
@@ -73,6 +80,23 @@ const BookEntryTicket: NextPageWithLayout = () => {
   const toggleTable = () => {
     setIsTableOpen(!isTableOpen); // Thay đổi trạng thái của bảng khi nhấn vào nút "Hiển thị danh sách sách"
   };
+
+  const handleSaveTicket = () => {
+
+    const entryDateObject = new Date(entryDate);
+    if (isNaN(entryDateObject.getTime())) {
+      // Xử lý khi đối tượng Date không hợp lệ (ví dụ: hiển thị thông báo lỗi)
+      console.error("Ngày nhập sách không hợp lệ");
+      return;
+    }
+    const formattedEntryDate = entryDateObject.toISOString(); // "YYYY-MM-DDTHH:mm:ss.sssZ"    
+
+    createTicket({ 
+      NgayTao: formattedEntryDate,
+      TongTien: totalPrice,
+      MaTK: 3,
+    });
+  }
 
   useEffect(() => {
     if (tableRef.current) {
@@ -179,7 +203,12 @@ const BookEntryTicket: NextPageWithLayout = () => {
           <CardBody className="flex flex-col gap-6">
             <div className="flex w-full flex-row gap-10">
               <div className="flex-grow">
-                <Input variant="outlined" label="Ngày nhập sách" type="date" />
+                <Input 
+                  variant="outlined" 
+                  label="Ngày nhập sách" 
+                  type="date" 
+                  onChange={(e) => setEntryDate(e.target.value)}
+                />
               </div>
               <div className="flex flex-grow items-center">
                 <Typography variant="h6" color="blue-gray">
@@ -337,7 +366,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
               <Button onClick={toggleTable}>
                 {isTableOpen ? "Ẩn danh sách sách" : "Hiển thị danh sách sách"}
               </Button>
-              <Button>Lưu phiếu</Button>
+              <Button onClick={handleSaveTicket}>Lưu phiếu</Button>
             </div>
           </CardBody>
         </Card>
