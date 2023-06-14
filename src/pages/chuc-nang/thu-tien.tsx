@@ -32,10 +32,12 @@ const TABLE_ROWS = [
     DiaChi: "Ktx Khu A",
     Email: "anhkhoa@gmail.com",
   },
-
 ];
 
-const HoaDon: NextPageWithLayout = () => {
+const ThuTien: NextPageWithLayout = () => {
+  const { data: KhachHang, isLoading: isLoadingKH } =
+    api.invoice.getKhachHang.useQuery();
+
   const locale = "vi";
   const [today, setDate] = useState(new Date());
   useEffect(() => {
@@ -51,8 +53,12 @@ const HoaDon: NextPageWithLayout = () => {
   const [quantity, setQuantity] = useState(1);
   const [selecting, setSelect] = useState();
   const [orderRows, setOrderRow] = useState([]);
+  const [MaKH, setMaKH] = useState("");
 
-  useEffect(() => {}, [numRows]);
+  // useEffect(() => {
+  //   const { data: dtKhachHang, isLoading: isLoadingDT } =
+  //     api.invoice.getKhachHangById.useQuery({ MaKH });
+  // }, [MaKH]);
 
   const handleDeleteRow = () => {};
   const handleAddBook = () => {};
@@ -76,27 +82,23 @@ const HoaDon: NextPageWithLayout = () => {
                 <Typography className="mb-4 font-bold">
                   Thông tin khách hàng
                 </Typography>{" "}
-
                 <div className="mb-4 mt-4 flex flex-col gap-6">
-                <div className="flex flex-row">
-                <Select
-                    label="SĐT khách hàng: "
-                    disabled={false}
-                    value="1"
-                    variant="static"
-                    className="basis-1/2"
-                  >
-                    <Option>Material Tailwind HTML</Option>
-                    <Option>Material Tailwind React</Option>
-                    <Option>Material Tailwind Vue</Option>
-                    <Option>Material Tailwind Angular</Option>
-                    <Option>Material Tailwind Svelte</Option>
-                  </Select>
-
-                    <Typography className="font-bold basis-1/2 ">
-                      Ngày lập phiếu thu: {dayjs(today).format("ddd, DD/MM/YYYY")}
+                  <div className="flex flex-row">
+                    <Select
+                      label="SĐT khách hàng: "
+                      disabled={false}
+                      variant="static"
+                      className="basis-1/4"
+                    >
+                      <Option>0914139767</Option>
+                      <Option>0914139767</Option>
+                      <Option>0914139767</Option>
+                    </Select>
+                    <Typography className="basis-1/2 font-bold ">
+                      Ngày lập phiếu thu:{" "}
+                      {dayjs(today).format("ddd, DD/MM/YYYY")}
                     </Typography>
-                </div>
+                  </div>
 
                   <table className="w-full min-w-max table-auto text-left">
                     <thead>
@@ -120,7 +122,10 @@ const HoaDon: NextPageWithLayout = () => {
                     <tbody>
                       {TABLE_ROWS.map(
                         ({ TenKhachHang, DiaChi, Email }, index) => (
-                          <tr key={`${index}_${TenKhachHang}_${Email}`} className="even:bg-blue-gray-50/50">
+                          <tr
+                            key={`${index}_${TenKhachHang}_${Email}`}
+                            className="even:bg-blue-gray-50/50"
+                          >
                             <td className="p-4">
                               <Typography
                                 variant="small"
@@ -154,16 +159,15 @@ const HoaDon: NextPageWithLayout = () => {
                     </tbody>
                   </table>
                   <Typography>Số tiền nợ: </Typography>
-                  <Input label="Số tiền nợ"></Input>
-                  <Typography>Số tiền trả: </Typography>
+                  <Input disabled label="Số tiền nợ"></Input>
+                  <Typography disabled>Số tiền trả: </Typography>
                   <Input label="Số tiền thu"></Input>
                   <Typography>Còn lại: </Typography>
                 </div>
                 <div className=" flex justify-end space-x-2">
                   <Button type="submit" className="mt-6">
-                  Thanh Toán và In Phiếu Thu
+                    Thanh Toán và In Phiếu Thu
                   </Button>
-
                 </div>
               </form>
             </CardBody>
@@ -173,5 +177,5 @@ const HoaDon: NextPageWithLayout = () => {
     </>
   );
 };
-HoaDon.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
-export default HoaDon;
+ThuTien.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+export default ThuTien;

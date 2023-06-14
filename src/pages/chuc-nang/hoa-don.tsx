@@ -16,7 +16,6 @@ import {
   IconButton,
 } from "@material-tailwind/react";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
-
 import { api } from "@/utils/api";
 import Head from "next/head";
 import dayjs from "dayjs";
@@ -28,29 +27,19 @@ const TABLE_HEAD = ["STT", "Sách", "Đơn giá bán", "Số lượng", "Xóa s�
 
 const TABLE_ROWS = [
   {
-    TenSach: "John Michael",
-    DonGiaBan: "Manager",
-    SoLuong: "23/04/18",
+    TenSach: "Doraemon",
+    DonGiaBan: "20.000đ",
+    SoLuong: "5",
   },
   {
-    TenSach: "Alexa Liras",
-    DonGiaBan: "Developer",
-    SoLuong: "23/04/18",
+    TenSach: "Toán cao cấp",
+    DonGiaBan: "35.000đ",
+    SoLuong: "1",
   },
   {
-    TenSach: "Laurent Perrier",
-    DonGiaBan: "Executive",
-    SoLuong: "19/09/17",
-  },
-  {
-    TenSach: "Michael Levi",
-    DonGiaBan: "Developer",
-    SoLuong: "24/12/08",
-  },
-  {
-    TenSach: "Richard Gran",
-    DonGiaBan: "Manager",
-    SoLuong: "04/10/21",
+    TenSach: "Nextjs cực dễ",
+    DonGiaBan: "50.000đ",
+    SoLuong: "1",
   },
 ];
 
@@ -65,17 +54,22 @@ const HoaDon: NextPageWithLayout = () => {
       clearInterval(timer);
     };
   }, []);
+  const [quantity, setQuantity] = useState(1);
 
   const [numRows, setNumRow] = useState(0);
-  const [quantity, setQuantity] = useState(1);
+
   const [selecting, setSelect] = useState();
+  const [MaKH, setMaKH] = useState("");
   const [orderRows, setOrderRow] = useState([]);
 
   useEffect(() => {}, [numRows]);
 
   const handleDeleteRow = () => {};
+
   const handleAddBook = () => {};
 
+  const { data: KhachHang, isLoading: isLoadingKH } =
+    api.invoice.getKhachHang.useQuery();
   return (
     <>
       <Head>
@@ -90,54 +84,63 @@ const HoaDon: NextPageWithLayout = () => {
               </Typography>
             </CardHeader>
 
-            <CardBody className="overflow-x-scroll px-0 pb-2 pt-0">
-              <form className="w-100 mb-4 ml-8 mt-2 max-w-screen-lg ">
-                <Typography className="mb-4 font-bold">
-                  Thông tin hóa đơn
-                </Typography>{" "}
-                <div className="flex flex-row">
-                  <Select
-                    label="SĐT khách hàng: "
-                    disabled={false}
-                    value="1"
-                    variant="static"
-                    className="basis-1/4"
-                  >
-                    <Option>Material Tailwind HTML</Option>
-                    <Option>Material Tailwind React</Option>
-                    <Option>Material Tailwind Vue</Option>
-                    <Option>Material Tailwind Angular</Option>
-                    <Option>Material Tailwind Svelte</Option>
-                  </Select>
-                  <div className="mb-4 ml-2 basis-3/4">
-                    <Typography>
-                      Ngày lập hóa đơn: {dayjs(today).format("ddd, DD/MM/YYYY")}
-                    </Typography>
+            <CardBody className="overflow-x-scroll px-0 pb-2 pt-4">
+              <form className="m-4">
+                <div className="flex w-full flex-row items-center justify-between ">
+                  <div className="md:w-56">
+                    <Select
+                      label="SĐT khách hàng: "
+                      disabled={false}
+                      variant="static"
+                      className="max-w-64"
+                    >
+                      {isLoadingKH ? (
+                        <Option key={MaKH} value={MaKH.toString()}>
+                          Đang tải...
+                        </Option>
+                      ) : KhachHang && KhachHang.length > 0 ? (
+                        KhachHang.map(({ MaKH, SoDienThoai }) => (
+                          <Option key={MaKH} value={MaKH.toString()}>
+                            {SoDienThoai}
+                          </Option>
+                        ))
+                      ) : (
+                        <Option key={MaKH} value={MaKH.toString()}>
+                          Không có dữ liệu
+                        </Option>
+                      )}
+                    </Select>
                   </div>
+
+                  <Typography className="font-bold">
+                    Ngày lập hóa đơn: {dayjs(today).format("ddd, DD/MM/YYYY")}
+                  </Typography>
                 </div>
-                <Typography className="mb-4 font-bold">
+                <Typography className="mb-4 mt-4 font-bold">
                   Thông tin sách
                 </Typography>
-                <div className="flex flex-row">
-                  <Select
-                    label="Chọn sách thêm vào hóa đơn: "
-                    variant="static"
-                    className="basis-1/4"
-                    value={"error"}
-                    onChange={(e) => {
-                      setSelect(selecting);
-                    }}
-                  >
-                    <Option>1</Option>
-                    <Option>2</Option>
-                    <Option>3</Option>
-                    <Option>4</Option>
-                  </Select>
-                  <div className=" flex basis-3/4 flex-row justify-center">
-                    <Typography className="mt-6">
+                <div className="flex flex-row items-center justify-between">
+                  <div className="md:w-56">
+                    <Select
+                      label="Chọn sách thêm vào hóa đơn: "
+                      variant="static"
+                      className="basis-1/4"
+                      value={"error"}
+                      onChange={(e) => {
+                        setSelect(selecting);
+                      }}
+                    >
+                      <Option>Doraemon</Option>
+                      <Option>2</Option>
+                      <Option>3</Option>
+                      <Option>4</Option>
+                    </Select>
+                  </div>
+                  <div className=" flex flex-row justify-center items-center gap-2">
+                    <Typography className="">
                       Số lượng: {quantity}
                     </Typography>
-                    <div className="flex flex-col justify-center">
+                    <div className="flex flex-col justify-center items-center">
                       <IconButton
                         variant="text"
                         color="blue-gray"
@@ -167,7 +170,7 @@ const HoaDon: NextPageWithLayout = () => {
                       </IconButton>
                     </div>
                     <Button
-                      className="w-15 align-content-center mt-5 h-10"
+                      className="w-15 align-content-center h-10"
                       onClick={handleAddBook}
                     >
                       Thêm sách
@@ -251,15 +254,27 @@ const HoaDon: NextPageWithLayout = () => {
                       )}
                     </tbody>
                   </table>
-                  <Typography>Tổng tiền: </Typography>
-                  <Typography>Số tiền trả: </Typography>
-                  <Typography>Còn lại: </Typography>
+                  <div>
+                    {" "}
+                    <Typography>Tổng tiền: </Typography>
+                    <div className="flex flex-row">
+                      {" "}
+                      <Typography className="basis-1/2">
+                        Số tiền trả:{" "}
+                      </Typography>
+                      <Input
+                        className="w-10 basis-1/4"
+                        label="Số tiền trả"
+                      ></Input>
+                    </div>
+                    <Typography>Còn lại: </Typography>
+                  </div>
                 </div>
                 <div className=" flex justify-end space-x-2">
-                  <Button type="submit" className="mt-6">
+                  <Button type="submit" className="mt-2">
                     Lập và in hóa đơn
                   </Button>
-                  <Button className="mt-6">Thêm khách hàng</Button>
+                  <Button className="mt-2">Thêm khách hàng</Button>
                 </div>
               </form>
             </CardBody>
