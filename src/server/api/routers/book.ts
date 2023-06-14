@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import { EFilterBook } from "@/constant/constant";
 
 export const bookRouter = createTRPCRouter({
   create: protectedProcedure
@@ -50,6 +51,7 @@ export const bookRouter = createTRPCRouter({
         limit: z.number(),
         page: z.number(),
         searchValue: z.string(),
+        type: z.string(),
       })
     )
     .query(async ({ input, ctx }) => {
@@ -59,33 +61,72 @@ export const bookRouter = createTRPCRouter({
           skip: limit * (page - 1),
           take: limit,
           where: {
-            OR: [
-              {
-                MaSach: {
-                  equals: parseInt(searchValue, 10) || undefined,
-                },
-              },
-              {
-                NhaXuatBan: {
-                  contains: searchValue,
-                },
-              },
-              {
-                NamXuatBan: {
-                  contains: searchValue,
-                },
-              },
-              {
-                SoLuongTon: {
-                  equals: parseInt(searchValue, 10) || undefined,
-                },
-              },
-              {
-                DonGiaBan: {
-                  equals: parseInt(searchValue, 10) || undefined,
-                },
-              },
-            ],
+            OR:
+              input.type === EFilterBook.all
+                ? [
+                    {
+                      MaSach: {
+                        equals: parseInt(searchValue, 10) || undefined,
+                      },
+                    },
+                    {
+                      NhaXuatBan: {
+                        contains: searchValue,
+                      },
+                    },
+                    {
+                      NamXuatBan: {
+                        contains: searchValue,
+                      },
+                    },
+                    {
+                      SoLuongTon: {
+                        equals: parseInt(searchValue, 10) || undefined,
+                      },
+                    },
+                    {
+                      DonGiaBan: {
+                        equals: parseInt(searchValue, 10) || undefined,
+                      },
+                    },
+                  ]
+                : EFilterBook.category
+                ? [
+                    {
+                      DauSach: {
+                        TheLoai: {
+                          TenTL: {
+                            contains: searchValue,
+                          },
+                        },
+                      },
+                    },
+                  ]
+                : EFilterBook.publisher
+                ? [
+                    {
+                      NhaXuatBan: {
+                        contains: searchValue,
+                      },
+                    },
+                  ]
+                : EFilterBook.publishYear
+                ? [
+                    {
+                      NamXuatBan: {
+                        contains: searchValue,
+                      },
+                    },
+                  ]
+                : EFilterBook.bookId
+                ? [
+                    {
+                      MaSach: {
+                        equals: parseInt(searchValue, 10) || undefined,
+                      },
+                    },
+                  ]
+                : [],
           },
           include: {
             DauSach: {

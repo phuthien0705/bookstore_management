@@ -3,7 +3,7 @@ import { type GetServerSidePropsContext } from "next";
 import { getServerSession, type NextAuthOptions, type User } from "next-auth";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { type TAIKHOAN } from "@prisma/client";
+import { type NHOMNGUOIDUNG, type TAIKHOAN } from "@prisma/client";
 import { prisma } from "./db";
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -14,16 +14,16 @@ import { prisma } from "./db";
 declare module "next-auth" {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface User extends TAIKHOAN {
-    id: number;
-    username: string;
-    password: string;
-    role: string;
+    MaTK: number;
+    TenDangNhap: string;
+    MatKhau: string;
+    NhomNguoiDung: NHOMNGUOIDUNG;
   }
   interface AdapterUser {
-    id: number;
-    username: string;
-    password: string;
-    role: string;
+    MaTK: number;
+    TenDangNhap: string;
+    MatKhau: string;
+    NhomNguoiDung: NHOMNGUOIDUNG;
   }
   interface Session {
     user: User;
@@ -46,15 +46,18 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "credentials",
       credentials: {
-        username: { label: "Username", type: "text" },
-        password: { label: "Password", type: "text" },
+        TenDangNhap: { label: "TenDangNhap", type: "text" },
+        MatKhau: { label: "MatKhau", type: "text" },
       },
       async authorize(credentials, req) {
         // Add logic here to look up the user from the credentials supplied
         const user = await prisma.tAIKHOAN.findUnique({
-          where: { TenDangNhap: credentials?.username },
+          where: { TenDangNhap: credentials?.TenDangNhap },
+          include: {
+            NhomNguoiDung: true,
+          },
         });
-        if (!user || user.MatKhau !== credentials?.password) {
+        if (!user || user.MatKhau !== credentials?.MatKhau) {
           throw new Error("No user found with this username and password");
         }
         return user as unknown as User;

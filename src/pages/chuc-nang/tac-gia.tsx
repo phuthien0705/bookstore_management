@@ -58,7 +58,7 @@ const AuthorPage: NextPageWithLayout = () => {
       } else {
         await utils.author.getWithPagination.refetch();
       }
-      toast.success("Delete successfully");
+      toast.success("Xóa thành công");
     },
     onError(err) {
       console.error(err);
@@ -79,13 +79,12 @@ const AuthorPage: NextPageWithLayout = () => {
       <Head>
         <title>Quản lý tác giả</title>
       </Head>
-
       <div className="mb-8 mt-12">
         <Card>
           <CardHeader
             variant="gradient"
             color="blue"
-            className="flex items-center justify-between px-6 py-4"
+            className="mb-2 flex items-center justify-between px-6 py-4"
           >
             <Typography variant="h6" color="white">
               Danh sách tác giả
@@ -112,7 +111,7 @@ const AuthorPage: NextPageWithLayout = () => {
             <table className="w-full min-w-max table-auto text-left">
               <thead>
                 <tr>
-                  {["ID", "Tên", "Thao tác"].map((head) => (
+                  {["ID", "Tên"].map((head) => (
                     <th
                       key={head}
                       className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"
@@ -126,6 +125,15 @@ const AuthorPage: NextPageWithLayout = () => {
                       </Typography>
                     </th>
                   ))}
+                  <th className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4">
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="text-center font-normal leading-none opacity-70"
+                    >
+                      Thao tác
+                    </Typography>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -157,7 +165,7 @@ const AuthorPage: NextPageWithLayout = () => {
                         </td>
 
                         <td className={`${className} w-2/12`}>
-                          <div className="flex w-max">
+                          <div className="flex w-full justify-center">
                             <IconButton
                               variant="text"
                               color="blue-gray"

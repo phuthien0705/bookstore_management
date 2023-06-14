@@ -16,4 +16,7 @@ export const groupUserRouter = createTRPCRouter({
         },
       });
     }),
+  getAll: protectedProcedure.query(({ ctx }) => {
+    return ctx.prisma.nHOMNGUOIDUNG.findMany();
+  }),
 });

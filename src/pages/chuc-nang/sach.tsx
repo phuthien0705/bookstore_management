@@ -7,9 +7,10 @@ import {
   CardHeader,
   CardBody,
   Typography,
-  Button,
   Input,
   IconButton,
+  Select,
+  Option,
 } from "@material-tailwind/react";
 import { type SACH } from "@prisma/client";
 import DashboardLayout from "@/layouts/dashboard";
@@ -27,6 +28,7 @@ import {
   TrashIcon,
 } from "@heroicons/react/24/outline";
 import useDebounce from "@/hook/useDebounce";
+import { EFilterBook } from "@/constant/constant";
 
 const BookModal = dynamic(() => import("@/components/modals/BookModal"));
 const ConfirmModal = dynamic(() => import("@/components/modals/ConfirmModal"));
@@ -40,13 +42,18 @@ const BookPage: NextPageWithLayout = () => {
   const [searchValueDebounced, setSearchValueDebounced] = useState<string>("");
   const [searchValue, setSearchValue] = useState<string>("");
   const debounced = useDebounce({ value: searchValue, delay: 500 });
+  const [filterVaule, setFilterValue] = useState(EFilterBook.all);
   const [currentItem, setCurrentItem] = useState<SACH | null>(null);
-  const { data, isLoading: isBooksLoading } =
-    api.book.getWithPagination.useQuery({
-      limit: 10,
-      page: pageIndex + 1,
-      searchValue: searchValueDebounced,
-    });
+  const {
+    data,
+    isLoading: isBooksLoading,
+    isFetching,
+  } = api.book.getWithPagination.useQuery({
+    limit: 10,
+    page: pageIndex + 1,
+    searchValue: searchValueDebounced,
+    type: filterVaule,
+  });
   const { mutate: deleteBook } = api.book.delete.useMutation({
     async onSuccess() {
       setCurrentItem(null);
@@ -55,7 +62,7 @@ const BookPage: NextPageWithLayout = () => {
       } else {
         await utils.book.getWithPagination.refetch();
       }
-      toast.success("Delete successfully");
+      toast.success("Xóa thành công");
     },
     onError(err) {
       console.error(err);
@@ -65,8 +72,6 @@ const BookPage: NextPageWithLayout = () => {
   const handleConfirmDelete = () => {
     currentItem && deleteBook({ MaSach: currentItem.MaSach });
   };
-
-  const isLoading = isBooksLoading;
 
   useEffect(() => {
     setSearchValueDebounced(searchValue);
@@ -83,25 +88,49 @@ const BookPage: NextPageWithLayout = () => {
           <CardHeader
             variant="gradient"
             color="blue"
-            className="mb-0 flex items-center justify-between px-6 py-4"
+            className="mb-2 flex items-center justify-between px-6 py-4"
           >
             <Typography variant="h6" color="white">
               Danh sách sách
             </Typography>
           </CardHeader>
           <CardBody className="overflow-x-scroll px-0 pb-2 pt-0">
-            <div className="m-4 flex justify-end">
+            <div className="m-4 flex justify-end gap-2">
+              <div className="w-full md:w-56">
+                <Select
+                  label="Tìm kiếm theo"
+                  value={filterVaule}
+                  onChange={(e) => {
+                    setFilterValue(e as unknown as EFilterBook);
+                  }}
+                >
+                  <Option value={EFilterBook.all}>Tất cả</Option>{" "}
+                  <Option value={EFilterBook.bookId}>Mã Sách</Option>
+                  <Option value={EFilterBook.category}>Thể loại</Option>
+                  <Option value={EFilterBook.author}>Tác giả</Option>
+                  <Option value={EFilterBook.publisher}>Nhà xuất bản</Option>
+                  <Option value={EFilterBook.publishYear}>Năm xuất bản</Option>
+                </Select>
+              </div>
               <div className="w-full md:w-56">
                 <Input
                   label="Tìm kiếm"
                   icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
                 />
               </div>
             </div>
             <table className="w-full min-w-max table-auto text-left">
               <thead>
                 <tr>
-                  {["ID", "Giá", "Số lượng tồn", "Thao tác"].map((head) => (
+                  {[
+                    "ID",
+                    "Giá",
+                    "Số lượng tồn",
+                    "Nhà xuất bản",
+                    "Năm xuất bản",
+                  ].map((head) => (
                     <th
                       key={head}
                       className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"
@@ -115,17 +144,26 @@ const BookPage: NextPageWithLayout = () => {
                       </Typography>
                     </th>
                   ))}
+                  <th className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4">
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="text-center font-normal leading-none opacity-70"
+                    >
+                      Thao tác
+                    </Typography>
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {isLoading && (
+                {isFetching && (
                   <tr>
                     <td colSpan={3}>
                       <LoadingScreen />
                     </td>
                   </tr>
                 )}
-                {!isLoading &&
+                {!isFetching &&
                   data &&
                   data.datas.map((item, index) => {
                     const isLast = index === data.datas.length - 1;
@@ -150,9 +188,18 @@ const BookPage: NextPageWithLayout = () => {
                             {item.SoLuongTon}
                           </Typography>
                         </td>
-
+                        <td className={className}>
+                          <Typography className="text-xs font-semibold text-blue-gray-600">
+                            {item.NhaXuatBan}
+                          </Typography>
+                        </td>
+                        <td className={className}>
+                          <Typography className="text-xs font-semibold text-blue-gray-600">
+                            {item.NamXuatBan}
+                          </Typography>
+                        </td>
                         <td className={`${className} w-2/12`}>
-                          <div className="flex w-max">
+                          <div className="flex w-full justify-center">
                             <IconButton
                               variant="text"
                               color="blue-gray"

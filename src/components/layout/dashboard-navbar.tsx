@@ -6,20 +6,19 @@ import {
   Button,
   IconButton,
   Breadcrumbs,
-  Input,
 } from "@material-tailwind/react";
 import { UserCircleIcon, Bars3Icon } from "@heroicons/react/24/solid";
-import { useMaterialTailwindController, setOpenSidenav } from "@/context";
 import { signOut } from "next-auth/react";
-import { useContext } from "react";
-import { DashboardContext } from "@/layouts/dashboard";
+import { useMaterialTailwindController, setOpenSidenav } from "@/context";
 
 export function DashboardNavbar() {
   const router = useRouter();
-  const { searchValue, setSearchValue } = useContext(DashboardContext);
   const [controller, dispatch] = useMaterialTailwindController();
   const { fixedNavbar, openSidenav } = controller;
-  const [layout, page] = router.pathname.split("/").filter((el) => el !== "");
+  const [layout, page] = router.pathname
+    .split("/")
+    .filter((el) => el !== "")
+    .map((e) => e.replaceAll("-", " "));
   return (
     <Navbar
       color={fixedNavbar ? "white" : "transparent"}
@@ -60,13 +59,6 @@ export function DashboardNavbar() {
           </Typography>
         </div>
         <div className="flex items-center">
-          <div className="mr-auto md:mr-4 md:w-56">
-            <Input
-              label="Tìm kiếm"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-            />
-          </div>
           <IconButton
             variant="text"
             color="blue-gray"
