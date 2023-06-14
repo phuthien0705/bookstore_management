@@ -9,8 +9,13 @@ import {
   Button,
   Select,
   Option,
+  List,
+  ListItem,
+  ListItemSuffix,
+  IconButton,
 } from "@material-tailwind/react";
-import { type DAUSACH } from "@prisma/client";
+import { type CT_TACGIA, type DAUSACH } from "@prisma/client";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { executeAfter500ms } from "@/utils/executeAfter500ms";
 import { api } from "@/utils/api";
 import { contentMapping } from "@/constant/modal";
@@ -18,8 +23,19 @@ import { contentMapping } from "@/constant/modal";
 interface ITitleModal {
   open: boolean;
   handleOpen: (value?: boolean) => void;
-  currentItem: DAUSACH | null;
-  setCurrentItem: Dispatch<SetStateAction<DAUSACH | null>>;
+  currentItem:
+    | (DAUSACH & {
+        CT_TACGIA: CT_TACGIA[];
+      })
+    | null;
+  setCurrentItem: Dispatch<
+    SetStateAction<
+      | (DAUSACH & {
+          CT_TACGIA: CT_TACGIA[];
+        })
+      | null
+    >
+  >;
 }
 
 const TitleModal: React.FC<ITitleModal> = ({
@@ -28,17 +44,29 @@ const TitleModal: React.FC<ITitleModal> = ({
   currentItem,
   setCurrentItem,
 }) => {
-  const [value, setValue] = useState({ MaDauSach: 0, MaTL: 0, TenDauSach: "" });
+  const [value, setValue] = useState<
+    DAUSACH & {
+      CT_TACGIA: CT_TACGIA[];
+    }
+  >({
+    MaDauSach: 0,
+    MaTL: 0,
+    TenDauSach: "",
+    CT_TACGIA: [],
+  });
   const utils = api.useContext();
   const { data: categoryData, isLoading: isLoadingCategory } =
     api.category.getAll.useQuery();
+  const { data: authorData, isLoading: isLoadingAuthor } =
+    api.author.getAll.useQuery();
   const clearValueAfterClose = () => {
-    setValue({ MaDauSach: 0, MaTL: 0, TenDauSach: "" });
+    setValue({ MaDauSach: 0, MaTL: 0, TenDauSach: "", CT_TACGIA: [] });
   };
   const onChange = (e: React.FormEvent<HTMLInputElement>): void => {
     const { value, name } = e.currentTarget;
     setValue((p) => ({ ...p, [name]: value }));
   };
+  const [authorSelectValue] = useState("");
   const {
     mutate: createFunc,
     status: createStatus,
@@ -46,10 +74,10 @@ const TitleModal: React.FC<ITitleModal> = ({
   } = api.title.create.useMutation({
     onSuccess() {
       executeAfter500ms(async () => {
-        handleOpen();
-
-        clearValueAfterClose();
         await utils.title.getWithPagination.refetch();
+        await utils.author.getAll.refetch();
+        clearValueAfterClose();
+        handleOpen();
       });
     },
     onError(err) {
@@ -61,10 +89,11 @@ const TitleModal: React.FC<ITitleModal> = ({
     api.title.update.useMutation({
       onSuccess() {
         executeAfter500ms(async () => {
-          handleOpen();
+          await utils.title.getWithPagination.refetch();
+          await utils.author.getAll.refetch();
           clearValueAfterClose();
           setCurrentItem(null);
-          await utils.title.getWithPagination.refetch();
+          handleOpen();
         });
       },
       onError(err) {
@@ -80,8 +109,13 @@ const TitleModal: React.FC<ITitleModal> = ({
           MaDauSach: currentItem.MaDauSach,
           TenDauSach: value.TenDauSach,
           MaTL: value.MaTL,
+          TacGia: value.CT_TACGIA.map((i) => i.MaTG),
         })
-      : createFunc({ TenDauSach: value.TenDauSach, MaTL: value.MaTL });
+      : createFunc({
+          TenDauSach: value.TenDauSach,
+          MaTL: value.MaTL,
+          TacGia: value.CT_TACGIA.map((i) => i.MaTG),
+        });
   };
 
   const status = currentItem ? updateStatus : createStatus;
@@ -90,7 +124,7 @@ const TitleModal: React.FC<ITitleModal> = ({
     if (currentItem) {
       setValue({ ...currentItem });
     } else {
-      setValue({ MaDauSach: 0, MaTL: 0, TenDauSach: "" });
+      setValue({ MaDauSach: 0, MaTL: 0, TenDauSach: "", CT_TACGIA: [] });
     }
   }, [currentItem]);
 
@@ -119,6 +153,7 @@ const TitleModal: React.FC<ITitleModal> = ({
               onChange={onChange}
               required
             />
+
             <Select
               label="Thể loại"
               disabled={isLoadingCategory}
@@ -134,6 +169,73 @@ const TitleModal: React.FC<ITitleModal> = ({
                   </Option>
                 ))}
             </Select>
+            <div className="mt-2">
+              <Select
+                variant="static"
+                label="Chọn tác giả"
+                disabled={isLoadingAuthor}
+                value={authorSelectValue}
+                onChange={(e) => {
+                  const temp = value.CT_TACGIA.find(
+                    (i) => i.MaTG === parseInt(e as string)
+                  );
+                  if (temp) {
+                    const newArr = value.CT_TACGIA.filter(
+                      (obj) => obj.MaTG !== temp.MaTG
+                    );
+                    setValue((p) => ({ ...p, CT_TACGIA: newArr }));
+                  } else {
+                    setValue((p) => ({
+                      ...p,
+                      CT_TACGIA: [
+                        ...p.CT_TACGIA,
+                        {
+                          MaDauSach: value.MaDauSach,
+                          MaTG: parseInt(e as string),
+                        },
+                      ],
+                    }));
+                  }
+                }}
+                // multiple
+              >
+                {authorData &&
+                  authorData.map((item) => (
+                    <Option key={item.MaTG} value={item.MaTG.toString()}>
+                      {item.TenTG}
+                    </Option>
+                  ))}
+              </Select>
+              {value.CT_TACGIA.length === 0 ? (
+                <Typography className="mt-2 text-sm font-medium">
+                  Chưa có tác giả
+                </Typography>
+              ) : (
+                <List className="mt-2 p-0">
+                  {value.CT_TACGIA.map((item, index) => {
+                    return (
+                      <ListItem key={index} className="p-2">
+                        {authorData?.find((i) => i.MaTG === item.MaTG)?.TenTG}
+                        <ListItemSuffix>
+                          <IconButton
+                            variant="text"
+                            color="blue-gray"
+                            onClick={() => {
+                              const newArr = value.CT_TACGIA.filter(
+                                (obj) => obj.MaTG !== item.MaTG
+                              );
+                              setValue((p) => ({ ...p, CT_TACGIA: newArr }));
+                            }}
+                          >
+                            <XMarkIcon className="h-5 w-5" />
+                          </IconButton>
+                        </ListItemSuffix>
+                      </ListItem>
+                    );
+                  })}
+                </List>
+              )}
+            </div>
           </CardBody>
           <CardFooter className="pt-0">
             <Button variant="gradient" type="submit" fullWidth>

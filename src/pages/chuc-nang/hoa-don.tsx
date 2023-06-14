@@ -3,21 +3,13 @@ import {
   CardHeader,
   CardBody,
   Typography,
-  Avatar,
-  Chip,
-  Tooltip,
-  Progress,
   Button,
-  Input,
   Select,
-  Checkbox,
   Option,
-  ButtonGroup,
   IconButton,
 } from "@material-tailwind/react";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 
-import { api } from "@/utils/api";
 import Head from "next/head";
 import dayjs from "dayjs";
 import DashboardLayout from "@/layouts/dashboard";
@@ -143,7 +135,6 @@ const HoaDon: NextPageWithLayout = () => {
                         color="blue-gray"
                         onClick={(e) => {
                           setQuantity(quantity + 1);
-                          console.log(`quantity: `, quantity);
                         }}
                       >
                         <ChevronUpIcon
@@ -157,7 +148,6 @@ const HoaDon: NextPageWithLayout = () => {
                         disabled={quantity === 1}
                         onClick={(e) => {
                           setQuantity(quantity - 1);
-                          console.log(`quantity: `, quantity);
                         }}
                       >
                         <ChevronDownIcon

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import DashboardLayout from "@/layouts/dashboard";
 import { type NextPageWithLayout } from "../page";
-import { type DAUSACH } from "@prisma/client";
+import { type CT_TACGIA, type DAUSACH } from "@prisma/client";
 import { api } from "@/utils/api";
 import {
   Card,
@@ -14,6 +14,10 @@ import {
   CardBody,
   Input,
   IconButton,
+  Menu,
+  MenuHandler,
+  MenuItem,
+  MenuList,
 } from "@material-tailwind/react";
 import { LoadingScreen } from "@/components/loading/LoadingScreen";
 import {
@@ -31,6 +35,8 @@ import useDebounce from "@/hook/useDebounce";
 
 const ConfirmModal = dynamic(() => import("@/components/modals/ConfirmModal"));
 
+const TABLE_HEADER = ["ID", "Tên đầu sách", "Thê loại", "Tác giả", "Thao tác"];
+
 const DauSach: NextPageWithLayout = () => {
   const [pageIndex, setPageIndex] = useState<number>(0);
 
@@ -41,11 +47,18 @@ const DauSach: NextPageWithLayout = () => {
   const { open: openTitleModal, handleOpen: handleOpenTitleModal } = useModal();
   const { open: openConfirmModal, handleOpen: handleOpenConfirmModal } =
     useModal();
-  const [currentItem, setCurrentItem] = useState<DAUSACH | null>(null);
+  const [currentItem, setCurrentItem] = useState<
+    | (DAUSACH & {
+        CT_TACGIA: CT_TACGIA[];
+      })
+    | null
+  >(null);
   const utils = api.useContext();
   const { data: categoryData, isLoading: isLoadingCategory } =
     api.category.getAll.useQuery();
-  const { data, isLoading, isFetching } = api.title.getWithPagination.useQuery({
+  const { data: authorData, isLoading: isLoadingAuthor } =
+    api.author.getAll.useQuery();
+  const { data, isLoading } = api.title.getWithPagination.useQuery({
     limit: 10,
     page: pageIndex + 1,
     searchValue: searchValueDebounced,
@@ -55,10 +68,12 @@ const DauSach: NextPageWithLayout = () => {
       setCurrentItem(null);
       if (data?.datas.length === 1 && pageIndex !== 0) {
         setPageIndex((p) => p - 1);
+        await utils.author.getAll.refetch();
       } else {
         await utils.title.getWithPagination.refetch();
+        await utils.author.getAll.refetch();
       }
-      toast.success("Delete successfully");
+      toast.success("Xóa thành công");
     },
     onError(err) {
       console.error(err);
@@ -111,8 +126,8 @@ const DauSach: NextPageWithLayout = () => {
             <table className="w-full min-w-max table-auto text-left">
               <thead>
                 <tr>
-                  {["ID", "Tên đầu sách", "Thê loại", "Thao tác"].map(
-                    (head) => (
+                  {TABLE_HEADER.map((head) => {
+                    return (
                       <th
                         key={head}
                         className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"
@@ -125,8 +140,8 @@ const DauSach: NextPageWithLayout = () => {
                           {head}
                         </Typography>
                       </th>
-                    )
-                  )}
+                    );
+                  })}
                 </tr>
               </thead>
               <tbody>
@@ -139,58 +154,102 @@ const DauSach: NextPageWithLayout = () => {
                 )}
                 {!isLoading &&
                   data &&
-                  data.datas.map(({ MaDauSach, TenDauSach, MaTL }, index) => {
-                    const isLast = index === data.datas.length - 1;
-                    const className = isLast
-                      ? "p-4 "
-                      : "p-4 border-b border-blue-gray-50";
-                    return (
-                      <tr key={MaDauSach}>
-                        <td className={`${className} w-1/12`}>
-                          <Typography className="text-xs font-semibold text-blue-gray-600">
-                            {MaDauSach}
-                          </Typography>
-                        </td>
-                        <td className={className}>
-                          <Typography className="text-xs font-semibold text-blue-gray-600">
-                            {TenDauSach}
-                          </Typography>
-                        </td>
-                        <td className={className}>
-                          <Typography className="text-xs font-semibold text-blue-gray-600">
-                            {isLoadingCategory
-                              ? "Đang tải..."
-                              : categoryData?.find((i) => i.MaTL === MaTL)
-                                  ?.TenTL}
-                          </Typography>
-                        </td>
-                        <td className={`${className} w-2/12`}>
-                          <div className="flex w-max">
-                            <IconButton
-                              variant="text"
-                              color="blue-gray"
-                              onClick={() => {
-                                setCurrentItem({ MaDauSach, TenDauSach, MaTL });
-                                handleOpenTitleModal(true);
-                              }}
-                            >
-                              <PencilIcon className="h-4 w-4" />
-                            </IconButton>
-                            <IconButton
-                              variant="text"
-                              color="red"
-                              onClick={() => {
-                                setCurrentItem({ MaDauSach, TenDauSach, MaTL });
-                                handleOpenConfirmModal(true);
-                              }}
-                            >
-                              <TrashIcon className="h-4 w-4" />
-                            </IconButton>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  data.datas.map(
+                    ({ MaDauSach, TenDauSach, MaTL, CT_TACGIA }, index) => {
+                      const isLast = index === data.datas.length - 1;
+                      const className = isLast
+                        ? "p-4 "
+                        : "p-4 border-b border-blue-gray-50";
+                      return (
+                        <tr key={MaDauSach}>
+                          <td className={`${className} w-1/12`}>
+                            <Typography className="text-xs font-semibold text-blue-gray-600">
+                              {MaDauSach}
+                            </Typography>
+                          </td>
+                          <td className={className}>
+                            <Typography className="text-xs font-semibold text-blue-gray-600">
+                              {TenDauSach}
+                            </Typography>
+                          </td>
+                          <td className={className}>
+                            <Typography className="text-xs font-semibold text-blue-gray-600">
+                              {isLoadingCategory
+                                ? "Đang tải..."
+                                : categoryData?.find((i) => i.MaTL === MaTL)
+                                    ?.TenTL}
+                            </Typography>
+                          </td>
+                          <td className={className}>
+                            <Typography className="text-xs font-semibold text-blue-gray-600">
+                              {isLoadingAuthor ? (
+                                "Đang tải..."
+                              ) : authorData?.find((i) =>
+                                  i.CT_TACGIA.some(
+                                    (cttg) => cttg.MaDauSach === MaDauSach
+                                  )
+                                ) ? (
+                                <Menu>
+                                  <MenuHandler>
+                                    <Button size="sm">Danh sách tác giả</Button>
+                                  </MenuHandler>
+                                  <MenuList>
+                                    {authorData
+                                      ?.filter((i) =>
+                                        i.CT_TACGIA.some(
+                                          (cttg) => cttg.MaDauSach === MaDauSach
+                                        )
+                                      )
+                                      ?.map((i) => (
+                                        <MenuItem key={i.MaTG}>
+                                          {i.TenTG}
+                                        </MenuItem>
+                                      ))}
+                                  </MenuList>
+                                </Menu>
+                              ) : (
+                                "Chưa có tác giả"
+                              )}
+                            </Typography>
+                          </td>
+                          <td className={`${className} w-2/12`}>
+                            <div className="flex w-max">
+                              <IconButton
+                                variant="text"
+                                color="blue-gray"
+                                onClick={() => {
+                                  setCurrentItem({
+                                    MaDauSach,
+                                    TenDauSach,
+                                    MaTL,
+                                    CT_TACGIA,
+                                  });
+                                  handleOpenTitleModal(true);
+                                }}
+                              >
+                                <PencilIcon className="h-4 w-4" />
+                              </IconButton>
+                              <IconButton
+                                variant="text"
+                                color="red"
+                                onClick={() => {
+                                  setCurrentItem({
+                                    MaDauSach,
+                                    TenDauSach,
+                                    MaTL,
+                                    CT_TACGIA,
+                                  });
+                                  handleOpenConfirmModal(true);
+                                }}
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                              </IconButton>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    }
+                  )}
               </tbody>
             </table>
             {data && (

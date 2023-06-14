@@ -3,21 +3,11 @@ import {
   CardHeader,
   CardBody,
   Typography,
-  Avatar,
-  Chip,
-  Tooltip,
-  Progress,
   Button,
   Input,
   Select,
-  Checkbox,
   Option,
-  ButtonGroup,
-  IconButton,
 } from "@material-tailwind/react";
-import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
-
-import { api } from "@/utils/api";
 import Head from "next/head";
 import dayjs from "dayjs";
 import DashboardLayout from "@/layouts/dashboard";
@@ -32,7 +22,6 @@ const TABLE_ROWS = [
     DiaChi: "Ktx Khu A",
     Email: "anhkhoa@gmail.com",
   },
-
 ];
 
 const HoaDon: NextPageWithLayout = () => {
@@ -76,27 +65,27 @@ const HoaDon: NextPageWithLayout = () => {
                 <Typography className="mb-4 font-bold">
                   Thông tin khách hàng
                 </Typography>{" "}
-
                 <div className="mb-4 mt-4 flex flex-col gap-6">
-                <div className="flex flex-row">
-                <Select
-                    label="SĐT khách hàng: "
-                    disabled={false}
-                    value="1"
-                    variant="static"
-                    className="basis-1/2"
-                  >
-                    <Option>Material Tailwind HTML</Option>
-                    <Option>Material Tailwind React</Option>
-                    <Option>Material Tailwind Vue</Option>
-                    <Option>Material Tailwind Angular</Option>
-                    <Option>Material Tailwind Svelte</Option>
-                  </Select>
+                  <div className="flex flex-row">
+                    <Select
+                      label="SĐT khách hàng: "
+                      disabled={false}
+                      value="1"
+                      variant="static"
+                      className="basis-1/2"
+                    >
+                      <Option>Material Tailwind HTML</Option>
+                      <Option>Material Tailwind React</Option>
+                      <Option>Material Tailwind Vue</Option>
+                      <Option>Material Tailwind Angular</Option>
+                      <Option>Material Tailwind Svelte</Option>
+                    </Select>
 
-                    <Typography className="font-bold basis-1/2 ">
-                      Ngày lập phiếu thu: {dayjs(today).format("ddd, DD/MM/YYYY")}
+                    <Typography className="basis-1/2 font-bold ">
+                      Ngày lập phiếu thu:{" "}
+                      {dayjs(today).format("ddd, DD/MM/YYYY")}
                     </Typography>
-                </div>
+                  </div>
 
                   <table className="w-full min-w-max table-auto text-left">
                     <thead>
@@ -120,7 +109,10 @@ const HoaDon: NextPageWithLayout = () => {
                     <tbody>
                       {TABLE_ROWS.map(
                         ({ TenKhachHang, DiaChi, Email }, index) => (
-                          <tr key={`${index}_${TenKhachHang}_${Email}`} className="even:bg-blue-gray-50/50">
+                          <tr
+                            key={`${index}_${TenKhachHang}_${Email}`}
+                            className="even:bg-blue-gray-50/50"
+                          >
                             <td className="p-4">
                               <Typography
                                 variant="small"
@@ -161,9 +153,8 @@ const HoaDon: NextPageWithLayout = () => {
                 </div>
                 <div className=" flex justify-end space-x-2">
                   <Button type="submit" className="mt-6">
-                  Thanh Toán và In Phiếu Thu
+                    Thanh Toán và In Phiếu Thu
                   </Button>
-
                 </div>
               </form>
             </CardBody>

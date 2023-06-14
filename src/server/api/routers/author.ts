@@ -13,7 +13,15 @@ export const authorRouter = createTRPCRouter({
       });
     }),
   getAll: protectedProcedure.query(({ ctx }) => {
-    return ctx.prisma.tACGIA.findMany();
+    return ctx.prisma.tACGIA.findMany({
+      include: {
+        CT_TACGIA: {
+          include: {
+            DauSach: true,
+          },
+        },
+      },
+    });
   }),
   getWithPagination: protectedProcedure
     .input(
@@ -42,6 +50,13 @@ export const authorRouter = createTRPCRouter({
                 },
               },
             ],
+          },
+          include: {
+            CT_TACGIA: {
+              include: {
+                DauSach: true,
+              },
+            },
           },
         }),
         ctx.prisma.tACGIA.count({
