@@ -106,17 +106,17 @@ const HoaDon: NextPageWithLayout = () => {
         {
           MaSach: currentBook.MaSach,
           SoLuong: quantity,
-          DonGia: dongia?.toString() || "0",
-          ThanhTien: thanhtien?.toString() || "0",
+          DonGia: dongia?.toString() ?? "0",
+          ThanhTien: thanhtien?.toString() ?? "0",
         },
       ]);
-      setTotal(thanhtien?.toString() || "0");
+      setTotal(thanhtien?.toString() ?? "0");
     } else {
       list.push({
         MaSach: currentBook.MaSach,
         SoLuong: quantity,
-        DonGia: dongia?.toString() || "0",
-        ThanhTien: thanhtien?.toString() || "0",
+        DonGia: dongia?.toString() ?? "0",
+        ThanhTien: thanhtien?.toString() ?? "0",
       });
       setList(list);
       setTotal((Number(thanhtien) + Number(total)).toString());
@@ -125,37 +125,36 @@ const HoaDon: NextPageWithLayout = () => {
     setQuantity(1);
     setCurrentBook(defaultBID);
   };
-  const {
-    mutate: createHDFunc,
-    status: createHDStatus,
-    reset,
-  } = api.invoice.createHD.useMutation({
-    onSuccess() {
-      executeAfter500ms(async () => {
-        updateDebitFunc({
-          MaKH: selectKH.MaKH,
-          NoHienTai: Number(
-            KhachHang?.find((i) => i.MaKH == selectKH.MaKH)?.TienNo || undefined
-          ),
-          ConLai: debit,
+  const { mutate: createHDFunc, status: createHDStatus } =
+    api.invoice.createHD.useMutation({
+      onSuccess() {
+        executeAfter500ms(async () => {
+          updateDebitFunc({
+            MaKH: selectKH.MaKH,
+            NoHienTai: Number(
+              KhachHang?.find((i) => i.MaKH == selectKH.MaKH)?.TienNo ||
+                undefined
+            ),
+            ConLai: debit,
+          });
+          list.map((i) =>
+            updateBookQtFunc({
+              MaSach: i.MaSach,
+              Current:
+                Books?.find((s) => s.MaSach == i.MaSach)?.SoLuongTon || 0,
+              Quantity: i.SoLuong,
+            })
+          );
+          clearAll();
+          await utils.invoice.getKhachHang.refetch();
+          await utils.invoice.getAllBookWithTitle.refetch();
+          await utils.invoice.getThamChieu.refetch();
         });
-        list.map((i) =>
-          updateBookQtFunc({
-            MaSach: i.MaSach,
-            Current: Books?.find((s) => s.MaSach == i.MaSach)?.SoLuongTon || 0,
-            Quantity: i.SoLuong,
-          })
-        );
-        clearAll();
-        await utils.invoice.getKhachHang.refetch();
-        await utils.invoice.getAllBookWithTitle.refetch();
-        await utils.invoice.getThamChieu.refetch();
-      });
-    },
-    onError(err) {
-      console.error(err);
-    },
-  });
+      },
+      onError(err) {
+        console.error(err);
+      },
+    });
 
   const { mutate: updateDebitFunc } =
     api.invoice.updateDebitOnNewInvoice.useMutation({
@@ -170,7 +169,7 @@ const HoaDon: NextPageWithLayout = () => {
       },
     });
 
-  const { mutate: updateBookQtFunc, status: updateBookStatus } =
+  const { mutate: updateBookQtFunc } =
     api.invoice.updateBookQuantity.useMutation();
 
   const handleSubmit = (e: React.SyntheticEvent) => {
