@@ -17,7 +17,7 @@ export const invoiceRouter = createTRPCRouter({
             MaSach: z.number().int(),
             SoLuong: z.number().int(),
             DonGia: z.number(),
-            ThanhThien: z.number(),
+            ThanhTien: z.number(),
           })
         ),
       })
@@ -33,7 +33,7 @@ export const invoiceRouter = createTRPCRouter({
           MaSach: i.MaSach,
           SoLuong: i.SoLuong,
           DonGia: i.DonGia,
-          ThanhThien: i.ThanhThien,
+          ThanhTien: i.ThanhTien,
         })),
       });
     }),
@@ -89,4 +89,43 @@ export const invoiceRouter = createTRPCRouter({
 
     return books;
   }),
+  getThamChieu: protectedProcedure.query(({ ctx }) => {
+    return ctx.prisma.tHAMCHIEU.findFirst({
+      where: {
+        SuDungQuyDinh: true,
+      },
+      select: {
+        TonKhoToiThieuSauBan: true,
+        CongNoToiDa: true,
+      },
+    });
+  }),
+  updateDebitOnNewInvoice: protectedProcedure
+    .input(
+      z.object({
+        MaKH: z.number().int(),
+        NoHienTai: z.number(),
+        ConLai: z.number(),
+      })
+    )
+    .mutation(({ input, ctx }) => {
+      return ctx.prisma.kHACHHANG.update({
+        data: { TienNo: input.NoHienTai + input.ConLai },
+        where: { MaKH: input.MaKH },
+      });
+    }),
+  updateBookQuantity: protectedProcedure
+    .input(
+      z.object({
+        MaSach: z.number().int(),
+        Current: z.number(),
+        Quantity: z.number(),
+      })
+    )
+    .mutation(({ input, ctx }) => {
+      return ctx.prisma.sACH.update({
+        data: { SoLuongTon: input.Current - input.Quantity },
+        where: { MaSach: input.MaSach },
+      });
+    }),
 });
