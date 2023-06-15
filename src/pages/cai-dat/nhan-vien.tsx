@@ -22,13 +22,13 @@ import { api } from "@/utils/api";
 import useDebounce from "@/hook/useDebounce";
 import { MagnifyingGlassIcon, PencilIcon } from "@heroicons/react/24/outline";
 import StaffModal from "@/components/modals/StaffModal";
+import useValidateUser from "@/hook/useValidateUser";
 
 const StaffPage: NextPageWithLayout = () => {
   const [pageIndex, setPageIndex] = useState<number>(0);
   const { open: openAccountModal, handleOpen: handleOpenAccountModal } =
     useModal();
   const [currentItem, setCurrentItem] = useState<TAIKHOAN | null>(null);
-  const utils = api.useContext();
   const [searchValueDebounced, setSearchValueDebounced] = useState<string>("");
   const [searchValue, setSearchValue] = useState<string>("");
   const debounced = useDebounce({ value: searchValue, delay: 500 });
@@ -37,6 +37,7 @@ const StaffPage: NextPageWithLayout = () => {
     page: pageIndex + 1,
     searchValue: searchValueDebounced,
   });
+  useValidateUser();
   useEffect(() => {
     setSearchValueDebounced(searchValue);
     setPageIndex(0);

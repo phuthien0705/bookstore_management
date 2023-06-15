@@ -1,5 +1,4 @@
 /* eslint-disable @next/next/no-img-element */
-/* eslint-disable @typescript-eslint/no-misused-promises */
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import {
@@ -14,6 +13,7 @@ import {
 } from "@material-tailwind/react";
 import { useRouter } from "next/router";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { toast } from "react-hot-toast";
 import { type NextPageWithLayout } from "./page";
 import AuthLayout from "@/layouts/auth";
 
@@ -35,9 +35,9 @@ const Login: NextPageWithLayout = () => {
       if (result && result.ok) {
         void router.push({ pathname: "/chuc-nang/phieu-nhap-sach" });
       }
-      console.log(result);
     } catch (error) {
       console.log(error);
+      toast.error("Tài khoản hoặc mật khẩu không đúng!");
     }
   };
   const onChange = (e: React.FormEvent<HTMLInputElement>): void => {
