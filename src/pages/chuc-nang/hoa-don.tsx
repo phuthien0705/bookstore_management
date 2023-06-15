@@ -560,6 +560,7 @@ const HoaDon: NextPageWithLayout = () => {
                     Tạo và in hóa đơn
                   </Button>
                   <Button className="mt-2">Thêm khách hàng</Button>
+                  <Button className="mt-2">Thanh toán nợ cũ</Button>
                 </div>
               </CardBody>
               <CardFooter>

@@ -128,4 +128,33 @@ export const invoiceRouter = createTRPCRouter({
         where: { MaSach: input.MaSach },
       });
     }),
+  updateDebit: protectedProcedure
+    .input(
+      z.object({
+        MaKH: z.number().int(),
+        NewDebit: z.number(),
+      })
+    )
+    .mutation(({ input, ctx }) => {
+      return ctx.prisma.kHACHHANG.update({
+        data: { TienNo: input.NewDebit },
+        where: { MaKH: input.MaKH },
+      });
+    }),
+  createPhieuThuTien: protectedProcedure
+    .input(
+      z.object({
+        SoTien: z.number(),
+        MaKH: z.number().int(),
+      })
+    )
+    .mutation(({ input, ctx }) => {
+      return ctx.prisma.pHIEUTHUTIEN.create({
+        data: {
+          SoTien: input.SoTien,
+          MaKH: input.MaKH,
+          MaTK: 1,
+        },
+      });
+    }),
 });
