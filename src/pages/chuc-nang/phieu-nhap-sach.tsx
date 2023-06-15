@@ -39,9 +39,9 @@ const BookEntryTicket: NextPageWithLayout = () => {
   const tableRef = useRef(null);
   const [bookList, setBookList] = useState<any[]>([]);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [currentTicketId, setCurrentTicketId] = useState<number>(1)
   const { data: titles, isLoading: isLoadingTitles } = api.title.getAll.useQuery({});
-  const [currentTicketId, setCurrentTicketId] = useState<number>(0);
-  const { mutate: createBookEntryDetail } = api.bookEntryDetail.create.useMutation({
+  const { mutateAsync: createBookEntryDetail } = api.bookEntryDetail.create.useMutation({
     onSuccess(data) {
       console.log("Successfully saved book entry detail")
     },
@@ -49,23 +49,22 @@ const BookEntryTicket: NextPageWithLayout = () => {
       console.error(err);
     },
   });
-  const { mutate: createTicket } = api.bookEntryTicket.create.useMutation({
-    onSuccess(data) {
+  const { mutateAsync: createTicket } = api.bookEntryTicket.create.useMutation({
+    onSuccess:(data) => {
 
       setCurrentTicketId(data.MaPhieuNhapSach); 
 
-      bookList.forEach((book, index) => {
-        createBook({
-            MaDauSach: parseInt(book.title_id),
-            NhaXuatBan: book.publisher,
-            NamXuatBan: book.published_year,
-            SoLuongTon: book.quantity,
-            DonGiaBan: book.price
-        })
-      })
+      bookList.forEach(async (book, index) => {
+        await createBook({
+          MaDauSach: parseInt(book.title_id),
+          NhaXuatBan: book.publisher,
+          NamXuatBan: book.published_year,
+          SoLuongTon: book.quantity,
+          DonGiaBan: book.price,
+        });
+      });
 
       toast.success("Lưu phiếu thành công !");
-
       
     },
     onError(err) {  
@@ -73,10 +72,12 @@ const BookEntryTicket: NextPageWithLayout = () => {
     },
   })
 
-  const { mutate: createBook } = api.book.create.useMutation({
-    onSuccess(data) {
+
+  const { mutateAsync: createBook } = api.book.create.useMutation({
+    onSuccess: async (data) => {
       console.log("Successfully saved book")
-      createBookEntryDetail({
+      console.log(currentTicketId)
+      await createBookEntryDetail({
         MaPhieuNhapSach: currentTicketId,
         MaSach: data.MaSach,
         SoLuong: data.SoLuongTon,
@@ -106,7 +107,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
     e.preventDefault();
 
     const newBook = {
-      id: bookList.length + 1,
+      id: new Date().getTime(),
       title_id: bookTitle,
       publisher,
       published_year: publishedYear,
@@ -115,13 +116,15 @@ const BookEntryTicket: NextPageWithLayout = () => {
     };
 
     setBookList((prevBookList) => [...prevBookList, newBook]);
+
+    console.log(bookList)
   };
 
   const toggleTable = () => {
     setIsTableOpen(!isTableOpen); // Thay đổi trạng thái của bảng khi nhấn vào nút "Hiển thị danh sách sách"
   };
 
-  const handleSaveTicket = async () => {
+  const handleSaveTicket = () => {
 
     // Tạo mới phiếu nhập
     const entryDateObject = new Date(entryDate);
