@@ -13,7 +13,7 @@ export const referenceRouter = createTRPCRouter({
       z.object({
         id: z.number().int(),
         SoLuongNhapToiThieu: z.number(),
-        SoLuongTonToiThieu: z.number(),
+        SoLuongTonToiDa: z.number(),
         TonKhoToiThieuSauBan: z.number(),
         TyLeDonGia: z.number(),
         CongNoToiDa: z.number(),
