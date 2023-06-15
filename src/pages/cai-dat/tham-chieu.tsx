@@ -4,6 +4,7 @@ import { type NextPageWithLayout } from "../page";
 import { Card, CardBody, CardHeader, Checkbox, Input, Typography, Button } from "@material-tailwind/react";
 import { api } from "@/utils/api";
 import { useState } from "react";
+import { toast } from "react-hot-toast";
 
 const SettingPage: NextPageWithLayout = () => {
 
@@ -14,18 +15,26 @@ const SettingPage: NextPageWithLayout = () => {
   const [priceRatio, setPriceRatio] = useState<number>(1.05);
   const [debtMax, setDebtMax] = useState<number>(20000)
   const [apply, setApply] = useState<boolean>(true);
+  const { mutate: updateReference } = api.reference.update.useMutation({
+    onSuccess(data) {
+      toast.success("Đã áp dụng quy đinh !");
+    },
+    onError(err) {
+      console.error(err);
+    },
+  })
 
   const handleApplyReference = () => {
-    const reference = {
-      entryMin,
-      leftMax,
-      leftAfterSellMin,
-      priceRatio,
-      debtMax,
-      apply
-    }
 
-    console.log(reference);
+    updateReference({
+      id: 1,
+      SoLuongNhapToiThieu: entryMin,
+      SoLuongTonToiThieu: leftMax,
+      TonKhoToiThieuSauBan: leftAfterSellMin,
+      TyLeDonGia: priceRatio,
+      CongNoToiDa: debtMax,
+      SuDungQuyDinh: apply
+    })
   }
 
   const setDefaultReference = () => {
