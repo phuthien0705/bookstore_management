@@ -10,27 +10,30 @@ import {
   Input,
   Button,
   Typography,
+  IconButton,
 } from "@material-tailwind/react";
-import AuthLayout from "@/layouts/auth";
 import { useRouter } from "next/router";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { type NextPageWithLayout } from "./page";
+import AuthLayout from "@/layouts/auth";
 
 const Login: NextPageWithLayout = () => {
-  const [values, setValues] = useState<{
-    username: string;
-    password: string;
-  }>({ username: "", password: "" });
   const router = useRouter();
+  const [values, setValues] = useState<{
+    TenDangNhap: string;
+    MatKhau: string;
+  }>({ TenDangNhap: "", MatKhau: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const onSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     try {
       const result = await signIn("credentials", {
         redirect: false,
-        username: values.username,
-        password: values.password,
+        TenDangNhap: values.TenDangNhap,
+        MatKhau: values.MatKhau,
       });
       if (result && result.ok) {
-        void router.push({ pathname: "/chuc-nang/sach" });
+        void router.push({ pathname: "/chuc-nang/phieu-nhap-sach" });
       }
       console.log(result);
     } catch (error) {
@@ -64,18 +67,40 @@ const Login: NextPageWithLayout = () => {
             <Input
               label="Tên đăng nhập"
               size="lg"
-              name="username"
-              value={values.username}
+              name="TenDangNhap"
+              value={values.TenDangNhap}
               onChange={onChange}
+              required
             />
-            <Input
-              type="password"
-              label="Mật khẩu"
-              size="lg"
-              name="password"
-              value={values.password}
-              onChange={onChange}
-            />
+            <div className="relative flex w-full max-w-[24rem]">
+              <Input
+                label="Mật khẩu"
+                size="lg"
+                type={showPassword ? "text" : "password"}
+                name="MatKhau"
+                value={values.MatKhau}
+                onChange={onChange}
+                required
+                className="pr-20"
+                containerProps={{
+                  className: "min-w-0",
+                }}
+              />
+              <div className="!absolute right-1 rounded" style={{ top: "5px" }}>
+                <IconButton
+                  onClick={() => setShowPassword((p) => !p)}
+                  variant="text"
+                  color="blue-gray"
+                  size="sm"
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="h-4 w-4" />
+                  ) : (
+                    <EyeIcon className="h-4 w-4" />
+                  )}
+                </IconButton>
+              </div>
+            </div>
           </CardBody>
           <CardFooter className="pt-0">
             <Button type="submit" variant="gradient" fullWidth>

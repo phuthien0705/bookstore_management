@@ -4,20 +4,25 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { Button, IconButton, Typography } from "@material-tailwind/react";
+import { useContext } from "react";
 import { useMaterialTailwindController, setOpenSidenav } from "@/context";
+import { DashboardContext } from "@/layouts/dashboard";
 
 interface ISidenav {
   brandImg?: string;
   brandName?: string;
-  routes: any[];
+  managerRoutes: any[];
+  staffRoutes: any[];
 }
 
 export function Sidenav({
   brandImg = "",
   brandName = "Quản lý nhà sách",
-  routes,
+  managerRoutes,
+  staffRoutes,
 }: ISidenav) {
   const router = useRouter();
+  const {isManager} = useContext(DashboardContext);
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavColor, sidenavType, openSidenav } = controller;
   const sidenavTypes = {
@@ -60,7 +65,7 @@ export function Sidenav({
         </IconButton>
       </div>
       <div className="m-4">
-        {routes.map(
+        {(isManager ? managerRoutes : staffRoutes).map(
           (
             {
               layout,

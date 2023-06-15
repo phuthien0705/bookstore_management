@@ -36,7 +36,7 @@ const CategoryModal = dynamic(
 const CategoryPage: NextPageWithLayout = () => {
   const [pageIndex, setPageIndex] = useState<number>(0);
 
-  const { open: openAuthorModal, handleOpen: handleOpenCategoryModal } =
+  const { open: openCategoryModal, handleOpen: handleOpenCategoryModal } =
     useModal();
   const { open: openConfirmModal, handleOpen: handleOpenConfirmModal } =
     useModal();
@@ -82,7 +82,7 @@ const CategoryPage: NextPageWithLayout = () => {
           <CardHeader
             variant="gradient"
             color="blue"
-            className="mb-8 flex items-center justify-between px-6 py-4"
+            className="mb-2 flex items-center justify-between px-6 py-4"
           >
             <Typography variant="h6" color="white">
               Danh sách thể loại
@@ -109,7 +109,7 @@ const CategoryPage: NextPageWithLayout = () => {
             <table className="w-full min-w-max table-auto text-left">
               <thead>
                 <tr>
-                  {["ID", "Tên", "Thao tác"].map((head) => (
+                  {["ID", "Tên"].map((head) => (
                     <th
                       key={head}
                       className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"
@@ -123,6 +123,15 @@ const CategoryPage: NextPageWithLayout = () => {
                       </Typography>
                     </th>
                   ))}
+                  <th className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4">
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="text-center font-normal leading-none opacity-70"
+                    >
+                      Thao tác
+                    </Typography>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -155,7 +164,7 @@ const CategoryPage: NextPageWithLayout = () => {
                         </td>
 
                         <td className={`${className} w-2/12`}>
-                          <div className="flex w-max">
+                          <div className="flex w-full justify-center">
                             <IconButton
                               variant="text"
                               color="blue-gray"
@@ -200,7 +209,7 @@ const CategoryPage: NextPageWithLayout = () => {
         </Card>
       </div>
       <CategoryModal
-        open={openAuthorModal}
+        open={openCategoryModal}
         handleOpen={handleOpenCategoryModal}
         currentItem={currentItem}
         setCurrentItem={setCurrentItem}
