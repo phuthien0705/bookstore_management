@@ -13,6 +13,7 @@ import dayjs from "dayjs";
 import DashboardLayout from "@/layouts/dashboard";
 import { type NextPageWithLayout } from "../page";
 import { useState, useEffect } from "react";
+import { api } from "@/utils/api";
 
 const TABLE_HEAD = ["Tên Khách hàng", "Địa chỉ", "Email"];
 
@@ -45,10 +46,7 @@ const ThuTien: NextPageWithLayout = () => {
   const [orderRows, setOrderRow] = useState([]);
   const [MaKH, setMaKH] = useState("");
 
-  // useEffect(() => {
-  //   const { data: dtKhachHang, isLoading: isLoadingDT } =
-  //     api.invoice.getKhachHangById.useQuery({ MaKH });
-  // }, [MaKH]);
+
 
   const handleDeleteRow = () => {};
   const handleAddBook = () => {};
