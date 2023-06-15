@@ -6,24 +6,30 @@ export const statisticRouter = createTRPCRouter({
   createBookLeftStatistic: protectedProcedure
     .input(
       z.object({
-        maSach: z.number(),
         month: z.number(),
         year: z.number(),
-        quantity: z.number(),
+        bookCount: z.number(),
       })
     )
-    .mutation(({ input, ctx }) => {
-      const { maSach, month, year, quantity } = input;
+    .mutation(async ({ input, ctx }) => {
+      const { month, year, bookCount } = input;
 
-      return ctx.prisma.bAOCAOTON.create({
-        data: {
-          MaSach: maSach,
+      const DanhSachSach = await ctx.prisma.sACH.findMany({
+        orderBy: {
+          MaSach: "desc",
+        },
+        take: bookCount,
+      });
+
+      return ctx.prisma.bAOCAOTON.createMany({
+        data: DanhSachSach.map(({ MaSach, SoLuongTon }) => ({
+          MaSach: MaSach,
           Thang: month,
           Nam: year,
-          TonCuoi: quantity,
-          TonDau: quantity,
+          TonCuoi: SoLuongTon,
+          TonDau: SoLuongTon,
           PhatSinh: 0,
-        },
+        })),
       });
     }),
 
@@ -71,7 +77,7 @@ export const statisticRouter = createTRPCRouter({
       const { limit, cursor, month, year } = input;
 
       const records = await ctx.prisma.bAOCAOTON.findMany({
-        skip: 1,
+        skip: cursor ? 1 : 0,
         take: limit,
         cursor: cursor
           ? { MaSach_Thang_Nam: { MaSach: cursor, Thang: month, Nam: year } }
@@ -84,8 +90,8 @@ export const statisticRouter = createTRPCRouter({
 
       return {
         datas: records,
-        cursor: records[records.length - 1]?.MaSach,
-        hasNextPage: records[records.length - 1]?.MaSach !== cursor,
+        cursor: records[limit - 1]?.MaSach,
+        hasNextPage: !!records[limit - 1]?.MaSach,
       };
     }),
 
@@ -94,22 +100,22 @@ export const statisticRouter = createTRPCRouter({
   createUserDebtStatistic: protectedProcedure
     .input(
       z.object({
-        maKH: z.number(),
         month: z.number(),
         year: z.number(),
-        quantity: z.number(),
+        debt: z.number(),
+        maKH: z.number(),
       })
     )
     .mutation(({ input, ctx }) => {
-      const { maKH, month, year, quantity } = input;
+      const { month, year, debt, maKH } = input;
 
       return ctx.prisma.bAOCAOCONGNO.create({
         data: {
           MaKH: maKH,
           Thang: month,
           Nam: year,
-          TonCuoi: quantity,
-          TonDau: quantity,
+          TonCuoi: debt,
+          TonDau: debt,
           PhatSinh: 0,
         },
       });
@@ -178,8 +184,8 @@ export const statisticRouter = createTRPCRouter({
 
       return {
         datas: records,
-        cursor: records[records.length - 1]?.MaKH,
-        hasNextPage: records[records.length - 1]?.MaKH !== cursor,
+        cursor: records[limit - 1]?.MaKH,
+        hasNextPage: !!records[limit - 1]?.MaKH,
       };
     }),
 });

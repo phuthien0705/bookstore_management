@@ -1,21 +1,26 @@
-import { getRndInteger } from "@/utils/number";
-import { useState } from "react";
+import { api } from "@/utils/api";
+import { useMemo, useState } from "react";
 
 const useBookLeftState = () => {
   const [month, setMonth] = useState<string>("");
   const [year, setYear] = useState<string>("");
 
-  const data = new Array(20).fill(0).map((_, index) => {
-    const tonDau = getRndInteger(35000000, 10000000);
-    const phatSinh = getRndInteger(5000000, 500000);
+  const queryReturn = api.statistic.getBookLeftWithPagination.useInfiniteQuery(
+    {
+      month: Number(month),
+      year: Number(year),
+      limit: 1,
+    },
+    {
+      enabled: !!month && !!year,
+      getNextPageParam: (lastPage) =>
+        lastPage.hasNextPage ? lastPage.cursor : undefined,
+    }
+  );
 
-    return {
-      maSach: index + 1,
-      tonDau,
-      phatSinh,
-      tonCuoi: tonDau + phatSinh,
-    };
-  });
+  const data = useMemo(() => {
+    return queryReturn.data?.pages.map((item) => item.datas).flat();
+  }, [queryReturn.data]);
 
   return {
     state: {
@@ -25,6 +30,7 @@ const useBookLeftState = () => {
       setYear,
     },
     data,
+    queryReturn,
   };
 };
 

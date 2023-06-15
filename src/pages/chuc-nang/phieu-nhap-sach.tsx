@@ -1,22 +1,22 @@
-import Head from "next/head";
-import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  Typography,
-  Input,
-  Select,
-  Option,
-  Button,
-} from "@material-tailwind/react";
-import { useRouter } from "next/router";
-import toast from "react-hot-toast";
-import { useSession } from "next-auth/react";
 import DashboardLayout from "@/layouts/dashboard";
-import { type NextPageWithLayout } from "../page";
 import { api } from "@/utils/api";
 import { moneyFormat, parseMoneyFormat } from "@/utils/moneyFormat";
+import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Input,
+  Option,
+  Select,
+  Typography,
+} from "@material-tailwind/react";
+import { useSession } from "next-auth/react";
+import Head from "next/head";
+import { useRouter } from "next/router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
+import { type NextPageWithLayout } from "../page";
 const TABLE_HEAD = [
   "ID",
   "Tên sách",
@@ -56,6 +56,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
   const [totalPrice, setTotalPrice] = useState(0);
   const { data: titles, isLoading: isLoadingTitles } =
     api.title.getAll.useQuery({});
+
   const { mutateAsync: createTicket } = api.bookEntryTicket.create.useMutation({
     onSuccess() {
       toast.success("Lưu phiếu nhập sách thành công !");
@@ -65,6 +66,10 @@ const BookEntryTicket: NextPageWithLayout = () => {
       toast.error("Xảy ra lỗi trong quá trình tạo phiếu nhập sách");
     },
   });
+
+  const { mutate: createBookLeftStatistic } =
+    api.statistic.createBookLeftStatistic.useMutation();
+
   const { data: sessionData } = useSession();
 
   const calculateTotalPrice = useCallback(() => {
@@ -107,11 +112,19 @@ const BookEntryTicket: NextPageWithLayout = () => {
     const date = new Date(Number(year), Number(month) - 1, Number(day));
     const dateTimeString = date.toISOString();
     if (sessionData) {
-      await createTicket({
+      const response = await createTicket({
         NgayTao: dateTimeString,
         TongTien: totalPrice,
         MaTK: sessionData.user.MaTK,
         DanhSachSach: bookList,
+      });
+
+      response.count;
+
+      createBookLeftStatistic({
+        month: Number(month),
+        year: Number(year),
+        bookCount: response.count,
       });
     } else {
       toast.error("Đăng nhập để thực hiện thao tác tạo sách");
