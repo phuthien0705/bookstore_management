@@ -1,4 +1,7 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import ExcelJs from "exceljs";
+import fs from "fs";
+import path from "path";
 import { z } from "zod";
 
 export const statisticRouter = createTRPCRouter({
@@ -93,6 +96,66 @@ export const statisticRouter = createTRPCRouter({
         cursor: records[limit - 1]?.MaSach,
         hasNextPage: !!records[limit - 1]?.MaSach,
       };
+    }),
+
+  exportBookLeftExcel: protectedProcedure
+    .input(
+      z.object({
+        month: z.number(),
+        year: z.number(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { month, year } = input;
+
+      const pathStorageCode = path.join(
+        __dirname,
+        `../../../../../public/excel/bao-cao-ton.xlsx`
+      );
+
+      const newWorkBook = new ExcelJs.Workbook();
+
+      const newWorkSheet = newWorkBook.addWorksheet("report");
+
+      newWorkSheet.getCell(1, 1).value = "Tháng";
+      newWorkSheet.getCell(1, 2).value = month;
+
+      newWorkSheet.getCell(2, 1).value = "Năm";
+      newWorkSheet.getCell(2, 2).value = year;
+
+      newWorkSheet.columns = [
+        { key: "MaSach" },
+        { key: "TonDau" },
+        { key: "PhatSinh" },
+        { key: "TonCuoi" },
+      ];
+
+      newWorkSheet.getCell(3, 1).value = "Mã Sách";
+      newWorkSheet.getCell(3, 2).value = "Tồn Đầu";
+      newWorkSheet.getCell(3, 3).value = "Phát Sinh";
+      newWorkSheet.getCell(3, 4).value = "Tồn Cuối";
+
+      const records = await ctx.prisma.bAOCAOTON.findMany({
+        where: {
+          Thang: month,
+          Nam: year,
+        },
+      });
+
+      records.forEach((item) => {
+        newWorkSheet.addRow({
+          MaSach: item.MaSach,
+          TonDau: Number(item.TonDau),
+          PhatSinh: Number(item.PhatSinh),
+          TonCuoi: Number(item.TonCuoi),
+        });
+      });
+
+      await newWorkBook.xlsx.writeFile(pathStorageCode);
+
+      const stream = fs.readFileSync(pathStorageCode).toString("base64");
+
+      return { stream };
     }),
 
   // báo cáo công nợ

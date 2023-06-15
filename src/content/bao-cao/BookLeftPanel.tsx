@@ -1,5 +1,7 @@
 import useBookLeftState from "@/hook/bao-cao/useBookLeftState";
+import { api } from "@/utils/api";
 import {
+  Button,
   Card,
   CardBody,
   CardHeader,
@@ -21,6 +23,15 @@ const BookLeftPanel = () => {
 
   const { ref, inView } = useInView();
 
+  const { mutate } = api.statistic.exportBookLeftExcel.useMutation({
+    onSuccess(data) {
+      const mediaType =
+        "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,";
+
+      window.location.href = `${mediaType}${data.stream}`;
+    },
+  });
+
   useEffect(() => {
     const pages = queryData?.pages;
     if (inView && !isFetching && pages?.[pages?.length - 1]?.hasNextPage) {
@@ -39,6 +50,13 @@ const BookLeftPanel = () => {
         </CardHeader>
         <CardBody className="p-4">
           <MonthYearInputSection {...state} />
+          <Button
+            onClick={() =>
+              mutate({ month: Number(state.month), year: Number(state.year) })
+            }
+          >
+            export
+          </Button>
           <div className="relative">
             {isFetching && (
               <div className="absolute bottom-0 left-0 right-0 top-0 z-10 flex w-full items-center justify-center bg-gray-50/70 ">

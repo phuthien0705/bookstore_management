@@ -23,6 +23,8 @@
     "@trpc/server": "^10.9.0",
     "apexcharts": "^3.37.2",
     "dayjs": "^1.11.7",
+    "exceljs": "^4.3.0",
+    "file-saver": "^2.0.5",
     "next": "^13.2.1",
     "next-auth": "^4.19.0",
     "prop-types": "^15.8.1",
@@ -37,6 +39,7 @@
   },
   "devDependencies": {
     "@types/eslint": "^8.21.1",
+    "@types/file-saver": "^2.0.5",
     "@types/node": "^18.14.0",
     "@types/prettier": "^2.7.2",
     "@types/react": "^18.0.28",
