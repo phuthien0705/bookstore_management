@@ -57,7 +57,7 @@ export const managerRoutes = [
   },
   {
     title: "Cài đặt",
-    layout: "/cai-dat",
+    layout: "cai-dat",
     pages: [
       {
         icon: <FilledSetting {...icon} />,

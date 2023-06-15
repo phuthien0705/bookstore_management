@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useEffect, useState } from "react";
@@ -22,13 +23,10 @@ import {
 } from "@/components/pagination/pagination";
 import useModal from "@/hook/useModal";
 import { api } from "@/utils/api";
-import {
-  MagnifyingGlassIcon,
-  PencilIcon,
-  TrashIcon,
-} from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, PencilIcon } from "@heroicons/react/24/outline";
 import useDebounce from "@/hook/useDebounce";
 import { EFilterBook } from "@/constant/constant";
+import { moneyFormat } from "@/utils/moneyFormat";
 
 const BookModal = dynamic(() => import("@/components/modals/BookModal"));
 const ConfirmModal = dynamic(() => import("@/components/modals/ConfirmModal"));
@@ -44,16 +42,13 @@ const BookPage: NextPageWithLayout = () => {
   const debounced = useDebounce({ value: searchValue, delay: 500 });
   const [filterVaule, setFilterValue] = useState(EFilterBook.all);
   const [currentItem, setCurrentItem] = useState<SACH | null>(null);
-  const {
-    data,
-    isLoading: isBooksLoading,
-    isFetching,
-  } = api.book.getWithPagination.useQuery({
+  const { data, isLoading, isFetching } = api.book.getWithPagination.useQuery({
     limit: 10,
     page: pageIndex + 1,
     searchValue: searchValueDebounced,
     type: filterVaule,
   });
+  const { data: titles } = api.title.getAll.useQuery({});
   const { mutate: deleteBook } = api.book.delete.useMutation({
     async onSuccess() {
       setCurrentItem(null);
@@ -66,11 +61,21 @@ const BookPage: NextPageWithLayout = () => {
     },
     onError(err) {
       console.error(err);
+      toast.error("Xảy ra lỗi trong quá trình xóa!");
     },
   });
 
   const handleConfirmDelete = () => {
     currentItem && deleteBook({ MaSach: currentItem.MaSach });
+  };
+
+  const getTitleNameById = (MaDauSach: number) => {
+    const foundTitle = titles?.find((title) => title.MaDauSach === MaDauSach);
+    return foundTitle ? foundTitle.TenDauSach : "";
+  };
+  const getCategoryNameById = (MaDauSach: number) => {
+    const category = titles?.find((title) => title.MaDauSach === MaDauSach);
+    return category ? category.TheLoai.TenTL : "";
   };
 
   useEffect(() => {
@@ -99,7 +104,7 @@ const BookPage: NextPageWithLayout = () => {
               <div className="w-full md:w-56">
                 <Select
                   label="Tìm kiếm theo"
-                  value={filterVaule}
+                  // value={filterVaule}
                   onChange={(e) => {
                     setFilterValue(e as unknown as EFilterBook);
                   }}
@@ -108,6 +113,7 @@ const BookPage: NextPageWithLayout = () => {
                   <Option value={EFilterBook.bookId}>Mã Sách</Option>
                   <Option value={EFilterBook.category}>Thể loại</Option>
                   <Option value={EFilterBook.author}>Tác giả</Option>
+                  <Option value={EFilterBook.price}>Giá</Option>
                   <Option value={EFilterBook.publisher}>Nhà xuất bản</Option>
                   <Option value={EFilterBook.publishYear}>Năm xuất bản</Option>
                 </Select>
@@ -126,6 +132,8 @@ const BookPage: NextPageWithLayout = () => {
                 <tr>
                   {[
                     "ID",
+                    "Tên",
+                    "Thể loại",
                     "Giá",
                     "Số lượng tồn",
                     "Nhà xuất bản",
@@ -156,14 +164,14 @@ const BookPage: NextPageWithLayout = () => {
                 </tr>
               </thead>
               <tbody>
-                {isFetching && (
+                {isLoading && (
                   <tr>
-                    <td colSpan={3}>
+                    <td colSpan={8}>
                       <LoadingScreen />
                     </td>
                   </tr>
                 )}
-                {!isFetching &&
+                {!isLoading &&
                   data &&
                   data.datas.map((item, index) => {
                     const isLast = index === data.datas.length - 1;
@@ -172,15 +180,24 @@ const BookPage: NextPageWithLayout = () => {
                       : "p-4 border-b border-blue-gray-50";
                     return (
                       <tr key={item.MaSach}>
-                        <td className={`${className} w-1/12`}>
+                        <td className={`${className}`}>
                           <Typography className="text-xs font-semibold text-blue-gray-600">
                             {item.MaSach}
                           </Typography>
                         </td>
-
+                        <td className={`${className}`}>
+                          <Typography className="text-xs font-semibold text-blue-gray-600">
+                            {getTitleNameById(item.MaDauSach)}
+                          </Typography>
+                        </td>
+                        <td className={`${className}`}>
+                          <Typography className="text-xs font-semibold text-blue-gray-600">
+                            {getCategoryNameById(item.MaDauSach)}
+                          </Typography>
+                        </td>
                         <td className={className}>
                           <Typography className="text-xs font-semibold text-blue-gray-600">
-                            {item.DonGiaBan}
+                            {moneyFormat(Number(item.DonGiaBan))}VNĐ
                           </Typography>
                         </td>
                         <td className={className}>
@@ -198,7 +215,7 @@ const BookPage: NextPageWithLayout = () => {
                             {item.NamXuatBan}
                           </Typography>
                         </td>
-                        <td className={`${className} w-2/12`}>
+                        <td className={`${className}`}>
                           <div className="flex w-full justify-center">
                             <IconButton
                               variant="text"
@@ -209,16 +226,6 @@ const BookPage: NextPageWithLayout = () => {
                               }}
                             >
                               <PencilIcon className="h-4 w-4" />
-                            </IconButton>
-                            <IconButton
-                              variant="text"
-                              color="red"
-                              onClick={() => {
-                                setCurrentItem(item);
-                                handleOpenConfirmModal(true);
-                              }}
-                            >
-                              <TrashIcon className="h-4 w-4" />
                             </IconButton>
                           </div>
                         </td>

@@ -112,7 +112,7 @@ const BookModal: React.FC<IBookModal> = ({
       className="bg-transparent shadow-none"
     >
       <form onSubmit={onSubmit}>
-        <Card className="mx-auto w-full max-w-[24rem]">
+        <Card className="mx-auto w-full">
           <CardBody className="flex flex-col gap-4">
             <Typography className="font-bold">Cập nhật sách</Typography>{" "}
             <Select

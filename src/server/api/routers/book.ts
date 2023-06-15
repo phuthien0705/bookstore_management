@@ -62,7 +62,9 @@ export const bookRouter = createTRPCRouter({
           take: limit,
           where: {
             OR:
-              input.type === EFilterBook.all
+              searchValue === ""
+                ? undefined
+                : input.type === EFilterBook.all
                 ? [
                     {
                       MaSach: {
@@ -90,7 +92,7 @@ export const bookRouter = createTRPCRouter({
                       },
                     },
                   ]
-                : EFilterBook.category
+                : input.type === EFilterBook.category
                 ? [
                     {
                       DauSach: {
@@ -102,7 +104,7 @@ export const bookRouter = createTRPCRouter({
                       },
                     },
                   ]
-                : EFilterBook.publisher
+                : input.type === EFilterBook.publisher
                 ? [
                     {
                       NhaXuatBan: {
@@ -110,7 +112,7 @@ export const bookRouter = createTRPCRouter({
                       },
                     },
                   ]
-                : EFilterBook.publishYear
+                : input.type === EFilterBook.publishYear
                 ? [
                     {
                       NamXuatBan: {
@@ -118,7 +120,7 @@ export const bookRouter = createTRPCRouter({
                       },
                     },
                   ]
-                : EFilterBook.bookId
+                : input.type === EFilterBook.bookId
                 ? [
                     {
                       MaSach: {
@@ -126,7 +128,15 @@ export const bookRouter = createTRPCRouter({
                       },
                     },
                   ]
-                : [],
+                : input.type === EFilterBook.price
+                ? [
+                    {
+                      DonGiaBan: {
+                        equals: parseInt(searchValue, 10) || undefined,
+                      },
+                    },
+                  ]
+                : undefined,
           },
           include: {
             DauSach: {
@@ -136,7 +146,86 @@ export const bookRouter = createTRPCRouter({
             },
           },
         }),
-        ctx.prisma.sACH.count(),
+        ctx.prisma.sACH.count({
+          where: {
+            OR:
+              searchValue === ""
+                ? undefined
+                : input.type === EFilterBook.all
+                ? [
+                    {
+                      MaSach: {
+                        equals: parseInt(searchValue, 10) || undefined,
+                      },
+                    },
+                    {
+                      NhaXuatBan: {
+                        contains: searchValue,
+                      },
+                    },
+                    {
+                      NamXuatBan: {
+                        contains: searchValue,
+                      },
+                    },
+                    {
+                      SoLuongTon: {
+                        equals: parseInt(searchValue, 10) || undefined,
+                      },
+                    },
+                    {
+                      DonGiaBan: {
+                        equals: parseInt(searchValue, 10) || undefined,
+                      },
+                    },
+                  ]
+                : input.type === EFilterBook.category
+                ? [
+                    {
+                      DauSach: {
+                        TheLoai: {
+                          TenTL: {
+                            contains: searchValue,
+                          },
+                        },
+                      },
+                    },
+                  ]
+                : input.type === EFilterBook.publisher
+                ? [
+                    {
+                      NhaXuatBan: {
+                        contains: searchValue,
+                      },
+                    },
+                  ]
+                : input.type === EFilterBook.publishYear
+                ? [
+                    {
+                      NamXuatBan: {
+                        contains: searchValue,
+                      },
+                    },
+                  ]
+                : input.type === EFilterBook.bookId
+                ? [
+                    {
+                      MaSach: {
+                        equals: parseInt(searchValue, 10) || undefined,
+                      },
+                    },
+                  ]
+                : input.type === EFilterBook.price
+                ? [
+                    {
+                      DonGiaBan: {
+                        equals: parseInt(searchValue, 10) || undefined,
+                      },
+                    },
+                  ]
+                : undefined,
+          },
+        }),
       ]);
 
       const totalPages = Math.ceil(totalCount / limit);
@@ -150,20 +239,17 @@ export const bookRouter = createTRPCRouter({
         totalPages,
       };
     }),
-  getAllWithTitleAndCategory: protectedProcedure
-  .query(
-    async ({ input, ctx }) => {
-      const books = await ctx.prisma.sACH.findMany({
-        include: {
-          DauSach: {
-            include: {
-              TheLoai: true,
-            },
+  getAllWithTitleAndCategory: protectedProcedure.query(async ({ ctx }) => {
+    const books = await ctx.prisma.sACH.findMany({
+      include: {
+        DauSach: {
+          include: {
+            TheLoai: true,
           },
         },
-      });
+      },
+    });
 
-      return books;
-    }
-  ),
+    return books;
+  }),
 });
