@@ -22,7 +22,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
       <ThemeProvider>
         <MaterialTailwindControllerProvider>
           <>{getLayout(<Component {...pageProps} />)}</>
-          <Toaster position="bottom-center" />
+          <Toaster position={"top-right"} />
         </MaterialTailwindControllerProvider>
       </ThemeProvider>
     </SessionProvider>
