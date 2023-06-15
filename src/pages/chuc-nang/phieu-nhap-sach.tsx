@@ -9,6 +9,7 @@ import {
   Select,
   Option,
   Button,
+  IconButton,
 } from "@material-tailwind/react";
 import { useRouter } from "next/router";
 import toast from "react-hot-toast";
@@ -18,6 +19,11 @@ import { type NextPageWithLayout } from "../page";
 import { api } from "@/utils/api";
 import { moneyFormat, parseMoneyFormat } from "@/utils/moneyFormat";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
+import useModal from "@/hook/useModal";
+import dynamic from "next/dynamic";
+
+const BookEntryTicketListModal = dynamic(() => import("@/components/modals/BookEntryTicketListModal"))
+
 const TABLE_HEAD = [
   "ID",
   "Tên sách",
@@ -70,6 +76,13 @@ const BookEntryTicket: NextPageWithLayout = () => {
     },
   });
   const { data: sessionData } = useSession();
+  const { open: openBookEntryTicketListModal, handleOpen: handleOpenBookEntryTicketListModal } = useModal();
+
+  const handleViewBookEntryTicket = () => {
+    handleOpenBookEntryTicketListModal(true); // Mở Modal
+  };
+
+
 
   const calculateTotalPrice = useCallback(() => {
     const totalPrice = bookList.reduce(
@@ -303,6 +316,13 @@ const BookEntryTicket: NextPageWithLayout = () => {
             <Typography variant="h6" color="white">
               Phiếu nhập sách
             </Typography>
+            <Button
+              variant="outlined"
+              className="bg-white"
+              onClick={handleViewBookEntryTicket}
+            >
+              Xem phiếu nhập sách
+            </Button>
           </CardHeader>
           <CardBody className="flex flex-col gap-6">
             <div className="flex w-full flex-row gap-10">
@@ -483,6 +503,10 @@ const BookEntryTicket: NextPageWithLayout = () => {
           </CardBody>
         </Card>
       </div>
+      <BookEntryTicketListModal
+        open={openBookEntryTicketListModal}
+        handleOpen={handleOpenBookEntryTicketListModal}
+      />
     </>
   );
 };

@@ -34,7 +34,7 @@ const ConfirmModal = dynamic(() => import("@/components/modals/ConfirmModal"));
 const AuthorPage: NextPageWithLayout = () => {
   const utils = api.useContext();
   const [pageIndex, setPageIndex] = useState<number>(0);
-  const { open: openAuthorModal, handleOpen: handleOpenAuthorModal } =
+  const { open: openAuthorModal, handleOpen: handleOpenAuthorModal } =AuthorModal
     useModal();
   const { open: openConfirmModal, handleOpen: handleOpenConfirmModal } =
     useModal();
