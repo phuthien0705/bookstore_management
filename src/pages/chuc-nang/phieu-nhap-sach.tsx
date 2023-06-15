@@ -17,6 +17,7 @@ import DashboardLayout from "@/layouts/dashboard";
 import { type NextPageWithLayout } from "../page";
 import { api } from "@/utils/api";
 import { moneyFormat, parseMoneyFormat } from "@/utils/moneyFormat";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
 const TABLE_HEAD = [
   "ID",
   "Tên sách",
@@ -28,11 +29,14 @@ const TABLE_HEAD = [
 ];
 const BookEntryTicket: NextPageWithLayout = () => {
   const router = useRouter();
-  const [bookTitle, setBookTitle] = useState<number>(0); // title id
+  const [bookTitle, setBookTitle] = useState<{ id: number; name: string }>({
+    id: 0,
+    name: "",
+  }); // title id
   const [publisher, setPublisher] = useState("");
   const [publishedYear, setPublishedYear] = useState("");
   const [price, setPrice] = useState<string>("0");
-  const [quantity, setQuantity] = useState(0);
+  const [quantity, setQuantity] = useState("0");
   const [entryDate, setEntryDate] = useState(() => {
     const currentDate = new Date();
     const year = currentDate.getFullYear();
@@ -78,10 +82,10 @@ const BookEntryTicket: NextPageWithLayout = () => {
   const hanldeAddBook = (e: { preventDefault: () => void }) => {
     e.preventDefault();
     const newBook = {
-      MaDauSach: bookTitle,
+      MaDauSach: bookTitle.id,
       NhaXuatBan: publisher,
       NamXuatBan: publishedYear,
-      SoLuongTon: quantity,
+      SoLuongTon: parseInt(quantity),
       DonGiaBan: parseMoneyFormat(price),
     };
     setBookList((prevBookList) => [...prevBookList, newBook]);
@@ -137,6 +141,26 @@ const BookEntryTicket: NextPageWithLayout = () => {
     return category ? category.TheLoai.TenTL : "";
   };
 
+  const handleRefresh = () => {
+    setBookTitle({ id: 0, name: "" });
+    setPublisher("");
+    setPublishedYear("");
+    setPrice("0");
+    setQuantity("0");
+    setEntryDate(() => {
+      const currentDate = new Date();
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+      const day = String(currentDate.getDate()).padStart(2, "0");
+      const formattedDate = `${year}-${month}-${day}`;
+      return formattedDate;
+    });
+    setIsTableOpen(true);
+    setTableHeight(0);
+    setBookList([]);
+    setTotalPrice(0);
+  };
+
   useEffect(() => {
     if (tableRef.current) {
       setTableHeight(
@@ -173,7 +197,13 @@ const BookEntryTicket: NextPageWithLayout = () => {
                 <Select
                   label="Tên đầu sách"
                   onChange={(e) => {
-                    setBookTitle(parseInt(e as string));
+                    setBookTitle({
+                      id: parseInt(e as string),
+                      name:
+                        titles?.find(
+                          (i) => i.MaDauSach === parseInt(e as string)
+                        )?.TenDauSach ?? "",
+                    });
                   }}
                 >
                   {isLoadingTitles ? (
@@ -192,6 +222,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
                   )}
                 </Select>
                 <Input
+                  value={publishedYear}
                   variant="outlined"
                   label="Năm xuất bản"
                   onChange={(e) => setPublishedYear(e.target.value)}
@@ -207,14 +238,16 @@ const BookEntryTicket: NextPageWithLayout = () => {
               </div>
               <div className="flex w-full flex-col gap-6">
                 <Input
+                  value={publisher}
                   variant="outlined"
                   label="Nhà xuất bản"
                   onChange={(e) => setPublisher(e.target.value)}
                 />
                 <Input
+                  value={quantity}
                   variant="outlined"
                   label="Số lượng"
-                  onChange={(e) => setQuantity(parseInt(e.target.value))}
+                  onChange={(e) => setQuantity(e.target.value)}
                 />
                 <div className="flex flex-row justify-end gap-10">
                   <Button onClick={hanldeAddBook}>Thêm sách</Button>
@@ -237,6 +270,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
             <div className="flex w-full flex-row gap-10">
               <div className="flex-grow">
                 <Input
+                  disabled
                   variant="outlined"
                   label="Ngày nhập sách"
                   type="date"
@@ -390,10 +424,23 @@ const BookEntryTicket: NextPageWithLayout = () => {
               </Card>
             </div>
             <div className="flex w-full flex-row justify-end gap-3">
-              <Button onClick={toggleTable}>
+              <Button
+                variant="outlined"
+                className="flex items-center gap-3"
+                onClick={handleRefresh}
+              >
+                Làm mới
+                <ArrowPathIcon strokeWidth={2} className="h-5 w-5" />
+              </Button>
+              <Button variant="outlined" onClick={toggleTable}>
                 {isTableOpen ? "Ẩn danh sách sách" : "Hiển thị danh sách sách"}
               </Button>
-              <Button onClick={handleSaveTicket}>Lưu phiếu</Button>
+              <Button
+                onClick={handleSaveTicket}
+                disabled={bookList.length === 0}
+              >
+                Lưu phiếu
+              </Button>
             </div>
           </CardBody>
         </Card>

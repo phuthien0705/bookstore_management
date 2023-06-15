@@ -1,7 +1,15 @@
 import Head from "next/head";
 import DashboardLayout from "@/layouts/dashboard";
 import { type NextPageWithLayout } from "../page";
-import { Card, CardBody, CardHeader, Checkbox, Input, Typography, Button } from "@material-tailwind/react";
+import {
+  Card,
+  CardBody,
+  CardHeader,
+  Checkbox,
+  Input,
+  Typography,
+  Button,
+} from "@material-tailwind/react";
 import { api } from "@/utils/api";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
@@ -36,12 +44,11 @@ const SettingPage: NextPageWithLayout = () => {
     onError(err) {
       console.error(err);
     },
-  })
+  });
 
 
 
   const handleApplyReference = () => {
-
     updateReference({
       id: 1,
       SoLuongNhapToiThieu: entryMin,
@@ -49,9 +56,9 @@ const SettingPage: NextPageWithLayout = () => {
       TonKhoToiThieuSauBan: leftAfterSellMin,
       TyLeDonGia: priceRatio,
       CongNoToiDa: debtMax,
-      SuDungQuyDinh: apply
-    })
-  }
+      SuDungQuyDinh: apply,
+    });
+  };
 
   const setDefaultReference = () => {
     setEntryMin(150);
@@ -69,7 +76,7 @@ const SettingPage: NextPageWithLayout = () => {
         <title>Thay đổi tham chiếu</title>
       </Head>
       <div className="mb-8 mt-12">
-      <Card>
+        <Card>
           <CardHeader
             variant="gradient"
             color="blue"
@@ -139,21 +146,26 @@ const SettingPage: NextPageWithLayout = () => {
             </div>
           </CardBody>
         </Card>
-        <div className="flex justify-end mt-8">
-          <Checkbox label={
-            <Typography color="blue-gray" className="font-medium flex">Sử dụng
-              <Typography as="a" href="#" color="blue" className="font-medium hover:text-blue-700 transition-colors mr-5">
-                &nbsp;quy định này.
+        <div className="mt-8 flex justify-end">
+          <Checkbox
+            label={
+              <Typography color="blue-gray" className="flex font-medium">
+                Sử dụng
+                <Typography
+                  as="a"
+                  href="#"
+                  color="blue"
+                  className="mr-5 font-medium transition-colors hover:text-blue-700"
+                >
+                  &nbsp;quy định này.
+                </Typography>
               </Typography>
             </Typography>
           }  checked={apply} onChange={(e) => setApply(e.target.checked)}/>
           <Button color="gray" className="mr-4" onClick={setDefaultReference}>
             Mặc định
           </Button>
-          <Button 
-            color="blue"
-            onClick={handleApplyReference}
-          >
+          <Button color="blue" onClick={handleApplyReference}>
             Áp dụng
           </Button>
         </div>
