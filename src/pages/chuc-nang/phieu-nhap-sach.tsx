@@ -58,8 +58,8 @@ const BookEntryTicket: NextPageWithLayout = () => {
     }[]
   >([]);
   const [totalPrice, setTotalPrice] = useState(0);
-  const { data: titles, isLoading: isLoadingTitles } =
-    api.title.getAll.useQuery({});
+  const { data: titles, isLoading: isLoadingTitles } = api.title.getAll.useQuery({});
+  const { data: reference } = api.reference.get.useQuery({});
   const { mutateAsync: createTicket } = api.bookEntryTicket.create.useMutation({
     onSuccess() {
       toast.success("Lưu phiếu nhập sách thành công !");
@@ -81,6 +81,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
 
   const hanldeAddBook = (e: { preventDefault: () => void }) => {
     e.preventDefault();
+   if (isValidated()) {
     const newBook = {
       MaDauSach: bookTitle.id,
       NhaXuatBan: publisher,
@@ -89,6 +90,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
       DonGiaBan: parseMoneyFormat(price),
     };
     setBookList((prevBookList) => [...prevBookList, newBook]);
+   }
   };
 
   const toggleTable = () => {
@@ -102,7 +104,43 @@ const BookEntryTicket: NextPageWithLayout = () => {
     }
     return true;
   }
+
+  const isValidated = () => {
+
+    const validatedTitle = bookTitle.name !== null
+    const validatedPublisher = publisher !== ""
+    const validatedPublisedYear = Number(publishedYear) <= (new Date().getFullYear()) && publishedYear !== ""
+    const validatedQuantity = Number(quantity) >= Number(reference?.SoLuongNhapToiThieu)
+    const validatedPrice = Number(price) > 0
+
+    if (!validatedTitle) {
+      toast.error("Không được để trống đầu sách !")
+      return false
+    }
+    else if (!validatedPublisher) {
+      toast.error("Không được để trống nhà xuất bản !")
+      return false
+    }
+    else if (!validatedPublisedYear) {
+      toast.error("Năm xuất bản không hợp lệ!")
+      return false
+    }
+    else if (!validatedQuantity) {
+      toast.error("Số lượng nhập phải lớn hơn số lượng nhập tối thiểu!")
+      return false
+    }
+    else if (!validatedPrice) {
+      toast.error("Đơn giá nhập lớn hơn 0!")
+      return false
+    }
+    else {
+      return true
+    }
+
+  }
+
   const handleSaveTicket = async () => {
+
     if (!compareDates(entryDate)) {
       toast.error("Ngày nhập sách không hợp lệ!");
       return;
