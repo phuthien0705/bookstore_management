@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Card,
   CardHeader,
@@ -10,69 +10,155 @@ import {
   Option,
   Button,
 } from "@material-tailwind/react";
+import { useRouter } from "next/router";
+import toast from "react-hot-toast";
+import { useSession } from "next-auth/react";
 import DashboardLayout from "@/layouts/dashboard";
 import { type NextPageWithLayout } from "../page";
 import { api } from "@/utils/api";
-
+import { moneyFormat, parseMoneyFormat } from "@/utils/moneyFormat";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
+const TABLE_HEAD = [
+  "ID",
+  "Tên sách",
+  "Thể loại",
+  "Nhà xuất bản",
+  "Năm xuất bản",
+  "Số lượng",
+  "Đơn giá",
+];
 const BookEntryTicket: NextPageWithLayout = () => {
-  const TABLE_HEAD = [
-    "ID",
-    "Tên sách",
-    "Thể loại",
-    "Nhà xuất bản",
-    "Năm xuất bản",
-    "Số lượng",
-    "Đơn giá",
-  ];
-
-  const [bookTitle, setBookTitle] = useState<any>();
+  const router = useRouter();
+  const [bookTitle, setBookTitle] = useState<{ id: number; name: string }>({
+    id: 0,
+    name: "",
+  }); // title id
   const [publisher, setPublisher] = useState("");
   const [publishedYear, setPublishedYear] = useState("");
-  const [price, setPrice] = useState(0);
-  const [quantity, setQuantity] = useState(0);
+  const [price, setPrice] = useState<string>("0");
+  const [quantity, setQuantity] = useState("0");
+  const [entryDate, setEntryDate] = useState(() => {
+    const currentDate = new Date();
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+    const day = String(currentDate.getDate()).padStart(2, "0");
+    const formattedDate = `${year}-${month}-${day}`;
+    return formattedDate;
+  });
   const [isTableOpen, setIsTableOpen] = useState(true); // Thêm state để theo dõi trạng thái của bảng sách
   const [tableHeight, setTableHeight] = useState(0);
   const tableRef = useRef(null);
-  const [bookList, setBookList] = useState<any[]>([]);
+  const [bookList, setBookList] = useState<
+    {
+      NhaXuatBan: string;
+      NamXuatBan: string;
+      DonGiaBan: number;
+      SoLuongTon: number;
+      MaDauSach: number;
+    }[]
+  >([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const { data: titles, isLoading: isLoadingTitles } =
     api.title.getAll.useQuery({});
+  const { mutateAsync: createTicket } = api.bookEntryTicket.create.useMutation({
+    onSuccess() {
+      toast.success("Lưu phiếu nhập sách thành công !");
+    },
+    onError(err) {
+      console.error(err);
+      toast.error("Xảy ra lỗi trong quá trình tạo phiếu nhập sách");
+    },
+  });
+  const { data: sessionData } = useSession();
 
-  const handleFormSubmit = (e: { preventDefault: () => void }) => {
-    e.preventDefault();
-    // Add your logic here to handle form submission
-  };
-
-  const calculateTotalPrice = () => {
+  const calculateTotalPrice = useCallback(() => {
     const totalPrice = bookList.reduce(
-      (accumulator, book) => accumulator + book.quantity * book.price,
+      (accumulator, book) => accumulator + book.SoLuongTon * book.DonGiaBan,
       0
     );
     setTotalPrice(totalPrice);
-  };
-
-  useEffect(() => {
-    calculateTotalPrice();
   }, [bookList]);
 
   const hanldeAddBook = (e: { preventDefault: () => void }) => {
     e.preventDefault();
-
     const newBook = {
-      id: bookList.length + 1,
-      title_id: bookTitle,
-      genre: "Kinh dị",
-      publisher,
-      published_year: publishedYear,
-      quantity,
-      price,
+      MaDauSach: bookTitle.id,
+      NhaXuatBan: publisher,
+      NamXuatBan: publishedYear,
+      SoLuongTon: parseInt(quantity),
+      DonGiaBan: parseMoneyFormat(price),
     };
-
     setBookList((prevBookList) => [...prevBookList, newBook]);
   };
 
   const toggleTable = () => {
-    setIsTableOpen(!isTableOpen); // Thay đổi trạng thái của bảng khi nhấn vào nút "Hiển thị danh sách sách"
+    setIsTableOpen(!isTableOpen);
+  };
+  function compareDates(entryDate: string): boolean {
+    const currentDate = new Date();
+    const parsedEntryDate = new Date(entryDate);
+    if (parsedEntryDate > currentDate) {
+      return false;
+    }
+    return true;
+  }
+  const handleSaveTicket = async () => {
+    if (!compareDates(entryDate)) {
+      toast.error("Ngày nhập sách không hợp lệ!");
+      return;
+    }
+    const [year, month, day] = entryDate.split("-");
+    const date = new Date(Number(year), Number(month) - 1, Number(day));
+    const dateTimeString = date.toISOString();
+    if (sessionData) {
+      await createTicket({
+        NgayTao: dateTimeString,
+        TongTien: totalPrice,
+        MaTK: sessionData.user.MaTK,
+        DanhSachSach: bookList,
+      });
+    } else {
+      toast.error("Đăng nhập để thực hiện thao tác tạo sách");
+      await router.push({
+        pathname: "/",
+      });
+    }
+  };
+
+  const handleDeleteBook = (bookIndex: number) => {
+    setBookList((prevBookList) =>
+      prevBookList.filter((book, index) => index !== bookIndex)
+    );
+  };
+
+  const getTitleNameById = (MaDauSach: number) => {
+    const foundTitle = titles?.find((title) => title.MaDauSach === MaDauSach);
+    return foundTitle ? foundTitle.TenDauSach : "";
+  };
+
+  const getCategoryNameById = (MaDauSach: number) => {
+    const category = titles?.find((title) => title.MaDauSach === MaDauSach);
+    return category ? category.TheLoai.TenTL : "";
+  };
+
+  const handleRefresh = () => {
+    setBookTitle({ id: 0, name: "" });
+    setPublisher("");
+    setPublishedYear("");
+    setPrice("0");
+    setQuantity("0");
+    setEntryDate(() => {
+      const currentDate = new Date();
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+      const day = String(currentDate.getDate()).padStart(2, "0");
+      const formattedDate = `${year}-${month}-${day}`;
+      return formattedDate;
+    });
+    setIsTableOpen(true);
+    setTableHeight(0);
+    setBookList([]);
+    setTotalPrice(0);
   };
 
   useEffect(() => {
@@ -85,16 +171,9 @@ const BookEntryTicket: NextPageWithLayout = () => {
     }
   }, [isTableOpen, bookList]);
 
-  const handleDeleteBook = (bookId: number) => {
-    setBookList((prevBookList) =>
-      prevBookList.filter((book) => book.id !== bookId)
-    );
-  };
-
-  const getTitleNameById = (id: number) => {
-    const foundTitle = titles?.find((title) => title.MaDauSach === id)
-    return foundTitle ? foundTitle.TenDauSach : "";
-  }
+  useEffect(() => {
+    calculateTotalPrice();
+  }, [bookList, calculateTotalPrice]);
 
   return (
     <>
@@ -118,14 +197,23 @@ const BookEntryTicket: NextPageWithLayout = () => {
                 <Select
                   label="Tên đầu sách"
                   onChange={(e) => {
-                    setBookTitle(e);
+                    setBookTitle({
+                      id: parseInt(e as string),
+                      name:
+                        titles?.find(
+                          (i) => i.MaDauSach === parseInt(e as string)
+                        )?.TenDauSach ?? "",
+                    });
                   }}
                 >
                   {isLoadingTitles ? (
                     <Option>Đang tải đầu sách ...</Option>
                   ) : titles ? (
                     titles.map((title) => (
-                      <Option key={title.MaDauSach} value={title.MaDauSach.toString()}>
+                      <Option
+                        key={title.MaDauSach}
+                        value={title.MaDauSach.toString()}
+                      >
                         {title.TenDauSach}
                       </Option>
                     ))
@@ -134,26 +222,32 @@ const BookEntryTicket: NextPageWithLayout = () => {
                   )}
                 </Select>
                 <Input
+                  value={publishedYear}
                   variant="outlined"
                   label="Năm xuất bản"
                   onChange={(e) => setPublishedYear(e.target.value)}
                 />
                 <Input
                   variant="outlined"
-                  label="Đơn giá nhập"
-                  onChange={(e) => setPrice(parseInt(e.target.value))}
+                  label="Đơn giá nhập (VNĐ)"
+                  value={price}
+                  onChange={(e) =>
+                    setPrice(moneyFormat(parseMoneyFormat(e.target.value)))
+                  }
                 />
               </div>
               <div className="flex w-full flex-col gap-6">
                 <Input
+                  value={publisher}
                   variant="outlined"
                   label="Nhà xuất bản"
                   onChange={(e) => setPublisher(e.target.value)}
                 />
                 <Input
+                  value={quantity}
                   variant="outlined"
                   label="Số lượng"
-                  onChange={(e) => setQuantity(parseInt(e.target.value))}
+                  onChange={(e) => setQuantity(e.target.value)}
                 />
                 <div className="flex flex-row justify-end gap-10">
                   <Button onClick={hanldeAddBook}>Thêm sách</Button>
@@ -175,15 +269,20 @@ const BookEntryTicket: NextPageWithLayout = () => {
           <CardBody className="flex flex-col gap-6">
             <div className="flex w-full flex-row gap-10">
               <div className="flex-grow">
-                <Input variant="outlined" label="Ngày nhập sách" type="date" />
+                <Input
+                  disabled
+                  variant="outlined"
+                  label="Ngày nhập sách"
+                  type="date"
+                  value={entryDate}
+                  onChange={(e) => {
+                    setEntryDate(e.target.value);
+                  }}
+                />
               </div>
               <div className="flex flex-grow items-center">
                 <Typography variant="h6" color="blue-gray">
-                  Tổng tiền:{" "}
-                  {totalPrice.toLocaleString("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                  })}
+                  Tổng tiền: {moneyFormat(totalPrice)} VNĐ
                 </Typography>
               </div>
             </div>
@@ -227,13 +326,11 @@ const BookEntryTicket: NextPageWithLayout = () => {
                       bookList?.map(
                         (
                           {
-                            id,
-                            title_id,
-                            genre,
-                            publisher,
-                            published_year,
-                            quantity,
-                            price,
+                            MaDauSach,
+                            NhaXuatBan,
+                            NamXuatBan,
+                            SoLuongTon,
+                            DonGiaBan,
                           },
                           index
                         ) => {
@@ -241,9 +338,10 @@ const BookEntryTicket: NextPageWithLayout = () => {
                           const classes = isLast
                             ? "p-4"
                             : "p-4 border-b border-blue-gray-50";
-                          const titleName = getTitleNameById(parseInt(title_id))
+                          const TenDauSach = getTitleNameById(MaDauSach);
+                          const TenTL = getCategoryNameById(MaDauSach);
                           return (
-                            <tr key={id}>
+                            <tr key={index}>
                               <td className={classes}>
                                 <Typography
                                   variant="small"
@@ -259,7 +357,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
                                   color="blue-gray"
                                   className="font-normal"
                                 >
-                                  {titleName}
+                                  {TenDauSach}
                                 </Typography>
                               </td>
                               <td className={classes}>
@@ -268,7 +366,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
                                   color="blue-gray"
                                   className="font-normal"
                                 >
-                                  {genre}
+                                  {TenTL}
                                 </Typography>
                               </td>
                               <td className={classes}>
@@ -277,7 +375,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
                                   color="blue-gray"
                                   className="font-normal"
                                 >
-                                  {publisher}
+                                  {NhaXuatBan}
                                 </Typography>
                               </td>
                               <td className={classes}>
@@ -286,7 +384,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
                                   color="blue-gray"
                                   className="font-normal"
                                 >
-                                  {published_year}
+                                  {NamXuatBan}
                                 </Typography>
                               </td>
                               <td className={classes}>
@@ -295,7 +393,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
                                   color="blue-gray"
                                   className="font-normal"
                                 >
-                                  {quantity}
+                                  {SoLuongTon}
                                 </Typography>
                               </td>
                               <td className={classes}>
@@ -304,10 +402,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
                                   color="blue-gray"
                                   className="font-normal"
                                 >
-                                  {price.toLocaleString("vi-VN", {
-                                    style: "currency",
-                                    currency: "VND",
-                                  })}
+                                  {moneyFormat(DonGiaBan)} VNĐ
                                 </Typography>
                               </td>
                               <td className={classes}>
@@ -315,7 +410,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
                                   variant="small"
                                   color="red"
                                   className="cursor-pointer"
-                                  onClick={() => handleDeleteBook(id)} // Add onClick event for delete action
+                                  onClick={() => handleDeleteBook(index)} // Add onClick event for delete action
                                 >
                                   Xóa
                                 </Typography>
@@ -329,10 +424,23 @@ const BookEntryTicket: NextPageWithLayout = () => {
               </Card>
             </div>
             <div className="flex w-full flex-row justify-end gap-3">
-              <Button onClick={toggleTable}>
+              <Button
+                variant="outlined"
+                className="flex items-center gap-3"
+                onClick={handleRefresh}
+              >
+                Làm mới
+                <ArrowPathIcon strokeWidth={2} className="h-5 w-5" />
+              </Button>
+              <Button variant="outlined" onClick={toggleTable}>
                 {isTableOpen ? "Ẩn danh sách sách" : "Hiển thị danh sách sách"}
               </Button>
-              <Button>Lưu phiếu</Button>
+              <Button
+                onClick={handleSaveTicket}
+                disabled={bookList.length === 0}
+              >
+                Lưu phiếu
+              </Button>
             </div>
           </CardBody>
         </Card>

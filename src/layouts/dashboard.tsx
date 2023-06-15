@@ -32,7 +32,6 @@ export function DashboardLayout(props: { children: React.ReactNode }) {
       setIsManager(false);
     }
   }, [router, sessionData, status]);
-  console.log(isManager);
   return (
     <DashboardContext.Provider value={{ isManager }}>
       <div className="min-h-screen bg-blue-gray-50/50">

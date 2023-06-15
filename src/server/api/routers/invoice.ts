@@ -1,10 +1,6 @@
 import { z } from "zod";
 
-import {
-  createTRPCRouter,
-  protectedProcedure,
-  publicProcedure,
-} from "@/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 
 export const invoiceRouter = createTRPCRouter({
   createHD: protectedProcedure
@@ -22,7 +18,6 @@ export const invoiceRouter = createTRPCRouter({
         ),
       })
     )
-    .output(z.object({}))
     .mutation(async ({ input, ctx }) => {
       const invoice = await ctx.prisma.hOADONBANSACH.create({
         data: { TongTien: input.TongTien, MaKH: input.MaKH, MaTK: 1 },

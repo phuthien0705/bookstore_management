@@ -10,21 +10,19 @@ import {
   Input,
   CardFooter,
 } from "@material-tailwind/react";
-
-import { moneyFormat } from "@/utils/moneyFormat";
 import {
   ChevronDownIcon,
   ChevronUpIcon,
   PaperAirplaneIcon,
 } from "@heroicons/react/24/outline";
-
-import { api } from "@/utils/api";
 import Head from "next/head";
 import dayjs from "dayjs";
-import DashboardLayout from "@/layouts/dashboard";
-import { type NextPageWithLayout } from "../page";
 import { useState, useEffect } from "react";
+import { type NextPageWithLayout } from "../page";
 import { executeAfter500ms } from "@/utils/executeAfter500ms";
+import DashboardLayout from "@/layouts/dashboard";
+import { api } from "@/utils/api";
+import { moneyFormat } from "@/utils/moneyFormat";
 
 import { createInvoiceMaping } from "@/constant/modal";
 const TABLE_HEAD = [
@@ -66,17 +64,15 @@ type LBook = {
   ThanhTien: string;
 };
 const HoaDon: NextPageWithLayout = () => {
-  const locale = "vi";
   const [today, setDate] = useState(new Date());
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setDate(new Date());
-    }, 60 * 1000);
-    return () => {
-      clearInterval(timer);
-    };
-  }, []);
 
+  const utils = api.useContext();
+  const { data: KhachHang, isLoading: isLoadingKH } =
+    api.invoice.getKhachHang.useQuery();
+
+  const { data: Books, isLoading: isLoadingBook } =
+    api.invoice.getAllBookWithTitle.useQuery();
+  const { data: thamchieu } = api.invoice.getThamChieu.useQuery();
   const [quantity, setQuantity] = useState(1);
   const [selectKH, setKH] = useState<TKhachHanng>(defaultValue);
   const [currentBook, setCurrentBook] = useState<BID>(defaultBID);
@@ -161,9 +157,9 @@ const HoaDon: NextPageWithLayout = () => {
     },
   });
 
-  const { mutate: updateDebitFunc, status: updateStatus } =
+  const { mutate: updateDebitFunc } =
     api.invoice.updateDebitOnNewInvoice.useMutation({
-      onSuccess() {
+      onSuccess: () => {
         executeAfter500ms(async () => {
           await utils.invoice.getKhachHang.refetch();
           await utils.invoice.getAllBookWithTitle.refetch();
@@ -190,6 +186,7 @@ const HoaDon: NextPageWithLayout = () => {
       })),
     });
   };
+  const status = createHDStatus;
 
   useEffect(() => {
     setDebit(Number(total) - pay);
@@ -197,14 +194,14 @@ const HoaDon: NextPageWithLayout = () => {
   useEffect(() => {
     setDebit(Number(total) - pay);
   }, [pay]);
-  const utils = api.useContext();
-  const { data: KhachHang, isLoading: isLoadingKH } =
-    api.invoice.getKhachHang.useQuery();
-
-  const { data: Books, isLoading: isLoadingBook } =
-    api.invoice.getAllBookWithTitle.useQuery();
-  const { data: thamchieu } = api.invoice.getThamChieu.useQuery();
-  const status = createHDStatus;
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setDate(new Date());
+    }, 60 * 1000);
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
   return (
     <>
       <Head>
@@ -260,6 +257,7 @@ const HoaDon: NextPageWithLayout = () => {
                             ?.TienNo || undefined
                         )
                       )}
+                      VNĐ
                     </Typography>
                   )}
                   <Typography className="font-bold">
@@ -295,12 +293,12 @@ const HoaDon: NextPageWithLayout = () => {
                             key={item.MaSach}
                             value={item.MaSach.toString()}
                           >
-                            {item.DauSach.TenDauSach +
+                            {item.DauSach.TenDauSach.toString() +
                               " - " +
                               "Xuất bản: " +
-                              item.NamXuatBan +
+                              item.NamXuatBan.toString() +
                               " (Qt: " +
-                              item.SoLuongTon +
+                              item.SoLuongTon.toString() +
                               ")"}
                           </Option>
                         ))
@@ -432,7 +430,7 @@ const HoaDon: NextPageWithLayout = () => {
                                     color="blue-gray"
                                     className="font-normal"
                                   >
-                                    {moneyFormat(Number(items.DonGiaBan))}
+                                    {moneyFormat(Number(items.DonGiaBan))}VNĐ
                                   </Typography>
                                 </td>
                                 <td className="p-4">
@@ -463,6 +461,7 @@ const HoaDon: NextPageWithLayout = () => {
                                           )
                                         )
                                       : moneyFormat(0)}
+                                    VNĐ
                                   </Typography>
                                 </td>
                                 <td className="p-4">
@@ -513,12 +512,12 @@ const HoaDon: NextPageWithLayout = () => {
                   <div>
                     {" "}
                     <Typography>
-                      Tổng tiền: {moneyFormat(Number(total))}
+                      Tổng tiền: {moneyFormat(Number(total))}VNĐ
                     </Typography>
                     <div className="flex flex-row">
                       {" "}
                       <Typography className="basis-1/2">
-                        Số tiền trả: {moneyFormat(Number(pay))}
+                        Số tiền trả: {moneyFormat(Number(pay))}VNĐ
                       </Typography>
                       <Input
                         className="w-10 basis-1/4"
@@ -531,7 +530,7 @@ const HoaDon: NextPageWithLayout = () => {
                       />
                     </div>
                     <Typography>
-                      Còn lại: {moneyFormat(Number(total) - pay)}
+                      Còn lại: {moneyFormat(Number(total) - pay)}VNĐ
                     </Typography>
                   </div>
                 </div>
