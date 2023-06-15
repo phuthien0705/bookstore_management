@@ -23,9 +23,7 @@ const SettingPage: NextPageWithLayout = () => {
   const [debtMax, setDebtMax] = useState<number>(20000);
   const [apply, setApply] = useState<boolean>(true);
 
-  const { data } = api.reference.get.useQuery({
-    
-  }, {
+  const { data } = api.reference.get.useQuery({}, {
     onSuccess(data) {
       setEntryMin(data?.SoLuongNhapToiThieu || 150);
       setLeftMax(data?.SoLuongTonToiDa || 300);
@@ -160,7 +158,6 @@ const SettingPage: NextPageWithLayout = () => {
                   &nbsp;quy định này.
                 </Typography>
               </Typography>
-            </Typography>
           }  checked={apply} onChange={(e) => setApply(e.target.checked)}/>
           <Button color="gray" className="mr-4" onClick={setDefaultReference}>
             Mặc định
