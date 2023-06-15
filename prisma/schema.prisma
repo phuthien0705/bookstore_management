@@ -51,7 +51,7 @@ model PHANQUYEN {
 model THAMCHIEU {
     id                   Int     @id @default(autoincrement())
     SoLuongNhapToiThieu  Int
-    SoLuongTonToiThieu   Int
+    SoLuongTonToiDa   Int
     TonKhoToiThieuSauBan Int
     TyLeDonGia           Decimal
     CongNoToiDa          Int
@@ -164,7 +164,7 @@ model CT_HOADON {
     MaSach        Int
     SoLuong       Int
     DonGia        Decimal
-    ThanTien    Decimal
+    ThanhTien    Decimal
 
     @@id([MaHD, MaSach])
 }

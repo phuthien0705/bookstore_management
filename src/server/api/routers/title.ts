@@ -48,9 +48,16 @@ export const titleRouter = createTRPCRouter({
               },
             ],
           },
+          include: {
+            TheLoai: true
+          },
         });
       }
-      return ctx.prisma.dAUSACH.findMany();
+      return ctx.prisma.dAUSACH.findMany({
+        include: {
+          TheLoai: true
+        },
+      });
     }),
 
   delete: protectedProcedure
