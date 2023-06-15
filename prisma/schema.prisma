@@ -164,7 +164,7 @@ model CT_HOADON {
     MaSach        Int
     SoLuong       Int
     DonGia        Decimal
-    ThanhThien    Decimal
+    ThanTien    Decimal
 
     @@id([MaHD, MaSach])
 }
