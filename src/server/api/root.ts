@@ -4,6 +4,7 @@ import { categoryRouter } from "./routers/category";
 import { bookRouter } from "./routers/book";
 import { titleRouter } from "./routers/title";
 import { groupUserRouter } from "./routers/groupUser";
+import { invoiceRouter } from "./routers/invoice";
 import { accountRouter } from "./routers/account";
 import { bookEntryTicketRouter } from "./routers/bookEntryTicket";
 import { bookEntryDetailRouter } from "./routers/bookEntryDetail";
@@ -20,6 +21,7 @@ export const appRouter = createTRPCRouter({
   book: bookRouter,
   title: titleRouter,
   groupUser: groupUserRouter,
+  invoice: invoiceRouter,
   account: accountRouter,
   bookEntryTicket: bookEntryTicketRouter,
   bookEntryDetail: bookEntryDetailRouter,
