@@ -3,11 +3,12 @@ import {
   FilledBook,
   FilledCategory,
   FilledDownSquare,
+  FilledInvoice,
+  FilledReceipt,
+  FilledReport,
   FilledSetting,
   FilledStaff,
   FilledTitle,
-  FilledInvoice,
-  FilledReceipt,
 } from "@/components/icons/filled";
 
 const icon = {
@@ -34,6 +35,11 @@ export const managerRoutes = [
         path: "/thu-tien",
       },
       {
+        icon: <FilledReport {...icon} />,
+        name: "Báo cáo",
+        path: "/bao-cao",
+      },
+      {
         icon: <FilledTitle {...icon} />,
         name: "Đầu sách",
         path: "/dau-sach",
@@ -57,7 +63,7 @@ export const managerRoutes = [
   },
   {
     title: "Cài đặt",
-    layout: "/cai-dat",
+    layout: "cai-dat",
     pages: [
       {
         icon: <FilledSetting {...icon} />,

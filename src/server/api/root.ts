@@ -1,10 +1,11 @@
 import { createTRPCRouter } from "@/server/api/trpc";
-import { authorRouter } from "./routers/author";
-import { categoryRouter } from "./routers/category";
-import { bookRouter } from "./routers/book";
-import { titleRouter } from "./routers/title";
-import { groupUserRouter } from "./routers/groupUser";
 import { accountRouter } from "./routers/account";
+import { authorRouter } from "./routers/author";
+import { bookRouter } from "./routers/book";
+import { categoryRouter } from "./routers/category";
+import { groupUserRouter } from "./routers/groupUser";
+import { statisticRouter } from "./routers/statistic";
+import { titleRouter } from "./routers/title";
 
 /**
  * This is the primary router for your server.
@@ -18,6 +19,7 @@ export const appRouter = createTRPCRouter({
   title: titleRouter,
   groupUser: groupUserRouter,
   account: accountRouter,
+  statistic: statisticRouter,
 });
 
 // export type definition of API
