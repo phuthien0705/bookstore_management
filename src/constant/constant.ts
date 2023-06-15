@@ -10,4 +10,5 @@ export enum EFilterBook {
   publishYear = "publishYear",
   publisher = "publisher",
   bookId = "bookId",
+  price = "price",
 }

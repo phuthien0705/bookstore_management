@@ -14,6 +14,7 @@ import { type SACH } from "@prisma/client";
 import { executeAfter500ms } from "@/utils/executeAfter500ms";
 import { api } from "@/utils/api";
 import { contentMapping } from "@/constant/modal";
+import { moneyFormat, parseMoneyFormat } from "@/utils/moneyFormat";
 
 interface IBookModal {
   open: boolean;
@@ -112,7 +113,7 @@ const BookModal: React.FC<IBookModal> = ({
       className="bg-transparent shadow-none"
     >
       <form onSubmit={onSubmit}>
-        <Card className="mx-auto w-full max-w-[24rem]">
+        <Card className="mx-auto w-full">
           <CardBody className="flex flex-col gap-4">
             <Typography className="font-bold">Cập nhật sách</Typography>{" "}
             <Select
@@ -149,22 +150,32 @@ const BookModal: React.FC<IBookModal> = ({
               onChange={onChange}
               required
             />
-            <Input
-              label="Đơn giá bán"
-              size="lg"
-              name="GonGiaBan"
-              value={values.DonGiaBan}
-              onChange={onChange}
-              required
-            />
-            <Input
-              label="Số lượng tồn"
-              size="lg"
-              name="SoLuongTon"
-              value={values.SoLuongTon}
-              onChange={onChange}
-              required
-            />
+            <div>
+              <Typography className="pb-1 text-xs font-light text-blue-gray-400">
+                Đơn giá bán
+              </Typography>
+              <Input
+                label="Đơn giá bán"
+                size="lg"
+                name="GonGiaBan"
+                value={moneyFormat(parseMoneyFormat(values.DonGiaBan))}
+                onChange={onChange}
+                disabled
+              />
+            </div>
+            <div>
+              <Typography className="pb-1 text-xs font-light text-blue-gray-400">
+                Số lượng tồn{" "}
+              </Typography>
+              <Input
+                label="Số lượng tồn"
+                size="lg"
+                name="SoLuongTon"
+                value={values.SoLuongTon}
+                onChange={onChange}
+                disabled
+              />
+            </div>
           </CardBody>
           <CardFooter className="pt-0">
             <Button variant="gradient" type="submit" fullWidth>
