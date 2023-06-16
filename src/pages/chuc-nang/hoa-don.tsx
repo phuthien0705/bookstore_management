@@ -69,7 +69,7 @@ const HoaDon: NextPageWithLayout = () => {
   const { data: Books, isLoading: isLoadingBook } =
     api.book.getAllBookWithTitle.useQuery();
   const { data: thamchieu } = api.reference.get.useQuery();
-  const [quantity, setQuantity] = useState("");
+  const [quantity, setQuantity] = useState("0");
   const [selectKH, setKH] = useState<TKhachHanng>(defaultValue);
   const [currentBook, setCurrentBook] = useState<BID>(defaultBID);
   const [list, setList] = useState<LBook[]>([]);
