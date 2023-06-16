@@ -9,20 +9,21 @@ import {
   Select,
   Option,
   Button,
-  IconButton,
 } from "@material-tailwind/react";
 import { useRouter } from "next/router";
 import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
+import dynamic from "next/dynamic";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import DashboardLayout from "@/layouts/dashboard";
 import { type NextPageWithLayout } from "../page";
 import { api } from "@/utils/api";
 import { moneyFormat, parseMoneyFormat } from "@/utils/moneyFormat";
-import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import useModal from "@/hook/useModal";
-import dynamic from "next/dynamic";
 
-const BookEntryTicketListModal = dynamic(() => import("@/components/modals/BookEntryTicketListModal"))
+const BookEntryTicketListModal = dynamic(
+  () => import("@/components/modals/BookEntryTicketListModal")
+);
 
 const TABLE_HEAD = [
   "ID",
@@ -77,13 +78,14 @@ const BookEntryTicket: NextPageWithLayout = () => {
     },
   });
   const { data: sessionData } = useSession();
-  const { open: openBookEntryTicketListModal, handleOpen: handleOpenBookEntryTicketListModal } = useModal();
+  const {
+    open: openBookEntryTicketListModal,
+    handleOpen: handleOpenBookEntryTicketListModal,
+  } = useModal();
 
   const handleViewBookEntryTicket = () => {
     handleOpenBookEntryTicketListModal(true); // Mở Modal
   };
-
-
 
   const calculateTotalPrice = useCallback(() => {
     const totalPrice = bookList.reduce(
