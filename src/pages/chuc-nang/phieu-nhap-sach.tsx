@@ -305,7 +305,6 @@ const BookEntryTicket: NextPageWithLayout = () => {
                   label="Đơn giá nhập (VNĐ)"
                   value={price}
                   onChange={(e) => {
-                    if (!isStringNumeric(e.target.value)) return;
                     setPrice(moneyFormat(parseMoneyFormat(e.target.value)));
                   }}
                 />
