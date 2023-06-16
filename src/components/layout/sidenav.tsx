@@ -22,7 +22,7 @@ export function Sidenav({
   staffRoutes,
 }: ISidenav) {
   const router = useRouter();
-  const {isManager} = useContext(DashboardContext);
+  const { isManager } = useContext(DashboardContext);
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavColor, sidenavType, openSidenav } = controller;
   const sidenavTypes = {
@@ -44,7 +44,10 @@ export function Sidenav({
           sidenavType === "dark" ? "border-white/20" : "border-blue-gray-50"
         }`}
       >
-        <Link href="/" className="flex items-center gap-4 px-8 py-6">
+        <Link
+          href="/chuc-nang/phieu-nhap-sach"
+          className="flex items-center gap-4 px-8 py-6"
+        >
           {/* <Avatar src={brandImg} size="sm" /> */}
           <Typography
             variant="h6"
