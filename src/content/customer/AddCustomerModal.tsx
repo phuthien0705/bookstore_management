@@ -26,6 +26,7 @@ const AddCustomerModal = ({ open, handleOpen }: IAddCustomerModal) => {
   const { mutate } = api.customer.createKhachHang.useMutation({
     onSuccess() {
       utils.customer.getKhachHang.refetch();
+      utils.customer.getWithPagination.refetch();
       toast.success("Tạo khách hàng thành công");
       handleOpen();
     },
