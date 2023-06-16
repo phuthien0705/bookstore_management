@@ -16,6 +16,7 @@ export const bookEntryTicketRouter = createTRPCRouter({
             DonGiaBan: z.number(),
             SoLuongTon: z.number(),
             MaDauSach: z.number(),
+            MaSach: z.number().optional(),
           })
         ),
       })
@@ -28,9 +29,40 @@ export const bookEntryTicketRouter = createTRPCRouter({
           MaTK: input.MaTK,
         },
       });
+
       const res = await ctx.prisma.sACH.createMany({
-        data: input.DanhSachSach,
+        data: input.DanhSachSach.filter((item) => !item.MaSach),
       });
+
+      await Promise.all(
+        input.DanhSachSach.filter((item) => item.MaSach).map(
+          ({ MaSach, SoLuongTon, ...item }) => {
+            return ctx.prisma.sACH.update({
+              data: { ...item, SoLuongTon: { increment: SoLuongTon } },
+              where: {
+                MaSach: MaSach,
+              },
+            });
+          }
+        )
+      );
+
+      await Promise.all(
+        input.DanhSachSach.filter((item) => item.MaSach).map(
+          ({ MaSach, ...i }) => {
+            return ctx.prisma.cT_PHIEUNHAPSACH.create({
+              data: {
+                MaPhieuNhapSach: PhieuNhapSach.MaPhieuNhapSach,
+                MaSach: MaSach as number,
+                SoLuong: i.SoLuongTon,
+                DonGia: i.DonGiaBan,
+                ThanhTien: i.SoLuongTon * (i.DonGiaBan as unknown as number),
+              },
+            });
+          }
+        )
+      );
+
       const count = res.count;
 
       const DanhSachSach = await ctx.prisma.sACH.findMany({
@@ -59,13 +91,11 @@ export const bookEntryTicketRouter = createTRPCRouter({
 
     return lastBookEntryTicket;
   }),
-  getAll: protectedProcedure
-  .input(z.object({}))
-  .query(({ ctx }) => {
+  getAll: protectedProcedure.input(z.object({})).query(({ ctx }) => {
     return ctx.prisma.pHIEUNHAPSACH.findMany({
       include: {
-        TaiKhoan: true
-      }
-    })
-  })
+        TaiKhoan: true,
+      },
+    });
+  }),
 });

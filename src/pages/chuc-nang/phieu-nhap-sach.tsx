@@ -41,10 +41,12 @@ const BookEntryTicket: NextPageWithLayout = () => {
     id: 0,
     name: "",
   }); // title id
+  const [bookId, setBookId] = useState("");
+
   const [publisher, setPublisher] = useState("");
   const [publishedYear, setPublishedYear] = useState("");
-  const [price, setPrice] = useState<string>("0");
-  const [quantity, setQuantity] = useState("0");
+  const [price, setPrice] = useState<string>("");
+  const [quantity, setQuantity] = useState("");
   const [entryDate, setEntryDate] = useState(() => {
     const currentDate = new Date();
     const year = currentDate.getFullYear();
@@ -63,12 +65,23 @@ const BookEntryTicket: NextPageWithLayout = () => {
       DonGiaBan: number;
       SoLuongTon: number;
       MaDauSach: number;
+      MaSach?: number;
     }[]
   >([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const utils = api.useContext();
   const { data: titles, isLoading: isLoadingTitles } =
     api.title.getAll.useQuery({});
+
+  //sách dựa trên đầu sách
+  const { data: bookListDueToDauSach } = api.book.getAllByTitleId.useQuery(
+    {
+      MaDauSach: bookTitle.id,
+    },
+    {
+      enabled: !!bookTitle.id,
+    }
+  );
 
   const { data: reference } = api.reference.get.useQuery();
   const { mutateAsync: createTicket } = api.bookEntryTicket.create.useMutation({
@@ -84,6 +97,9 @@ const BookEntryTicket: NextPageWithLayout = () => {
 
   const { mutate: createBookLeftStatistic } =
     api.statistic.createBookLeftStatistic.useMutation();
+
+  const { mutate: updateBookLeftStatistic } =
+    api.statistic.updateBookLeftStatistic.useMutation();
 
   const { data: sessionData } = useSession();
   const {
@@ -106,13 +122,24 @@ const BookEntryTicket: NextPageWithLayout = () => {
   const hanldeAddBook = (e: { preventDefault: () => void }) => {
     e.preventDefault();
     if (isValidated()) {
-      const newBook = {
+      const newBook: {
+        NhaXuatBan: string;
+        NamXuatBan: string;
+        DonGiaBan: number;
+        SoLuongTon: number;
+        MaDauSach: number;
+        MaSach?: number;
+      } = {
         MaDauSach: bookTitle.id,
         NhaXuatBan: publisher,
         NamXuatBan: publishedYear,
         SoLuongTon: parseInt(quantity),
         DonGiaBan: parseMoneyFormat(price),
       };
+
+      if (bookId) {
+        newBook.MaSach = Number(bookId);
+      }
       setBookList((prevBookList) => [...prevBookList, newBook]);
     }
   };
@@ -186,6 +213,18 @@ const BookEntryTicket: NextPageWithLayout = () => {
         month: Number(month),
         year: Number(year),
         bookCount: response.count,
+      });
+
+      const updateList = bookList.filter((item) => item.MaSach);
+
+      updateList.forEach((item) => {
+        updateBookLeftStatistic({
+          maSach: item?.MaSach as number,
+          month: Number(month),
+          year: Number(year),
+          quantity: item.SoLuongTon,
+          updateQuantity: false,
+        });
       });
     } else {
       toast.error("Đăng nhập để thực hiện thao tác tạo sách");
@@ -262,73 +301,104 @@ const BookEntryTicket: NextPageWithLayout = () => {
             </Typography>
           </CardHeader>
           <CardBody className="flex flex-col gap-6">
-            <div className="flex flex-row gap-10">
-              <div className="flex w-full flex-col gap-6">
-                <Select
-                  label="Tên đầu sách"
-                  onChange={(e) => {
-                    setBookTitle({
-                      id: parseInt(e as string),
-                      name:
-                        titles?.find(
-                          (i) => i.MaDauSach === parseInt(e as string)
-                        )?.TenDauSach ?? "",
-                    });
-                  }}
-                >
-                  {isLoadingTitles ? (
-                    <Option>Đang tải đầu sách ...</Option>
-                  ) : titles ? (
-                    titles.map((title) => (
-                      <Option
-                        key={title.MaDauSach}
-                        value={title.MaDauSach.toString()}
-                      >
-                        {title.TenDauSach}
-                      </Option>
-                    ))
-                  ) : (
-                    <Option>Không có đầu sách nào</Option>
-                  )}
-                </Select>
+            <div className="grid w-full grid-cols-2 gap-10">
+              <Select
+                label="Tên đầu sách"
+                onChange={(e) => {
+                  setBookTitle({
+                    id: parseInt(e as string),
+                    name:
+                      titles?.find((i) => i.MaDauSach === parseInt(e as string))
+                        ?.TenDauSach ?? "",
+                  });
+                }}
+              >
+                {isLoadingTitles ? (
+                  <Option>Đang tải đầu sách ...</Option>
+                ) : titles ? (
+                  titles.map((title) => (
+                    <Option
+                      key={title.MaDauSach}
+                      value={title.MaDauSach.toString()}
+                    >
+                      {title.TenDauSach}
+                    </Option>
+                  ))
+                ) : (
+                  <Option>Không có đầu sách nào</Option>
+                )}
+              </Select>
 
-                <Input
-                  value={publishedYear}
-                  variant="outlined"
-                  label="Năm xuất bản"
-                  onChange={(e) => {
-                    if (!isStringNumeric(e.target.value)) return;
-                    setPublishedYear(e.target.value);
-                  }}
-                />
-                <Input
-                  variant="outlined"
-                  label="Đơn giá nhập (VNĐ)"
-                  value={price}
-                  onChange={(e) => {
-                    setPrice(moneyFormat(parseMoneyFormat(e.target.value)));
-                  }}
-                />
-              </div>
-              <div className="flex w-full flex-col gap-6">
-                <Input
-                  value={publisher}
-                  variant="outlined"
-                  label="Nhà xuất bản"
-                  onChange={(e) => setPublisher(e.target.value)}
-                />
-                <Input
-                  value={quantity}
-                  variant="outlined"
-                  label="Số lượng"
-                  onChange={(e) => {
-                    if (e.target.value.includes("-")) return;
-                    setQuantity(e.target.value);
-                  }}
-                />
-                <div className="flex flex-row justify-end gap-10">
-                  <Button onClick={hanldeAddBook}>Thêm sách</Button>
-                </div>
+              <Select
+                label="Mã sách"
+                onChange={(e) => {
+                  setBookId(e as string);
+                  setPublisher(
+                    bookListDueToDauSach?.find(
+                      (item) => item.MaSach == Number(e as string)
+                    )?.NhaXuatBan || ""
+                  );
+                  setPublishedYear(
+                    bookListDueToDauSach?.find(
+                      (item) => item.MaSach == Number(e as string)
+                    )?.NamXuatBan || ""
+                  );
+                  setPrice(
+                    bookListDueToDauSach
+                      ?.find((item) => item.MaSach == Number(e as string))
+                      ?.DonGiaBan.toString() || ""
+                  );
+                }}
+              >
+                {false ? (
+                  <Option>Đang tải mã sách ...</Option>
+                ) : bookListDueToDauSach ? (
+                  bookListDueToDauSach.map((book) => (
+                    <Option key={book.MaSach} value={book.MaSach.toString()}>
+                      {book.MaSach} ({book.NamXuatBan}, NXB. {book.NhaXuatBan})
+                    </Option>
+                  ))
+                ) : (
+                  <Option>Không có mã sách nào phù hợp</Option>
+                )}
+              </Select>
+
+              <Input
+                value={publishedYear}
+                variant="outlined"
+                label="Năm xuất bản"
+                onChange={(e) => {
+                  if (!isStringNumeric(e.target.value)) return;
+                  setPublishedYear(e.target.value);
+                }}
+              />
+              <Input
+                variant="outlined"
+                label="Đơn giá nhập (VNĐ)"
+                value={price}
+                onChange={(e) => {
+                  if (e.target.value.includes("-")) return;
+                  setPrice(moneyFormat(parseMoneyFormat(e.target.value)));
+                }}
+              />
+              <Input
+                value={publisher}
+                variant="outlined"
+                label="Nhà xuất bản"
+                onChange={(e) => setPublisher(e.target.value)}
+              />
+              <Input
+                value={quantity}
+                variant="outlined"
+                label="Số lượng"
+                onChange={(e) => {
+                  if (e.target.value.includes("-")) return;
+                  setQuantity(e.target.value);
+                }}
+              />
+              <div></div>
+              <div className="flex flex-row justify-end gap-10 self-end">
+                <Button onClick={hanldeAddBook}>Thêm sách</Button>
               </div>
             </div>
           </CardBody>
