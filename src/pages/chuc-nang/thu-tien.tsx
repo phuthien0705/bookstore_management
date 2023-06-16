@@ -36,9 +36,6 @@ import { useReactToPrint } from "react-to-print";
 const TABLE_HEAD = ["Tên khách hàng", "Địa chỉ", "Email", "Số điện thoại"];
 
 const ThuTien: NextPageWithLayout = () => {
-  const { data: KhachHang, isLoading: isLoadingKH } =
-    api.customer.getKhachHang.useQuery();
-
   const locale = "vi";
 
   const dayJsVi = dayjs;
@@ -51,18 +48,24 @@ const ThuTien: NextPageWithLayout = () => {
   const [debit, setDebit] = useState<number>(0);
   const [curr, setCurr] = useState<number>(0);
   const payPDF = useRef(null);
+
   const printPay = useReactToPrint({
     content: () => payPDF.current,
   });
+
   useEffect(() => {
     setDebit(Number(curr) - pay);
   }, [curr, pay]);
-  const clearAll = () => {
-    setKH(defaultValue);
-    setPay(0);
-    setDebit(0);
-    setCurr(0);
-  };
+
+  const { data: KhachHang, isLoading: isLoadingKH } =
+    api.customer.getKhachHang.useQuery(undefined, {
+      onSuccess(data) {
+        if (selectKH.MaKH !== 0) {
+          setCurr(Number(data?.find((i) => i.MaKH == selectKH.MaKH)?.TienNo));
+        }
+      },
+    });
+
   const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
     createPTFunc({
@@ -87,8 +90,8 @@ const ThuTien: NextPageWithLayout = () => {
       });
       executeAfter500ms(async () => {
         printPay();
-        clearAll();
         await utils.customer.getKhachHang.refetch();
+        setPay(0);
         toast.success("Tạo phiếu thu tiền thành công!");
       });
     },
@@ -97,6 +100,7 @@ const ThuTien: NextPageWithLayout = () => {
       toast.error("Xảy ra lỗi trong quá trình phiếu thu tiền!");
     },
   });
+
   return (
     <>
       <Head>
