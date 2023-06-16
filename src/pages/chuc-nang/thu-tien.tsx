@@ -161,10 +161,6 @@ const ThuTien: NextPageWithLayout = () => {
                         <Option>Không có dữ liệu</Option>
                       )}
                     </Select>
-                    <Typography className="basis-1/2 font-bold ">
-                      Ngày lập phiếu thu:{" "}
-                      {dayJsVi(today).format("ddd, DD/MM/YYYY")}
-                    </Typography>
                   </div>
 
                   <table className="w-full min-w-max table-auto text-left">

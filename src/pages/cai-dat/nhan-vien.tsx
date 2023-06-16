@@ -1,39 +1,37 @@
-import Head from "next/head";
-import {
-  Card,
-  CardHeader,
-  Typography,
-  Button,
-  CardBody,
-  Input,
-  IconButton,
-} from "@material-tailwind/react";
-import { useEffect, useState } from "react";
-import {
-  EyeIcon,
-  MagnifyingGlassIcon,
-  PencilIcon,
-} from "@heroicons/react/24/outline";
-import { type TAIKHOAN } from "@prisma/client";
-import dynamic from "next/dynamic";
-import DashboardLayout from "@/layouts/dashboard";
-import { type NextPageWithLayout } from "../page";
 import { LoadingScreen } from "@/components/loading/LoadingScreen";
 import {
   Pagination,
   PaginationWrapper,
 } from "@/components/pagination/pagination";
-import useModal from "@/hook/useModal";
-import { api } from "@/utils/api";
 import useDebounce from "@/hook/useDebounce";
+import useModal from "@/hook/useModal";
 import useValidateUser from "@/hook/useValidateUser";
+import DashboardLayout from "@/layouts/dashboard";
+import { api } from "@/utils/api";
+import {
+  EyeIcon,
+  MagnifyingGlassIcon,
+  PencilIcon,
+} from "@heroicons/react/24/outline";
+import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  IconButton,
+  Input,
+  Typography,
+} from "@material-tailwind/react";
+import { type TAIKHOAN } from "@prisma/client";
+import dynamic from "next/dynamic";
+import Head from "next/head";
+import { useEffect, useState } from "react";
+import { type NextPageWithLayout } from "../page";
 
 const ManageStaffModal = dynamic(
   () => import("@/components/modals/ManageStaffModal")
 );
-const StaffModal = dynamic(
-  () => import("@/components/modals/StaffModal")
-);
+const StaffModal = dynamic(() => import("@/components/modals/StaffModal"));
 
 const StaffPage: NextPageWithLayout = () => {
   const [pageIndex, setPageIndex] = useState<number>(0);
@@ -120,7 +118,7 @@ const StaffPage: NextPageWithLayout = () => {
               <tbody>
                 {isLoading && (
                   <tr>
-                    <td colSpan={3}>
+                    <td colSpan={4}>
                       <LoadingScreen />
                     </td>
                   </tr>
