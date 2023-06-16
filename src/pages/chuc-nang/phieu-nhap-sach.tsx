@@ -290,6 +290,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
                     <Option>Không có đầu sách nào</Option>
                   )}
                 </Select>
+
                 <Input
                   value={publishedYear}
                   variant="outlined"
@@ -304,7 +305,6 @@ const BookEntryTicket: NextPageWithLayout = () => {
                   label="Đơn giá nhập (VNĐ)"
                   value={price}
                   onChange={(e) => {
-                    if (!isStringNumeric(e.target.value)) return;
                     setPrice(moneyFormat(parseMoneyFormat(e.target.value)));
                   }}
                 />
@@ -321,7 +321,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
                   variant="outlined"
                   label="Số lượng"
                   onChange={(e) => {
-                    if (!isStringNumeric(e.target.value)) return;
+                    if (e.target.value.includes("-")) return;
                     setQuantity(e.target.value);
                   }}
                 />
