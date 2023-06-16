@@ -18,8 +18,6 @@ import {
   Option,
   CardFooter,
 } from "@material-tailwind/react";
-
-import { createInvoiceMaping } from "@/constant/modal";
 import Head from "next/head";
 import dayjs from "dayjs";
 import DashboardLayout from "@/layouts/dashboard";
@@ -29,6 +27,7 @@ import { api } from "@/utils/api";
 import { Prisma, type KHACHHANG } from "@prisma/client";
 import { moneyFormat } from "@/utils/moneyFormat";
 import { executeAfter500ms } from "@/utils/executeAfter500ms";
+import { createInvoiceMaping } from "@/constant/modal";
 const TABLE_HEAD = ["Tên khách hàng", "Địa chỉ", "Email", "Số điện thoại"];
 
 const ThuTien: NextPageWithLayout = () => {

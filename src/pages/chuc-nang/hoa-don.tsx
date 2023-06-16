@@ -13,16 +13,17 @@ import {
 import {
   ChevronDownIcon,
   ChevronUpIcon,
-  PaperAirplaneIcon,
+  PlusIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 import Head from "next/head";
-import dayjs from "dayjs";
 import { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
 import { type NextPageWithLayout } from "../page";
 import { executeAfter500ms } from "@/utils/executeAfter500ms";
 import DashboardLayout from "@/layouts/dashboard";
 import { api } from "@/utils/api";
-import { moneyFormat } from "@/utils/moneyFormat";
+import { moneyFormat, parseMoneyFormat } from "@/utils/moneyFormat";
 
 import { createInvoiceMaping } from "@/constant/modal";
 const TABLE_HEAD = [
@@ -78,7 +79,7 @@ const HoaDon: NextPageWithLayout = () => {
   const [currentBook, setCurrentBook] = useState<BID>(defaultBID);
   const [list, setList] = useState<LBook[]>([]);
   const [total, setTotal] = useState<string>("0");
-  const [pay, setPay] = useState<number>(0);
+  const [pay, setPay] = useState<string>("0");
   const [debit, setDebit] = useState<number>(0);
 
   const clearAll = () => {
@@ -87,7 +88,7 @@ const HoaDon: NextPageWithLayout = () => {
     setCurrentBook(defaultBID);
     setList([]);
     setTotal("0");
-    setPay(0);
+    setPay("0");
     setDebit(0);
   };
 
@@ -125,7 +126,7 @@ const HoaDon: NextPageWithLayout = () => {
     setQuantity(1);
     setCurrentBook(defaultBID);
   };
-  const { mutate: createHDFunc, status: createHDStatus } =
+  const { mutate: createHDFunc } =
     api.invoice.createHD.useMutation({
       onSuccess() {
         executeAfter500ms(async () => {
@@ -149,10 +150,12 @@ const HoaDon: NextPageWithLayout = () => {
           await utils.invoice.getKhachHang.refetch();
           await utils.invoice.getAllBookWithTitle.refetch();
           await utils.invoice.getThamChieu.refetch();
+          toast.success("Tạo hóa đơn thành công");
         });
       },
       onError(err) {
         console.error(err);
+        toast.error("Xảy ra lỗi trong quá trình tạo hóa đơn");
       },
     });
 
@@ -163,9 +166,11 @@ const HoaDon: NextPageWithLayout = () => {
           await utils.invoice.getKhachHang.refetch();
           await utils.invoice.getAllBookWithTitle.refetch();
         });
+        toast.success("Thanh toán nợ thành công");
       },
       onError(err) {
         console.error(err);
+        toast.error("Xảy ra lỗi trong quá trình thanh toán nợ");
       },
     });
 
@@ -185,13 +190,11 @@ const HoaDon: NextPageWithLayout = () => {
       })),
     });
   };
-  const status = createHDStatus;
-
   useEffect(() => {
-    setDebit(Number(total) - pay);
+    setDebit(Number(total) - parseMoneyFormat(pay));
   }, [total]);
   useEffect(() => {
-    setDebit(Number(total) - pay);
+    setDebit(Number(total) - parseMoneyFormat(pay));
   }, [pay]);
   useEffect(() => {
     const timer = setInterval(() => {
@@ -217,12 +220,21 @@ const HoaDon: NextPageWithLayout = () => {
               </CardHeader>
 
               <CardBody className="overflow-x-scroll px-0 pb-2 pt-4">
-                <div className="flex w-full flex-row items-center justify-between ">
-                  <div className="w-300">
+                <Typography className="text-lg ">
+                  <span className="font-bold">Ngày lập hóa đơn:</span>{" "}
+                  {today.toLocaleDateString("vi-VN", {
+                    timeZone: "Asia/Ho_Chi_Minh",
+                  })}
+                </Typography>
+                <Typography className="mb-4 mt-2 font-bold">
+                  Thông tin khách hàng
+                </Typography>
+                <div className="flex w-full flex-col items-start justify-between gap-2">
+                  <div className="w-1/2">
+                    {" "}
                     <Select
-                      label="Khách hàng (Tên - SĐT): "
                       variant="static"
-                      className="max-w-300"
+                      label="Khách hàng (Tên - SĐT): "
                       disabled={isLoadingKH}
                       onChange={(e) => {
                         setKH((p) => ({ ...p, MaKH: parseInt(e as string) }));
@@ -247,27 +259,27 @@ const HoaDon: NextPageWithLayout = () => {
                       )}
                     </Select>
                   </div>
-                  {selectKH !== defaultValue && (
-                    <Typography>
-                      Số tiền đang nợ:{" "}
-                      {moneyFormat(
-                        Number(
-                          KhachHang?.find((i) => i.MaKH == selectKH.MaKH)
-                            ?.TienNo || undefined
-                        )
-                      )}
-                      VNĐ
-                    </Typography>
-                  )}
-                  <Typography className="font-bold">
-                    Ngày lập hóa đơn: {dayjs(today).format("ddd, DD/MM/YYYY")}
-                  </Typography>
+                  <div className="w-full">
+                    {" "}
+                    {selectKH !== defaultValue && (
+                      <Typography>
+                        Số tiền đang nợ:{" "}
+                        {moneyFormat(
+                          Number(
+                            KhachHang?.find((i) => i.MaKH == selectKH.MaKH)
+                              ?.TienNo || undefined
+                          )
+                        )}
+                        VNĐ
+                      </Typography>
+                    )}
+                  </div>
                 </div>
-                <Typography className="mb-4 mt-4 font-bold">
+                <Typography className="mb-0 mt-4 font-bold">
                   Thông tin sách
                 </Typography>
-                <div className="flex flex-row items-center justify-between">
-                  <div className="md:w-56">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="w-1/2">
                     <Select
                       label="Chọn sách thêm vào hóa đơn: "
                       variant="static"
@@ -306,9 +318,10 @@ const HoaDon: NextPageWithLayout = () => {
                       )}
                     </Select>
                   </div>
-                  <div className=" flex flex-row items-center justify-center gap-2">
+                  <div className="flex flex-1 items-center justify-center gap-2">
                     <Input
-                      className="w-10"
+                      variant="static"
+                      label="Số lượng"
                       value={quantity}
                       onChange={(e) => {
                         setQuantity(parseInt(e.target.value || "1"));
@@ -316,6 +329,7 @@ const HoaDon: NextPageWithLayout = () => {
                     />
                     <div className="flex flex-col items-center justify-center">
                       <IconButton
+                        size="sm"
                         variant="text"
                         color="blue-gray"
                         disabled={
@@ -338,6 +352,7 @@ const HoaDon: NextPageWithLayout = () => {
                         />
                       </IconButton>
                       <IconButton
+                        size="sm"
                         variant="text"
                         color="blue-gray"
                         disabled={quantity === 1}
@@ -352,7 +367,7 @@ const HoaDon: NextPageWithLayout = () => {
                       </IconButton>
                     </div>
                     <IconButton
-                      variant="text"
+                      variant="filled"
                       color="blue"
                       disabled={
                         Number(
@@ -366,10 +381,7 @@ const HoaDon: NextPageWithLayout = () => {
                       }
                       onClick={handleAddBook}
                     >
-                      <PaperAirplaneIcon
-                        strokeWidth={1}
-                        className="h-10 w-10 text-blue-500"
-                      />
+                      <PlusIcon strokeWidth={3} className="h-4 w-4" />
                     </IconButton>
                   </div>
                 </div>
@@ -464,8 +476,9 @@ const HoaDon: NextPageWithLayout = () => {
                                   </Typography>
                                 </td>
                                 <td className="p-4">
-                                  <Typography
-                                    as="button"
+                                  <IconButton
+                                    variant="text"
+                                    color="red"
                                     onClick={() => {
                                       setList(
                                         list.filter(
@@ -484,12 +497,9 @@ const HoaDon: NextPageWithLayout = () => {
                                         ).toString()
                                       );
                                     }}
-                                    variant="small"
-                                    color="blue"
-                                    className="font-medium"
                                   >
-                                    Xóa
-                                  </Typography>
+                                    <TrashIcon className="h-4 w-4" />
+                                  </IconButton>
                                 </td>
                               </tr>
                             );
@@ -508,29 +518,34 @@ const HoaDon: NextPageWithLayout = () => {
                       </tbody>
                     )}
                   </table>
-                  <div>
-                    {" "}
-                    <Typography>
-                      Tổng tiền: {moneyFormat(Number(total))}VNĐ
-                    </Typography>
-                    <div className="flex flex-row">
-                      {" "}
-                      <Typography className="basis-1/2">
-                        Số tiền trả: {moneyFormat(Number(pay))}VNĐ
+                  <div className="flex justify-between">
+                    <div>
+                      <Typography>
+                        Tổng tiền: {moneyFormat(parseMoneyFormat(total))}VNĐ
                       </Typography>
+                      <Typography className="basis-1/2">
+                        Số tiền trả: {moneyFormat(parseMoneyFormat(pay))}VNĐ
+                      </Typography>
+
+                      <Typography>
+                        Còn lại:{" "}
+                        {moneyFormat(Number(total) - parseMoneyFormat(pay))}VNĐ
+                      </Typography>
+                    </div>
+                    <div className="w-1/2">
+                      {" "}
                       <Input
                         className="w-10 basis-1/4"
                         label="Số tiền trả"
                         value={pay}
                         onChange={(e) => {
-                          setPay(parseInt(e.target.value || "0"));
-                          setDebit(Number(total) - pay);
+                          setPay(
+                            moneyFormat(parseMoneyFormat(e.target.value ?? "0"))
+                          );
+                          setDebit(Number(total) - parseMoneyFormat(pay));
                         }}
                       />
                     </div>
-                    <Typography>
-                      Còn lại: {moneyFormat(Number(total) - pay)}VNĐ
-                    </Typography>
                   </div>
                 </div>
                 <div className=" flex justify-end space-x-2">
@@ -538,7 +553,7 @@ const HoaDon: NextPageWithLayout = () => {
                     type="submit"
                     className="mt-2"
                     disabled={
-                      Number(pay) > Number(total) ||
+                      parseMoneyFormat(pay) > Number(total) ||
                       Number(
                         KhachHang?.find((i) => i.MaKH == selectKH.MaKH)
                           ?.TienNo || 0
@@ -561,15 +576,6 @@ const HoaDon: NextPageWithLayout = () => {
                   <Button className="mt-2">Thanh toán nợ cũ</Button>
                 </div>
               </CardBody>
-              <CardFooter>
-                <Button>
-                  {
-                    createInvoiceMaping(false)[
-                      status as unknown as keyof typeof createInvoiceMaping
-                    ]
-                  }
-                </Button>
-              </CardFooter>
             </Card>
           </form>
         </div>

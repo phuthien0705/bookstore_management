@@ -176,7 +176,7 @@ const AuthorPage: NextPageWithLayout = () => {
                             >
                               <PencilIcon className="h-4 w-4" />
                             </IconButton>
-                            <IconButton
+                            {/* <IconButton
                               variant="text"
                               color="red"
                               onClick={() => {
@@ -185,7 +185,7 @@ const AuthorPage: NextPageWithLayout = () => {
                               }}
                             >
                               <TrashIcon className="h-4 w-4" />
-                            </IconButton>
+                            </IconButton> */}
                           </div>
                         </td>
                       </tr>
