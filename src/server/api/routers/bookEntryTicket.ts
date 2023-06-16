@@ -59,4 +59,13 @@ export const bookEntryTicketRouter = createTRPCRouter({
 
     return lastBookEntryTicket;
   }),
+  getAll: protectedProcedure
+  .input(z.object({}))
+  .query(({ ctx }) => {
+    return ctx.prisma.pHIEUNHAPSACH.findMany({
+      include: {
+        TaiKhoan: true
+      }
+    })
+  })
 });
