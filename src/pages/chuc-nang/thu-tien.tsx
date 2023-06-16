@@ -16,25 +16,25 @@ import {
   Input,
   Select,
   Option,
-  CardFooter,
 } from "@material-tailwind/react";
 import Head from "next/head";
 import dayjs from "dayjs";
 import DashboardLayout from "@/layouts/dashboard";
 import { type NextPageWithLayout } from "../page";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { api } from "@/utils/api";
 import { Prisma, type KHACHHANG } from "@prisma/client";
-import { moneyFormat } from "@/utils/moneyFormat";
+import { moneyFormat, parseMoneyFormat } from "@/utils/moneyFormat";
 import { executeAfter500ms } from "@/utils/executeAfter500ms";
-import { createInvoiceMaping } from "@/constant/modal";
+
+import { toast } from "react-hot-toast";
+import { useReactToPrint } from "react-to-print";
+
 const TABLE_HEAD = ["Tên khách hàng", "Địa chỉ", "Email", "Số điện thoại"];
 
 const ThuTien: NextPageWithLayout = () => {
   const { data: KhachHang, isLoading: isLoadingKH } =
     api.invoice.getKhachHang.useQuery();
-
-  const locale = "vi";
   const [today, setDate] = useState(new Date());
   useEffect(() => {
     const timer = setInterval(() => {
@@ -49,6 +49,10 @@ const ThuTien: NextPageWithLayout = () => {
   const [pay, setPay] = useState<number>(0);
   const [debit, setDebit] = useState<number>(0);
   const [curr, setCurr] = useState<number>(0);
+  const payPDF = useRef(null);
+  const printPay = useReactToPrint({
+    content: () => payPDF.current,
+  });
   useEffect(() => {
     setDebit(Number(curr) - pay);
   }, [curr]);
@@ -70,33 +74,32 @@ const ThuTien: NextPageWithLayout = () => {
   };
   const { mutate: updateDebitFunc, status: updateBookStatus } =
     api.invoice.updateDebit.useMutation();
-  const {
-    mutate: createPTFunc,
-    status: createPTStatus,
-    reset,
-  } = api.invoice.createPhieuThuTien.useMutation({
+  const { mutate: createPTFunc } = api.invoice.createPhieuThuTien.useMutation({
     onSuccess() {
       updateDebitFunc({
         MaKH: selectKH.MaKH,
         NewDebit: debit,
       });
       executeAfter500ms(async () => {
+        printPay();
         clearAll();
         await utils.invoice.getKhachHang.refetch();
+        toast.success("Tạo phiếu thu tiền thành công!");
       });
     },
     onError(err) {
       console.error(err);
+      toast.error("Xảy ra lỗi trong quá trình phiếu thu tiền!");
     },
   });
-  const status = createPTStatus;
+
   return (
     <>
       <Head>
         <title>Phiếu Thu Tiền</title>
       </Head>
       <div>
-        <div className="mb-8 mt-12 flex flex-col gap-12">
+        <div className="mb-8 mt-12 flex flex-col gap-12" ref={payPDF}>
           <Card>
             <CardHeader variant="gradient" color="blue" className="mb-2 p-6">
               <Typography variant="h6" color="white">
@@ -229,12 +232,14 @@ const ThuTien: NextPageWithLayout = () => {
                     Số tiền nợ:{" "}
                     {moneyFormat(
                       Number(
-                        KhachHang?.find((i) => i.MaKH == selectKH.MaKH)?.TienNo
+                        KhachHang?.find((i) => i.MaKH == selectKH.MaKH)?.TienNo ?? "0"
                       )
                     )}
+                    VNĐ
                   </Typography>
                   <Typography className="basis-1/2">
-                    Số tiền thu: {moneyFormat(pay)}
+                    Số tiền thu: {moneyFormat(parseMoneyFormat(pay.toString()))}
+                    VNĐ
                   </Typography>
                   <Input
                     className="w-10 basis-1/4"
@@ -253,7 +258,10 @@ const ThuTien: NextPageWithLayout = () => {
                       Số tiền thu không được lớn hơn số tiền nợ!{" "}
                     </Typography>
                   ) : (
-                    <Typography>Còn lại: {moneyFormat(debit)} </Typography>
+                    <Typography>
+                      Còn lại: {moneyFormat(parseMoneyFormat(debit.toString()))}
+                      {"VNĐ"}
+                    </Typography>
                   )}
                 </div>
                 <div className=" flex justify-end space-x-2">
@@ -275,15 +283,6 @@ const ThuTien: NextPageWithLayout = () => {
                 </div>
               </form>
             </CardBody>
-            <CardFooter>
-              <Button>
-                {
-                  createInvoiceMaping(false)[
-                    status as unknown as keyof typeof createInvoiceMaping
-                  ]
-                }
-              </Button>
-            </CardFooter>
           </Card>
         </div>
       </div>

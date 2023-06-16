@@ -8,7 +8,6 @@ import {
   Option,
   IconButton,
   Input,
-  CardFooter,
 } from "@material-tailwind/react";
 import {
   ChevronDownIcon,
@@ -17,15 +16,16 @@ import {
   TrashIcon,
 } from "@heroicons/react/24/outline";
 import Head from "next/head";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "react-hot-toast";
 import { type NextPageWithLayout } from "../page";
 import { executeAfter500ms } from "@/utils/executeAfter500ms";
 import DashboardLayout from "@/layouts/dashboard";
 import { api } from "@/utils/api";
 import { moneyFormat, parseMoneyFormat } from "@/utils/moneyFormat";
+import { useReactToPrint } from "react-to-print";
+import { useRouter } from 'next/router';
 
-import { createInvoiceMaping } from "@/constant/modal";
 const TABLE_HEAD = [
   "STT",
   "Sách",
@@ -81,7 +81,7 @@ const HoaDon: NextPageWithLayout = () => {
   const [total, setTotal] = useState<string>("0");
   const [pay, setPay] = useState<string>("0");
   const [debit, setDebit] = useState<number>(0);
-
+  const router = useRouter();
   const clearAll = () => {
     setQuantity(1);
     setKH(defaultValue);
@@ -91,7 +91,10 @@ const HoaDon: NextPageWithLayout = () => {
     setPay("0");
     setDebit(0);
   };
-
+  const invoicePDF = useRef(null);
+  const printInvoice = useReactToPrint({
+    content: () => invoicePDF.current,
+  });
   const handleAddBook = () => {
     let dongia;
     let thanhtien;
@@ -126,38 +129,36 @@ const HoaDon: NextPageWithLayout = () => {
     setQuantity(1);
     setCurrentBook(defaultBID);
   };
-  const { mutate: createHDFunc } =
-    api.invoice.createHD.useMutation({
-      onSuccess() {
-        executeAfter500ms(async () => {
-          updateDebitFunc({
-            MaKH: selectKH.MaKH,
-            NoHienTai: Number(
-              KhachHang?.find((i) => i.MaKH == selectKH.MaKH)?.TienNo ||
-                undefined
-            ),
-            ConLai: debit,
-          });
-          list.map((i) =>
-            updateBookQtFunc({
-              MaSach: i.MaSach,
-              Current:
-                Books?.find((s) => s.MaSach == i.MaSach)?.SoLuongTon || 0,
-              Quantity: i.SoLuong,
-            })
-          );
-          clearAll();
-          await utils.invoice.getKhachHang.refetch();
-          await utils.invoice.getAllBookWithTitle.refetch();
-          await utils.invoice.getThamChieu.refetch();
-          toast.success("Tạo hóa đơn thành công");
+  const { mutate: createHDFunc } = api.invoice.createHD.useMutation({
+    onSuccess() {
+      executeAfter500ms(async () => {
+        updateDebitFunc({
+          MaKH: selectKH.MaKH,
+          NoHienTai: Number(
+            KhachHang?.find((i) => i.MaKH == selectKH.MaKH)?.TienNo || undefined
+          ),
+          ConLai: debit,
         });
-      },
-      onError(err) {
-        console.error(err);
-        toast.error("Xảy ra lỗi trong quá trình tạo hóa đơn");
-      },
-    });
+        list.map((i) =>
+          updateBookQtFunc({
+            MaSach: i.MaSach,
+            Current: Books?.find((s) => s.MaSach == i.MaSach)?.SoLuongTon || 0,
+            Quantity: i.SoLuong,
+          })
+        );
+        printInvoice();
+        clearAll();
+        await utils.invoice.getKhachHang.refetch();
+        await utils.invoice.getAllBookWithTitle.refetch();
+        await utils.invoice.getThamChieu.refetch();
+        toast.success("Tạo hóa đơn thành công");
+      });
+    },
+    onError(err) {
+      console.error(err);
+      toast.error("Xảy ra lỗi trong quá trình tạo hóa đơn");
+    },
+  });
 
   const { mutate: updateDebitFunc } =
     api.invoice.updateDebitOnNewInvoice.useMutation({
@@ -166,7 +167,7 @@ const HoaDon: NextPageWithLayout = () => {
           await utils.invoice.getKhachHang.refetch();
           await utils.invoice.getAllBookWithTitle.refetch();
         });
-        toast.success("Thanh toán nợ thành công");
+        toast.success("Đã cập nhật nợ khách hàng thành công");
       },
       onError(err) {
         console.error(err);
@@ -210,7 +211,7 @@ const HoaDon: NextPageWithLayout = () => {
         <title>Hóa Đơn Bán Sách</title>
       </Head>
       <div>
-        <div className="mb-8 mt-12 flex flex-col gap-12">
+        <div className="mb-8 mt-12 flex flex-col gap-12" ref={invoicePDF}>
           <form className="m-4" onSubmit={handleSubmit}>
             <Card className=" p-4">
               <CardHeader variant="gradient" color="blue" className="mb-2 p-6">
@@ -573,7 +574,12 @@ const HoaDon: NextPageWithLayout = () => {
                     Tạo và in hóa đơn
                   </Button>
                   <Button className="mt-2">Thêm khách hàng</Button>
-                  <Button className="mt-2">Thanh toán nợ cũ</Button>
+                  <Button
+                    className="mt-2"
+                    onClick={() => router.push("/chuc-nang/thu-tien")}
+                  >
+                    Thanh toán nợ cũ
+                  </Button>
                 </div>
               </CardBody>
             </Card>
