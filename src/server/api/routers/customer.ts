@@ -83,4 +83,102 @@ export const customerRouter = createTRPCRouter({
         },
       });
     }),
+  getWithPagination: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number(),
+        page: z.number(),
+        searchValue: z.string(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const { limit, page, searchValue } = input;
+      const [records, totalCount] = await Promise.all([
+        ctx.prisma.kHACHHANG.findMany({
+          skip: limit * (page - 1),
+          take: limit,
+          where: {
+            OR: [
+              {
+                MaKH: {
+                  equals: parseInt(searchValue, 10) || undefined,
+                },
+              },
+              {
+                HoTen: {
+                  contains: searchValue,
+                },
+              },
+              {
+                DiaChi: {
+                  contains: searchValue,
+                },
+              },
+              {
+                SoDienThoai: {
+                  contains: searchValue,
+                },
+              },
+              {
+                Email: {
+                  contains: searchValue,
+                },
+              },
+              {
+                TienNo: {
+                  equals: parseInt(searchValue, 10) || undefined,
+                },
+              },
+            ],
+          },
+        }),
+        ctx.prisma.kHACHHANG.count({
+          where: {
+            OR: [
+              {
+                MaKH: {
+                  equals: parseInt(searchValue, 10) || undefined,
+                },
+              },
+              {
+                HoTen: {
+                  contains: searchValue,
+                },
+              },
+              {
+                DiaChi: {
+                  contains: searchValue,
+                },
+              },
+              {
+                SoDienThoai: {
+                  contains: searchValue,
+                },
+              },
+              {
+                Email: {
+                  contains: searchValue,
+                },
+              },
+              {
+                TienNo: {
+                  equals: parseInt(searchValue, 10) || undefined,
+                },
+              },
+            ],
+          },
+        }),
+      ]);
+
+      const totalPages = Math.ceil(totalCount / limit);
+      const havePrevPage = page > 1;
+      const haveNextPage = page < totalPages;
+
+      return {
+        datas: records,
+        havePrevPage,
+        haveNextPage,
+        totalPages,
+      };
+    }),
 });

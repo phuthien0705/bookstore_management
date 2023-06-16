@@ -550,7 +550,7 @@ const HoaDon: NextPageWithLayout = () => {
                   >
                     Tạo và in hóa đơn
                   </Button>
-                  <AddCustomerButton />
+                  <AddCustomerButton classname="mt-2" />
                 </div>
               </CardBody>
             </Card>
@@ -561,13 +561,19 @@ const HoaDon: NextPageWithLayout = () => {
   );
 };
 
-const AddCustomerButton = () => {
+export const AddCustomerButton = ({
+  variant = "filled",
+  classname = "",
+}: {
+  variant?: "filled" | "outlined";
+  classname?: string;
+}) => {
   const [open, setOpen] = useState(false);
 
   const toggle = () => setOpen((p) => !p);
   return (
     <>
-      <Button onClick={toggle} className="mt-2">
+      <Button onClick={toggle} className={classname} variant={variant}>
         Thêm khách hàng
       </Button>
       <AddCustomerModal open={open} handleOpen={toggle} />
