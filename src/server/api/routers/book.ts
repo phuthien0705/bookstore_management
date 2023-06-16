@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { EFilterBook } from "@/constant/constant";
+import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 
 export const bookRouter = createTRPCRouter({
   create: protectedProcedure
@@ -245,6 +245,41 @@ export const bookRouter = createTRPCRouter({
         DauSach: {
           include: {
             TheLoai: true,
+          },
+        },
+      },
+    });
+
+    return books;
+  }),
+
+  getSachById: protectedProcedure
+    .input(z.object({ MaSach: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const result = await ctx.prisma.sACH.findMany({
+        where: {
+          MaSach: input.MaSach,
+        },
+        include: {
+          DauSach: {
+            select: {
+              TenDauSach: true,
+            },
+          },
+        },
+      });
+
+      return {
+        result,
+      };
+    }),
+
+  getAllBookWithTitle: protectedProcedure.query(async ({ ctx }) => {
+    const books = await ctx.prisma.sACH.findMany({
+      include: {
+        DauSach: {
+          select: {
+            TenDauSach: true,
           },
         },
       },

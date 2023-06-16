@@ -1,3 +1,23 @@
+import DashboardLayout from "@/layouts/dashboard";
+import { api } from "@/utils/api";
+import { executeAfter500ms } from "@/utils/executeAfter500ms";
+import { moneyFormat } from "@/utils/moneyFormat";
+import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Input,
+  Option,
+  Select,
+  Typography,
+} from "@material-tailwind/react";
+import { Prisma, type KHACHHANG } from "@prisma/client";
+import dayjs from "dayjs";
+import Head from "next/head";
+import { useEffect, useState } from "react";
+import { type NextPageWithLayout } from "../page";
+
 const defaultValue: KHACHHANG = {
   MaKH: 0,
   HoTen: "",
@@ -7,25 +27,8 @@ const defaultValue: KHACHHANG = {
   TienNo: new Prisma.Decimal(0),
 };
 
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  Typography,
-  Button,
-  Input,
-  Select,
-  Option,
-} from "@material-tailwind/react";
-import Head from "next/head";
-import dayjs from "dayjs";
-import DashboardLayout from "@/layouts/dashboard";
-import { type NextPageWithLayout } from "../page";
-import { useState, useEffect, useRef } from "react";
-import { api } from "@/utils/api";
-import { Prisma, type KHACHHANG } from "@prisma/client";
-import { moneyFormat, parseMoneyFormat } from "@/utils/moneyFormat";
-import { executeAfter500ms } from "@/utils/executeAfter500ms";
+import { parseMoneyFormat } from "@/utils/moneyFormat";
+import { useRef } from "react";
 
 import { toast } from "react-hot-toast";
 import { useReactToPrint } from "react-to-print";
@@ -34,16 +37,14 @@ const TABLE_HEAD = ["Tên khách hàng", "Địa chỉ", "Email", "Số điện 
 
 const ThuTien: NextPageWithLayout = () => {
   const { data: KhachHang, isLoading: isLoadingKH } =
-    api.invoice.getKhachHang.useQuery();
+    api.customer.getKhachHang.useQuery();
+
+  const locale = "vi";
+
+  const dayJsVi = dayjs;
+  dayJsVi.locale(locale);
+
   const [today, setDate] = useState(new Date());
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setDate(new Date());
-    }, 60 * 1000);
-    return () => {
-      clearInterval(timer);
-    };
-  }, []);
   const utils = api.useContext();
   const [selectKH, setKH] = useState<KHACHHANG>(defaultValue);
   const [pay, setPay] = useState<number>(0);
@@ -55,10 +56,7 @@ const ThuTien: NextPageWithLayout = () => {
   });
   useEffect(() => {
     setDebit(Number(curr) - pay);
-  }, [curr]);
-  useEffect(() => {
-    setDebit(Number(curr) - pay);
-  }, [pay]);
+  }, [curr, pay]);
   const clearAll = () => {
     setKH(defaultValue);
     setPay(0);
@@ -72,18 +70,25 @@ const ThuTien: NextPageWithLayout = () => {
       MaKH: selectKH.MaKH,
     });
   };
-  const { mutate: updateDebitFunc, status: updateBookStatus } =
-    api.invoice.updateDebit.useMutation();
+  const { mutate: updateDebitFunc } = api.invoice.updateDebit.useMutation();
+  const { mutate: updateUserDebitFunc } =
+    api.statistic.updateUserDebtStatistic.useMutation();
   const { mutate: createPTFunc } = api.invoice.createPhieuThuTien.useMutation({
     onSuccess() {
       updateDebitFunc({
         MaKH: selectKH.MaKH,
         NewDebit: debit,
       });
+      updateUserDebitFunc({
+        maKH: selectKH.MaKH,
+        month: new Date().getMonth() + 1,
+        year: new Date().getFullYear(),
+        quantity: -pay,
+      });
       executeAfter500ms(async () => {
         printPay();
         clearAll();
-        await utils.invoice.getKhachHang.refetch();
+        await utils.customer.getKhachHang.refetch();
         toast.success("Tạo phiếu thu tiền thành công!");
       });
     },
@@ -92,7 +97,6 @@ const ThuTien: NextPageWithLayout = () => {
       toast.error("Xảy ra lỗi trong quá trình phiếu thu tiền!");
     },
   });
-
   return (
     <>
       <Head>
@@ -132,8 +136,9 @@ const ThuTien: NextPageWithLayout = () => {
                         setKH((p) => ({ ...p, MaKH: parseInt(e as string) }));
                         setCurr(
                           Number(
-                            KhachHang?.find((i) => i.MaKH == selectKH.MaKH)
-                              ?.TienNo
+                            KhachHang?.find(
+                              (i) => i.MaKH == parseInt(e as string)
+                            )?.TienNo
                           )
                         );
                       }}
@@ -156,6 +161,10 @@ const ThuTien: NextPageWithLayout = () => {
                         <Option>Không có dữ liệu</Option>
                       )}
                     </Select>
+                    <Typography className="basis-1/2 font-bold ">
+                      Ngày lập phiếu thu:{" "}
+                      {dayJsVi(today).format("ddd, DD/MM/YYYY")}
+                    </Typography>
                   </div>
 
                   <table className="w-full min-w-max table-auto text-left">

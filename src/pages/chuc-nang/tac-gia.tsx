@@ -1,8 +1,13 @@
-import dynamic from "next/dynamic";
-import Head from "next/head";
-import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
+import { LoadingScreen } from "@/components/loading/LoadingScreen";
+import {
+  Pagination,
+  PaginationWrapper,
+} from "@/components/pagination/pagination";
+import useDebounce from "@/hook/useDebounce";
+import useModal from "@/hook/useModal";
 import DashboardLayout from "@/layouts/dashboard";
+import { api } from "@/utils/api";
+import { MagnifyingGlassIcon, PencilIcon } from "@heroicons/react/24/outline";
 import {
   Button,
   Card,
@@ -13,20 +18,11 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import { type TACGIA } from "@prisma/client";
+import dynamic from "next/dynamic";
+import Head from "next/head";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { type NextPageWithLayout } from "../page";
-import useModal from "@/hook/useModal";
-import { api } from "@/utils/api";
-import { LoadingScreen } from "@/components/loading/LoadingScreen";
-import {
-  Pagination,
-  PaginationWrapper,
-} from "@/components/pagination/pagination";
-import useDebounce from "@/hook/useDebounce";
-import {
-  MagnifyingGlassIcon,
-  PencilIcon,
-  TrashIcon,
-} from "@heroicons/react/24/outline";
 
 const AuthorModal = dynamic(() => import("@/components/modals/AuthorModal"));
 const ConfirmModal = dynamic(() => import("@/components/modals/ConfirmModal"));
@@ -36,6 +32,7 @@ const AuthorPage: NextPageWithLayout = () => {
   const [pageIndex, setPageIndex] = useState<number>(0);
   const { open: openAuthorModal, handleOpen: handleOpenAuthorModal } =
     useModal();
+
   const { open: openConfirmModal, handleOpen: handleOpenConfirmModal } =
     useModal();
   const [currentItem, setCurrentItem] = useState<TACGIA | null>(null);

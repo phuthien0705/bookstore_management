@@ -1,20 +1,19 @@
-import Head from "next/head";
 import DashboardLayout from "@/layouts/dashboard";
-import { type NextPageWithLayout } from "../page";
+import { api } from "@/utils/api";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import {
+  Button,
   Card,
   CardBody,
   CardHeader,
   Checkbox,
   Input,
   Typography,
-  Button,
 } from "@material-tailwind/react";
+import Head from "next/head";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
-import { ArrowPathIcon } from "@heroicons/react/24/outline";
-import { api } from "@/utils/api";
-import useValidateUser from "@/hook/useValidateUser";
+import { type NextPageWithLayout } from "../page";
 
 const SettingPage: NextPageWithLayout = () => {
   const [entryMin, setEntryMin] = useState<number>(150);
@@ -24,22 +23,16 @@ const SettingPage: NextPageWithLayout = () => {
   const [debtMax, setDebtMax] = useState<number>(20000);
   const [apply, setApply] = useState<boolean>(true);
 
-  const { data } = api.reference.get.useQuery(
-    {},
-    {
-      onSuccess(data) {
-        console.log(data);
-        if (data) {
-          setEntryMin(data.SoLuongNhapToiThieu ?? 150);
-          setLeftMax(data.SoLuongTonToiDa ?? 300);
-          setLefAfterSellMin(data.TonKhoToiThieuSauBan ?? 20);
-          setPriceRatio(Number(data.TyLeDonGia) ?? 105);
-          setDebtMax(data.CongNoToiDa ?? 20000);
-          setApply(data.SuDungQuyDinh ?? false);
-        }
-      },
-    }
-  );
+  api.reference.get.useQuery(undefined, {
+    onSuccess(data) {
+      setEntryMin(data?.SoLuongNhapToiThieu || 150);
+      setLeftMax(data?.SoLuongTonToiDa || 300);
+      setLefAfterSellMin(data?.TonKhoToiThieuSauBan || 20);
+      setPriceRatio(Number(data?.TyLeDonGia) || 105);
+      setDebtMax(data?.CongNoToiDa || 20000);
+      setApply(data?.SuDungQuyDinh || false);
+    },
+  });
 
   const { mutate: updateReference } = api.reference.update.useMutation({
     onSuccess() {
@@ -70,7 +63,7 @@ const SettingPage: NextPageWithLayout = () => {
     setDebtMax(20000);
     setApply(true);
   };
-  useValidateUser();
+
   return (
     <>
       <Head>

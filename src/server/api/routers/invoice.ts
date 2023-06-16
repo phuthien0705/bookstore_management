@@ -33,68 +33,6 @@ export const invoiceRouter = createTRPCRouter({
       });
     }),
 
-  getKhachHang: protectedProcedure.query(({ ctx }) => {
-    return ctx.prisma.kHACHHANG.findMany();
-  }),
-
-  getKhachHangById: protectedProcedure
-    .input(z.object({ MaKH: z.number() }))
-    .query(async ({ ctx, input }) => {
-      const result = await ctx.prisma.kHACHHANG.findUnique({
-        where: {
-          MaKH: input.MaKH,
-        },
-      });
-
-      return {
-        result,
-      };
-    }),
-
-  getSachById: protectedProcedure
-    .input(z.object({ MaSach: z.number() }))
-    .query(async ({ ctx, input }) => {
-      const result = await ctx.prisma.sACH.findMany({
-        where: {
-          MaSach: input.MaSach,
-        },
-        include: {
-          DauSach: {
-            select: {
-              TenDauSach: true,
-            },
-          },
-        },
-      });
-
-      return {
-        result,
-      };
-    }),
-  getAllBookWithTitle: protectedProcedure.query(async ({ ctx }) => {
-    const books = await ctx.prisma.sACH.findMany({
-      include: {
-        DauSach: {
-          select: {
-            TenDauSach: true,
-          },
-        },
-      },
-    });
-
-    return books;
-  }),
-  getThamChieu: protectedProcedure.query(({ ctx }) => {
-    return ctx.prisma.tHAMCHIEU.findFirst({
-      where: {
-        SuDungQuyDinh: true,
-      },
-      select: {
-        TonKhoToiThieuSauBan: true,
-        CongNoToiDa: true,
-      },
-    });
-  }),
   updateDebitOnNewInvoice: protectedProcedure
     .input(
       z.object({
@@ -109,20 +47,7 @@ export const invoiceRouter = createTRPCRouter({
         where: { MaKH: input.MaKH },
       });
     }),
-  updateBookQuantity: protectedProcedure
-    .input(
-      z.object({
-        MaSach: z.number().int(),
-        Current: z.number(),
-        Quantity: z.number(),
-      })
-    )
-    .mutation(({ input, ctx }) => {
-      return ctx.prisma.sACH.update({
-        data: { SoLuongTon: input.Current - input.Quantity },
-        where: { MaSach: input.MaSach },
-      });
-    }),
+
   updateDebit: protectedProcedure
     .input(
       z.object({
