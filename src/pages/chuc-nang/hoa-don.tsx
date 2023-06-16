@@ -92,10 +92,13 @@ const HoaDon: NextPageWithLayout = () => {
   const handleAddBook = () => {
     let dongia;
     let thanhtien;
-    if (Books) {
-      dongia = Books?.find((i) => i.MaSach == currentBook.MaSach)?.DonGiaBan;
-      if (dongia) {
-        thanhtien = Number(dongia) * Number(quantity) || 0;
+    if (Books && thamchieu) {
+      dongia =
+        (Number(Books.find((i) => i.MaSach == currentBook.MaSach)?.DonGiaBan) ??
+          0) *
+        (Number(thamchieu.TyLeDonGia) / 100);
+      if (dongia && thamchieu) {
+        thanhtien = Number(dongia) * (Number(quantity) || 0);
       }
     }
 
@@ -374,7 +377,7 @@ const HoaDon: NextPageWithLayout = () => {
                       <tbody>
                         {Books &&
                           Books.map((items, index) => {
-                            if (!!!list.find((i) => i.MaSach == items.MaSach)) {
+                            if (!list.find((i) => i.MaSach == items.MaSach)) {
                               return;
                             }
                             return (
@@ -406,7 +409,12 @@ const HoaDon: NextPageWithLayout = () => {
                                     color="blue-gray"
                                     className="font-normal"
                                   >
-                                    {moneyFormat(Number(items.DonGiaBan))}VNĐ
+                                    {thamchieu &&
+                                      moneyFormat(
+                                        Number(items.DonGiaBan) *
+                                          (Number(thamchieu.TyLeDonGia) / 100)
+                                      )}
+                                    VNĐ
                                   </Typography>
                                 </td>
                                 <td className="p-4">
