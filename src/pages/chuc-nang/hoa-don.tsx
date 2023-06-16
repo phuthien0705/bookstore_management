@@ -330,6 +330,7 @@ const HoaDon: NextPageWithLayout = () => {
                       label="Số lượng"
                       value={quantity}
                       onChange={(e) => {
+                        if (e.target.value.includes("-")) return;
                         setQuantity(e.target.value);
                       }}
                     />

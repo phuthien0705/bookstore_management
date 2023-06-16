@@ -140,7 +140,8 @@ const BookEntryTicket: NextPageWithLayout = () => {
     const validatedPublisedYear =
       Number(publishedYear) <= new Date().getFullYear() && publishedYear !== "";
     const validatedQuantity =
-      Number(quantity) >= Number(reference?.SoLuongNhapToiThieu);
+      Number(quantity) >= Number(reference?.SoLuongNhapToiThieu) &&
+      Number(quantity) <= Number(reference?.SoLuongTonToiDa);
     const validatedPrice = Number(price) > 0;
 
     if (!validatedTitle) {
@@ -153,7 +154,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
       toast.error("Năm xuất bản không hợp lệ!");
       return false;
     } else if (!validatedQuantity) {
-      toast.error("Số lượng nhập phải lớn hơn số lượng nhập tối thiểu!");
+      toast.error("Số lượng nhập không hợp lệ!");
       return false;
     } else if (!validatedPrice) {
       toast.error("Đơn giá nhập lớn hơn 0!");
