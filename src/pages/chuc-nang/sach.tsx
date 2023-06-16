@@ -35,11 +35,16 @@ import { moneyFormat } from "@/utils/moneyFormat";
 
 const BookModal = dynamic(() => import("@/components/modals/BookModal"));
 const ConfirmModal = dynamic(() => import("@/components/modals/ConfirmModal"));
+const BookDetailModal = dynamic(
+  () => import("@/components/modals/BookDetailModal")
+);
 
 const BookPage: NextPageWithLayout = () => {
   const utils = api.useContext();
   const [pageIndex, setPageIndex] = useState<number>(0);
   const { open: openBookModal, handleOpen: handleOpenBookModal } = useModal();
+  const { open: openBookDetailModal, handleOpen: handleOpenBookDetailModal } =
+    useModal();
   const { open: openConfirmModal, handleOpen: handleOpenConfirmModal } =
     useModal();
   const [searchValueDebounced, setSearchValueDebounced] = useState<string>("");
@@ -239,7 +244,7 @@ const BookPage: NextPageWithLayout = () => {
                               color="blue-gray"
                               onClick={() => {
                                 setCurrentItem(item);
-                                handleOpenBookModal(true);
+                                handleOpenBookDetailModal(true);
                               }}
                             >
                               <EyeIcon className="h-4 w-4" />
@@ -270,6 +275,12 @@ const BookPage: NextPageWithLayout = () => {
       <BookModal
         open={openBookModal}
         handleOpen={handleOpenBookModal}
+        currentItem={currentItem}
+        setCurrentItem={setCurrentItem}
+      />
+      <BookDetailModal
+        open={openBookDetailModal}
+        handleOpen={handleOpenBookDetailModal}
         currentItem={currentItem}
         setCurrentItem={setCurrentItem}
       />

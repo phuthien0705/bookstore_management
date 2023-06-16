@@ -9,9 +9,10 @@ import {
   IconButton,
 } from "@material-tailwind/react";
 import { useEffect, useState } from "react";
+import { MagnifyingGlassIcon, PencilIcon } from "@heroicons/react/24/outline";
+import { type TAIKHOAN } from "@prisma/client";
 import DashboardLayout from "@/layouts/dashboard";
 import { type NextPageWithLayout } from "../page";
-import { type TAIKHOAN } from "@prisma/client";
 import { LoadingScreen } from "@/components/loading/LoadingScreen";
 import {
   Pagination,
@@ -20,7 +21,6 @@ import {
 import useModal from "@/hook/useModal";
 import { api } from "@/utils/api";
 import useDebounce from "@/hook/useDebounce";
-import { MagnifyingGlassIcon, PencilIcon } from "@heroicons/react/24/outline";
 import StaffModal from "@/components/modals/StaffModal";
 import useValidateUser from "@/hook/useValidateUser";
 
