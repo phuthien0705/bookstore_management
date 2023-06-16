@@ -12,6 +12,7 @@ import {
 } from "@material-tailwind/react";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { api } from "@/utils/api";
 import useValidateUser from "@/hook/useValidateUser";
 
@@ -179,8 +180,14 @@ const SettingPage: NextPageWithLayout = () => {
             checked={apply}
             onChange={(e) => setApply(e.target.checked)}
           />
-          <Button color="gray" className="mr-4" onClick={setDefaultReference}>
+          <Button
+            variant="outlined"
+            color="blue"
+            className="mr-4 flex items-center gap-3"
+            onClick={setDefaultReference}
+          >
             Mặc định
+            <ArrowPathIcon strokeWidth={2} className="h-5 w-5" />
           </Button>
           <Button color="blue" onClick={handleApplyReference}>
             Áp dụng

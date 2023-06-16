@@ -1,10 +1,4 @@
-import {
-  Dialog,
-  Card,
-  Typography,
-  CardBody,
-  Tooltip,
-} from "@material-tailwind/react";
+import { Dialog, Card, Typography, CardBody } from "@material-tailwind/react";
 import { api } from "@/utils/api";
 import { moneyFormat } from "@/utils/moneyFormat";
 

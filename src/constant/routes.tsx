@@ -25,7 +25,7 @@ export const managerRoutes = [
       },
       {
         icon: <FilledInvoice {...icon} />,
-        name: "Lập hóa đơn",
+        name: "Hóa đơn",
         path: "/hoa-don",
       },
       {
@@ -84,7 +84,7 @@ export const staffRoutes = [
       },
       {
         icon: <FilledInvoice {...icon} />,
-        name: "Lập hóa đơn",
+        name: "Hóa đơn",
         path: "/hoa-don",
       },
       {
