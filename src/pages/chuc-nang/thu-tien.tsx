@@ -27,6 +27,12 @@ const defaultValue: KHACHHANG = {
   TienNo: new Prisma.Decimal(0),
 };
 
+import { parseMoneyFormat } from "@/utils/moneyFormat";
+import { useRef } from "react";
+
+import { toast } from "react-hot-toast";
+import { useReactToPrint } from "react-to-print";
+
 const TABLE_HEAD = ["Tên khách hàng", "Địa chỉ", "Email", "Số điện thoại"];
 
 const ThuTien: NextPageWithLayout = () => {
@@ -44,6 +50,10 @@ const ThuTien: NextPageWithLayout = () => {
   const [pay, setPay] = useState<number>(0);
   const [debit, setDebit] = useState<number>(0);
   const [curr, setCurr] = useState<number>(0);
+  const payPDF = useRef(null);
+  const printPay = useReactToPrint({
+    content: () => payPDF.current,
+  });
   useEffect(() => {
     setDebit(Number(curr) - pay);
   }, [curr, pay]);
@@ -76,12 +86,15 @@ const ThuTien: NextPageWithLayout = () => {
         quantity: -pay,
       });
       executeAfter500ms(async () => {
+        printPay();
         clearAll();
         await utils.customer.getKhachHang.refetch();
+        toast.success("Tạo phiếu thu tiền thành công!");
       });
     },
     onError(err) {
       console.error(err);
+      toast.error("Xảy ra lỗi trong quá trình phiếu thu tiền!");
     },
   });
   return (
@@ -90,28 +103,34 @@ const ThuTien: NextPageWithLayout = () => {
         <title>Phiếu Thu Tiền</title>
       </Head>
       <div>
-        <div className="mb-8 mt-12 flex flex-col gap-12">
+        <div className="mb-8 mt-12" ref={payPDF}>
           <Card>
-            <CardHeader variant="gradient" color="blue" className="mb-2 p-6">
+            <CardHeader
+              variant="gradient"
+              color="blue"
+              className="mb-2 flex items-center justify-between px-6 py-4"
+            >
               <Typography variant="h6" color="white">
                 Phiếu Thu Tiền
               </Typography>
             </CardHeader>
 
             <CardBody className="overflow-x-scroll px-0 pb-2 pt-0">
-              <form
-                className="w-100 mb-4 ml-8 mt-2 max-w-screen-lg "
-                onSubmit={handleSubmit}
-              >
+              <form className="mx-6 mt-4" onSubmit={handleSubmit}>
+                <Typography className="mb-2 mt-6 basis-1/2 text-lg font-bold">
+                  Ngày lập phiếu thu:{" "}
+                  {today.toLocaleDateString("vi-VN", {
+                    timeZone: "Asia/Ho_Chi_Minh",
+                  })}
+                </Typography>
                 <Typography className="mb-4 font-bold">
                   Thông tin khách hàng
                 </Typography>{" "}
                 <div className="mb-4 mt-4 flex flex-col gap-6">
-                  <div className="flex flex-row">
+                  <div className="w-1/2">
                     <Select
                       label="Khách hàng (Tên - SĐT): "
                       variant="static"
-                      className="max-w-300"
                       disabled={isLoadingKH}
                       onChange={(e) => {
                         setKH((p) => ({ ...p, MaKH: parseInt(e as string) }));
@@ -224,12 +243,15 @@ const ThuTien: NextPageWithLayout = () => {
                     Số tiền nợ:{" "}
                     {moneyFormat(
                       Number(
-                        KhachHang?.find((i) => i.MaKH == selectKH.MaKH)?.TienNo
+                        KhachHang?.find((i) => i.MaKH == selectKH.MaKH)
+                          ?.TienNo ?? "0"
                       )
                     )}
+                    VNĐ
                   </Typography>
                   <Typography className="basis-1/2">
-                    Số tiền thu: {moneyFormat(pay)}
+                    Số tiền thu: {moneyFormat(parseMoneyFormat(pay.toString()))}
+                    VNĐ
                   </Typography>
                   <Input
                     className="w-10 basis-1/4"
@@ -245,7 +267,10 @@ const ThuTien: NextPageWithLayout = () => {
                       Số tiền thu không được lớn hơn số tiền nợ!{" "}
                     </Typography>
                   ) : (
-                    <Typography>Còn lại: {moneyFormat(debit)} </Typography>
+                    <Typography>
+                      Còn lại: {moneyFormat(parseMoneyFormat(debit.toString()))}
+                      {"VNĐ"}
+                    </Typography>
                   )}
                 </div>
                 <div className=" flex justify-end space-x-2">

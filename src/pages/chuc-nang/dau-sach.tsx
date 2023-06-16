@@ -18,11 +18,7 @@ import {
   MenuItem,
   MenuList,
 } from "@material-tailwind/react";
-import {
-  MagnifyingGlassIcon,
-  PencilIcon,
-  TrashIcon,
-} from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, PencilIcon } from "@heroicons/react/24/outline";
 import { LoadingScreen } from "@/components/loading/LoadingScreen";
 import {
   Pagination,

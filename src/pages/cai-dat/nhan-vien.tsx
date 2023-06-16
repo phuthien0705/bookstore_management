@@ -9,9 +9,15 @@ import {
   IconButton,
 } from "@material-tailwind/react";
 import { useEffect, useState } from "react";
+import {
+  EyeIcon,
+  MagnifyingGlassIcon,
+  PencilIcon,
+} from "@heroicons/react/24/outline";
+import { type TAIKHOAN } from "@prisma/client";
+import dynamic from "next/dynamic";
 import DashboardLayout from "@/layouts/dashboard";
 import { type NextPageWithLayout } from "../page";
-import { type TAIKHOAN } from "@prisma/client";
 import { LoadingScreen } from "@/components/loading/LoadingScreen";
 import {
   Pagination,
@@ -20,13 +26,20 @@ import {
 import useModal from "@/hook/useModal";
 import { api } from "@/utils/api";
 import useDebounce from "@/hook/useDebounce";
-import { MagnifyingGlassIcon, PencilIcon } from "@heroicons/react/24/outline";
-import StaffModal from "@/components/modals/StaffModal";
 import useValidateUser from "@/hook/useValidateUser";
+
+const ManageStaffModal = dynamic(
+  () => import("@/components/modals/ManageStaffModal")
+);
+const StaffModal = dynamic(
+  () => import("@/components/modals/StaffModal")
+);
 
 const StaffPage: NextPageWithLayout = () => {
   const [pageIndex, setPageIndex] = useState<number>(0);
   const { open: openAccountModal, handleOpen: handleOpenAccountModal } =
+    useModal();
+  const { open: openManageStaffModal, handleOpen: handleOpenManageStaffModel } =
     useModal();
   const [currentItem, setCurrentItem] = useState<TAIKHOAN | null>(null);
   const [searchValueDebounced, setSearchValueDebounced] = useState<string>("");
@@ -156,6 +169,21 @@ const StaffPage: NextPageWithLayout = () => {
                               >
                                 <PencilIcon className="h-4 w-4" />
                               </IconButton>
+                              <IconButton
+                                variant="text"
+                                color="blue-gray"
+                                onClick={() => {
+                                  setCurrentItem({
+                                    MaTK,
+                                    TenDangNhap,
+                                    MatKhau,
+                                    MaNhom,
+                                  });
+                                  handleOpenManageStaffModel(true);
+                                }}
+                              >
+                                <EyeIcon className="h-4 w-4" />
+                              </IconButton>
                             </div>
                           </td>
                         </tr>
@@ -183,6 +211,12 @@ const StaffPage: NextPageWithLayout = () => {
       <StaffModal
         open={openAccountModal}
         handleOpen={handleOpenAccountModal}
+        currentItem={currentItem}
+        setCurrentItem={setCurrentItem}
+      />
+      <ManageStaffModal
+        open={openManageStaffModal}
+        handleOpen={handleOpenManageStaffModel}
         currentItem={currentItem}
         setCurrentItem={setCurrentItem}
       />

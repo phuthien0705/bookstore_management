@@ -16,8 +16,9 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import Head from "next/head";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
+import { useReactToPrint } from "react-to-print";
 import { type NextPageWithLayout } from "../page";
 
 const TABLE_HEAD = [
@@ -75,7 +76,6 @@ const HoaDon: NextPageWithLayout = () => {
   const [total, setTotal] = useState<string>("0");
   const [pay, setPay] = useState<string>("0");
   const [debit, setDebit] = useState<number>(0);
-
   const clearAll = () => {
     setQuantity("1");
     setKH(defaultValue);
@@ -85,7 +85,10 @@ const HoaDon: NextPageWithLayout = () => {
     setPay("0");
     setDebit(0);
   };
-
+  const invoicePDF = useRef(null);
+  const printInvoice = useReactToPrint({
+    content: () => invoicePDF.current,
+  });
   const handleAddBook = () => {
     let dongia;
     let thanhtien;
@@ -158,6 +161,7 @@ const HoaDon: NextPageWithLayout = () => {
         await utils.book.getAllBookWithTitle.refetch();
         await utils.reference.get.refetch();
         toast.success("Tạo hóa đơn thành công");
+        printInvoice();
       });
     },
     onError(err) {
@@ -173,7 +177,7 @@ const HoaDon: NextPageWithLayout = () => {
           await utils.customer.getKhachHang.refetch();
           await utils.book.getAllBookWithTitle.refetch();
         });
-        toast.success("Thanh toán nợ thành công");
+        toast.success("Đã cập nhật nợ khách hàng thành công");
       },
       onError(err) {
         console.error(err);
@@ -205,16 +209,20 @@ const HoaDon: NextPageWithLayout = () => {
         <title>Hóa Đơn Bán Sách</title>
       </Head>
       <div>
-        <div className="mb-8 mt-12 flex flex-col gap-12">
-          <form className="m-4" onSubmit={handleSubmit}>
-            <Card className=" p-4">
-              <CardHeader variant="gradient" color="blue" className="mb-2 p-6">
+        <div className="mb-8 mt-12" ref={invoicePDF}>
+          <form onSubmit={handleSubmit}>
+            <Card>
+              <CardHeader
+                variant="gradient"
+                color="blue"
+                className="mb-2 flex items-center justify-between px-6 py-4"
+              >
                 <Typography variant="h6" color="white">
                   Hóa đơn bán sách
                 </Typography>
               </CardHeader>
 
-              <CardBody className="overflow-x-scroll px-0 pb-2 pt-4">
+              <CardBody className="p-4">
                 <Typography className="text-lg ">
                   <span className="font-bold">Ngày lập hóa đơn:</span>{" "}
                   {today.toLocaleDateString("vi-VN", {

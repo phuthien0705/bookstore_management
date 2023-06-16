@@ -15,6 +15,11 @@ import {
   Input,
   IconButton,
 } from "@material-tailwind/react";
+import {
+  MagnifyingGlassIcon,
+  PencilIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
 import { LoadingScreen } from "@/components/loading/LoadingScreen";
 import {
   Pagination,
@@ -22,11 +27,6 @@ import {
 } from "@/components/pagination/pagination";
 import useModal from "@/hook/useModal";
 import useDebounce from "@/hook/useDebounce";
-import {
-  MagnifyingGlassIcon,
-  PencilIcon,
-  TrashIcon,
-} from "@heroicons/react/24/outline";
 
 const ConfirmModal = dynamic(() => import("@/components/modals/ConfirmModal"));
 const CategoryModal = dynamic(

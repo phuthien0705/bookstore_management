@@ -1,5 +1,6 @@
 import DashboardLayout from "@/layouts/dashboard";
 import { api } from "@/utils/api";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import {
   Button,
   Card,
@@ -18,7 +19,7 @@ const SettingPage: NextPageWithLayout = () => {
   const [entryMin, setEntryMin] = useState<number>(150);
   const [leftMax, setLeftMax] = useState<number>(300);
   const [leftAfterSellMin, setLefAfterSellMin] = useState<number>(20);
-  const [priceRatio, setPriceRatio] = useState<number>(Number(1.05));
+  const [priceRatio, setPriceRatio] = useState<number>(105);
   const [debtMax, setDebtMax] = useState<number>(20000);
   const [apply, setApply] = useState<boolean>(true);
 
@@ -27,7 +28,7 @@ const SettingPage: NextPageWithLayout = () => {
       setEntryMin(data?.SoLuongNhapToiThieu || 150);
       setLeftMax(data?.SoLuongTonToiDa || 300);
       setLefAfterSellMin(data?.TonKhoToiThieuSauBan || 20);
-      setPriceRatio(Number(data?.TyLeDonGia) || 1.05);
+      setPriceRatio(Number(data?.TyLeDonGia) || 105);
       setDebtMax(data?.CongNoToiDa || 20000);
       setApply(data?.SuDungQuyDinh || false);
     },
@@ -58,7 +59,7 @@ const SettingPage: NextPageWithLayout = () => {
     setEntryMin(150);
     setLeftMax(300);
     setLefAfterSellMin(20);
-    setPriceRatio(1.05);
+    setPriceRatio(105);
     setDebtMax(20000);
     setApply(true);
   };
@@ -129,7 +130,7 @@ const SettingPage: NextPageWithLayout = () => {
               />
               <Input
                 variant="outlined"
-                label="Tỷ lệ đơn giá bán"
+                label="Tỷ lệ đơn giá bán (%)"
                 value={priceRatio}
                 onChange={(e) => {
                   const value = Number(e.target.value);
@@ -172,8 +173,14 @@ const SettingPage: NextPageWithLayout = () => {
             checked={apply}
             onChange={(e) => setApply(e.target.checked)}
           />
-          <Button color="gray" className="mr-4" onClick={setDefaultReference}>
+          <Button
+            variant="outlined"
+            color="blue"
+            className="mr-4 flex items-center gap-3"
+            onClick={setDefaultReference}
+          >
             Mặc định
+            <ArrowPathIcon strokeWidth={2} className="h-5 w-5" />
           </Button>
           <Button color="blue" onClick={handleApplyReference}>
             Áp dụng

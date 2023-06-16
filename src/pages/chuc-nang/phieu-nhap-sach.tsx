@@ -1,3 +1,4 @@
+import useModal from "@/hook/useModal";
 import DashboardLayout from "@/layouts/dashboard";
 import { api } from "@/utils/api";
 import { moneyFormat, parseMoneyFormat } from "@/utils/moneyFormat";
@@ -13,11 +14,17 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import { useSession } from "next-auth/react";
+import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { type NextPageWithLayout } from "../page";
+
+const BookEntryTicketListModal = dynamic(
+  () => import("@/components/modals/BookEntryTicketListModal")
+);
+
 const TABLE_HEAD = [
   "ID",
   "Tên sách",
@@ -58,6 +65,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
     }[]
   >([]);
   const [totalPrice, setTotalPrice] = useState(0);
+  const utils = api.useContext();
   const { data: titles, isLoading: isLoadingTitles } =
     api.title.getAll.useQuery({});
 
@@ -65,6 +73,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
   const { mutateAsync: createTicket } = api.bookEntryTicket.create.useMutation({
     onSuccess() {
       toast.success("Lưu phiếu nhập sách thành công !");
+      utils.bookEntryTicket.getAll.refetch();
     },
     onError(err) {
       console.error(err);
@@ -76,6 +85,14 @@ const BookEntryTicket: NextPageWithLayout = () => {
     api.statistic.createBookLeftStatistic.useMutation();
 
   const { data: sessionData } = useSession();
+  const {
+    open: openBookEntryTicketListModal,
+    handleOpen: handleOpenBookEntryTicketListModal,
+  } = useModal();
+
+  const handleViewBookEntryTicket = () => {
+    handleOpenBookEntryTicketListModal(true); // Mở Modal
+  };
 
   const calculateTotalPrice = useCallback(() => {
     const totalPrice = bookList.reduce(
@@ -316,6 +333,13 @@ const BookEntryTicket: NextPageWithLayout = () => {
             <Typography variant="h6" color="white">
               Phiếu nhập sách
             </Typography>
+            <Button
+              variant="outlined"
+              className="bg-white"
+              onClick={handleViewBookEntryTicket}
+            >
+              Xem phiếu nhập sách
+            </Button>
           </CardHeader>
           <CardBody className="flex flex-col gap-6">
             <div className="flex w-full flex-row gap-10">
@@ -496,6 +520,10 @@ const BookEntryTicket: NextPageWithLayout = () => {
           </CardBody>
         </Card>
       </div>
+      <BookEntryTicketListModal
+        open={openBookEntryTicketListModal}
+        handleOpen={handleOpenBookEntryTicketListModal}
+      />
     </>
   );
 };
