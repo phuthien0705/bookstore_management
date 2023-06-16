@@ -3,10 +3,8 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 
 export const referenceRouter = createTRPCRouter({
-  get: protectedProcedure
-  .input(z.object({}))
-  .query(({ ctx }) => {
-    return ctx.prisma.tHAMCHIEU.findFirst();
+  get: protectedProcedure.query(async ({ ctx }) => {
+    return await ctx.prisma.tHAMCHIEU.findFirst();
   }),
   update: protectedProcedure
     .input(
