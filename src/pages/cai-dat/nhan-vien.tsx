@@ -8,11 +8,7 @@ import useModal from "@/hook/useModal";
 import useValidateUser from "@/hook/useValidateUser";
 import DashboardLayout from "@/layouts/dashboard";
 import { api } from "@/utils/api";
-import {
-  EyeIcon,
-  MagnifyingGlassIcon,
-  PencilIcon,
-} from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, PencilIcon } from "@heroicons/react/24/outline";
 import {
   Button,
   Card,
@@ -83,7 +79,7 @@ const StaffPage: NextPageWithLayout = () => {
                   label="Tìm kiếm"
                   icon={<MagnifyingGlassIcon className="h-5 w-5" />}
                   value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
+                  onChange={(e: any) => setSearchValue(e.target.value)}
                 />
               </div>
             </div>
@@ -167,7 +163,7 @@ const StaffPage: NextPageWithLayout = () => {
                               >
                                 <PencilIcon className="h-4 w-4" />
                               </IconButton>
-                              <IconButton
+                              {/* <IconButton
                                 variant="text"
                                 color="blue-gray"
                                 onClick={() => {
@@ -181,7 +177,7 @@ const StaffPage: NextPageWithLayout = () => {
                                 }}
                               >
                                 <EyeIcon className="h-4 w-4" />
-                              </IconButton>
+                              </IconButton> */}
                             </div>
                           </td>
                         </tr>
