@@ -36,12 +36,12 @@ const BookEntryDetailModal: React.FC<IBookEntryDetailModal> = ({
 
   return (
     <Dialog
-      size="md"
+      size="lg"
       open={open}
       handler={handleOpen}
       className="bg-transparent shadow-none"
     >
-      <Card className="mx-auto w-full max-w-[40rem]">
+      <Card className="mx-auto w-full">
         <CardBody className="flex flex-col gap-4">
         <Typography className="text-2xl font-bold py-4 px-6 text-center">
           Chi tiết phiếu nhập sách
