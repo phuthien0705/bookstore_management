@@ -12,6 +12,7 @@ import {
   IconButton,
   Select,
   Option,
+  Tooltip,
 } from "@material-tailwind/react";
 import { type SACH } from "@prisma/client";
 import DashboardLayout from "@/layouts/dashboard";
@@ -23,7 +24,11 @@ import {
 } from "@/components/pagination/pagination";
 import useModal from "@/hook/useModal";
 import { api } from "@/utils/api";
-import { MagnifyingGlassIcon, PencilIcon } from "@heroicons/react/24/outline";
+import {
+  EyeIcon,
+  MagnifyingGlassIcon,
+  PencilIcon,
+} from "@heroicons/react/24/outline";
 import useDebounce from "@/hook/useDebounce";
 import { EFilterBook } from "@/constant/constant";
 import { moneyFormat } from "@/utils/moneyFormat";
@@ -186,9 +191,11 @@ const BookPage: NextPageWithLayout = () => {
                           </Typography>
                         </td>
                         <td className={`${className}`}>
-                          <Typography className="text-xs font-semibold text-blue-gray-600">
-                            {getTitleNameById(item.MaDauSach)}
-                          </Typography>
+                          <Typography className="max-w-[200px] truncate text-xs font-semibold text-blue-gray-600">
+                            <Tooltip content={getTitleNameById(item.MaDauSach)}>
+                              {getTitleNameById(item.MaDauSach)}
+                            </Tooltip>
+                          </Typography>{" "}
                         </td>
                         <td className={`${className}`}>
                           <Typography className="text-xs font-semibold text-blue-gray-600">
@@ -216,7 +223,7 @@ const BookPage: NextPageWithLayout = () => {
                           </Typography>
                         </td>
                         <td className={`${className}`}>
-                          <div className="flex w-full justify-center">
+                          <div className="flex w-full justify-center gap-2">
                             <IconButton
                               variant="text"
                               color="blue-gray"
@@ -226,6 +233,16 @@ const BookPage: NextPageWithLayout = () => {
                               }}
                             >
                               <PencilIcon className="h-4 w-4" />
+                            </IconButton>
+                            <IconButton
+                              variant="text"
+                              color="blue-gray"
+                              onClick={() => {
+                                setCurrentItem(item);
+                                handleOpenBookModal(true);
+                              }}
+                            >
+                              <EyeIcon className="h-4 w-4" />
                             </IconButton>
                           </div>
                         </td>
