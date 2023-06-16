@@ -30,7 +30,9 @@ const BookEntryDetailModal: React.FC<IBookEntryDetailModal> = ({
   currentTicket
 }) => {
 
-  const { data: bookEntryTicketList } = api.bookEntryTicket.getAll.useQuery({});
+  const { data: bookEntryDetails } = api.bookEntryDetail.get.useQuery(
+    {MaPhieuNhapSach: currentTicket}
+  );
 
   return (
     <Dialog
@@ -55,34 +57,28 @@ const BookEntryDetailModal: React.FC<IBookEntryDetailModal> = ({
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {bookEntryTicketList && bookEntryTicketList.map((bookEntryTicket) => (
+              {bookEntryDetails && bookEntryDetails.map((bookEntryDetail, index) => (
                 <tr
-                  key={bookEntryTicket.MaPhieuNhapSach}
+                  key={bookEntryDetail.MaSach}
                   className="hover:bg-purple-50 transition-colors duration-200"
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {bookEntryTicket.MaPhieuNhapSach}
+                    {index + 1}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(bookEntryTicket.NgayTao).toLocaleDateString('en-GB')}
+                    {bookEntryDetail.Sach.DauSach.TenDauSach}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {moneyFormat(Number(bookEntryTicket.TongTien))} VND
+                    {bookEntryDetail.Sach.NhaXuatBan}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {bookEntryTicket.TaiKhoan.TenDangNhap}
+                    {bookEntryDetail.Sach.NamXuatBan}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <IconButton variant="text" color="gray">
-                  <link
-                    rel="stylesheet"
-                    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css"
-                    integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w=="
-                    crossOrigin="anonymous"
-                    referrerPolicy="no-referrer"
-                  />
-                    <i className="fas fa-eye"/>
-                  </IconButton>
+                    {bookEntryDetail.Sach.SoLuongTon}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {moneyFormat(Number(bookEntryDetail.DonGia))} VND
                   </td>
                 </tr>
               ))}

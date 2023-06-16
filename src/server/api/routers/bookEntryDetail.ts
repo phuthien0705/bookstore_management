@@ -18,4 +18,24 @@ export const bookEntryDetailRouter = createTRPCRouter({
             data: { ...input },
         });
     }),
+    get: protectedProcedure
+    .input(
+        z.object({
+            MaPhieuNhapSach: z.number().int()
+        })
+    )
+    .query(({ input, ctx }) => {
+        return ctx.prisma.cT_PHIEUNHAPSACH.findMany({
+            include: {
+                Sach: {
+                    include: {
+                        DauSach: true,
+                    }
+                }
+            },
+            where: {
+                MaPhieuNhapSach: input.MaPhieuNhapSach,
+            },
+        })
+    })
 })
