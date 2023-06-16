@@ -1,5 +1,8 @@
 import useUserDebtState from "@/hook/bao-cao/useUserDebtState";
+import { api } from "@/utils/api";
+import { moneyFormat } from "@/utils/moneyFormat";
 import {
+  Button,
   Card,
   CardBody,
   CardHeader,
@@ -21,6 +24,15 @@ const UserDebtPanel = () => {
 
   const { ref, inView } = useInView();
 
+  const { mutate } = api.statistic.exportUserDebtExcel.useMutation({
+    onSuccess(data) {
+      const mediaType =
+        "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,";
+
+      window.location.href = `${mediaType}${data.stream}`;
+    },
+  });
+
   useEffect(() => {
     const pages = queryData?.pages;
     if (inView && !isFetching && pages?.[pages?.length - 1]?.hasNextPage) {
@@ -39,6 +51,14 @@ const UserDebtPanel = () => {
         </CardHeader>
         <CardBody className="p-4">
           <MonthYearInputSection {...state} />
+          <Button
+            onClick={() =>
+              mutate({ month: Number(state.month), year: Number(state.year) })
+            }
+            className="mb-5"
+          >
+            Xuất excel
+          </Button>
           <div className="relative">
             {isFetching && (
               <div className="absolute bottom-0 left-0 right-0 top-0 z-10 flex w-full items-center justify-center bg-gray-50/70 ">
@@ -102,7 +122,7 @@ const UserDebtPanel = () => {
                                 color="blue-gray"
                                 className="font-normal"
                               >
-                                {NoDau}
+                                {moneyFormat(Number(NoDau))}đ
                               </Typography>
                             </td>
                             <td className={"border-b border-blue-gray-50 p-4"}>
@@ -111,7 +131,7 @@ const UserDebtPanel = () => {
                                 color="blue-gray"
                                 className="font-normal"
                               >
-                                {PhatSinh}
+                                {moneyFormat(Number(PhatSinh))}đ
                               </Typography>
                             </td>
                             <td className={"border-b border-blue-gray-50 p-4"}>
@@ -120,7 +140,7 @@ const UserDebtPanel = () => {
                                 color="blue-gray"
                                 className="font-medium"
                               >
-                                {NoCuoi}
+                                {moneyFormat(Number(NoCuoi))}đ
                               </Typography>
                             </td>
                           </tr>

@@ -2,8 +2,7 @@ import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import DashboardLayout from "@/layouts/dashboard";
-import { type NextPageWithLayout } from "../page";
+
 import { type CT_TACGIA, type DAUSACH } from "@prisma/client";
 import { api } from "@/utils/api";
 import {
@@ -19,18 +18,20 @@ import {
   MenuItem,
   MenuList,
 } from "@material-tailwind/react";
-import { LoadingScreen } from "@/components/loading/LoadingScreen";
-import {
-  Pagination,
-  PaginationWrapper,
-} from "@/components/pagination/pagination";
-import useModal from "@/hook/useModal";
-import TitleModal from "@/components/modals/TitleModal";
 import {
   MagnifyingGlassIcon,
   PencilIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
+import { LoadingScreen } from "@/components/loading/LoadingScreen";
+import {
+  Pagination,
+  PaginationWrapper,
+} from "@/components/pagination/pagination";
+import TitleModal from "@/components/modals/TitleModal";
+import DashboardLayout from "@/layouts/dashboard";
+import { type NextPageWithLayout } from "../page";
+import useModal from "@/hook/useModal";
 import useDebounce from "@/hook/useDebounce";
 
 const ConfirmModal = dynamic(() => import("@/components/modals/ConfirmModal"));
@@ -238,7 +239,7 @@ const DauSach: NextPageWithLayout = () => {
                               >
                                 <PencilIcon className="h-4 w-4" />
                               </IconButton>
-                              <IconButton
+                              {/* <IconButton
                                 variant="text"
                                 color="red"
                                 onClick={() => {
@@ -252,7 +253,7 @@ const DauSach: NextPageWithLayout = () => {
                                 }}
                               >
                                 <TrashIcon className="h-4 w-4" />
-                              </IconButton>
+                              </IconButton> */}
                             </div>
                           </td>
                         </tr>

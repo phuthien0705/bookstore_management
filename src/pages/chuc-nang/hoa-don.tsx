@@ -2,12 +2,8 @@ import AddCustomerModal from "@/content/customer/AddCustomerModal";
 import DashboardLayout from "@/layouts/dashboard";
 import { api } from "@/utils/api";
 import { executeAfter500ms } from "@/utils/executeAfter500ms";
-import { moneyFormat } from "@/utils/moneyFormat";
-import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  PaperAirplaneIcon,
-} from "@heroicons/react/24/outline";
+import { moneyFormat, parseMoneyFormat } from "@/utils/moneyFormat";
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import {
   Button,
   Card,
@@ -19,9 +15,9 @@ import {
   Select,
   Typography,
 } from "@material-tailwind/react";
-import dayjs from "dayjs";
 import Head from "next/head";
 import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
 import { type NextPageWithLayout } from "../page";
 
 const TABLE_HEAD = [
@@ -72,68 +68,21 @@ const HoaDon: NextPageWithLayout = () => {
   const { data: Books, isLoading: isLoadingBook } =
     api.book.getAllBookWithTitle.useQuery();
   const { data: thamchieu } = api.reference.get.useQuery();
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState("");
   const [selectKH, setKH] = useState<TKhachHanng>(defaultValue);
   const [currentBook, setCurrentBook] = useState<BID>(defaultBID);
   const [list, setList] = useState<LBook[]>([]);
   const [total, setTotal] = useState<string>("0");
-  const [pay, setPay] = useState<number>(0);
+  const [pay, setPay] = useState<string>("0");
   const [debit, setDebit] = useState<number>(0);
 
-  const { mutate: updateDebitFunc } =
-    api.invoice.updateDebitOnNewInvoice.useMutation({
-      onSuccess: () => {
-        executeAfter500ms(async () => {
-          await utils.customer.getKhachHang.refetch();
-          await utils.book.getAllBookWithTitle.refetch();
-        });
-      },
-      onError(err) {
-        console.error(err);
-      },
-    });
-
-  const { mutate: updateBookQtFunc } =
-    api.statistic.updateBookLeftStatistic.useMutation();
-
-  const { mutate: createHDFunc, status: createHDStatus } =
-    api.invoice.createHD.useMutation({
-      onSuccess() {
-        executeAfter500ms(async () => {
-          updateDebitFunc({
-            MaKH: selectKH.MaKH,
-            NoHienTai: Number(
-              KhachHang?.find((i) => i.MaKH == selectKH.MaKH)?.TienNo ||
-                undefined
-            ),
-            ConLai: debit,
-          });
-          list.map((i) =>
-            updateBookQtFunc({
-              maSach: i.MaSach,
-              month: new Date().getMonth(),
-              year: new Date().getMonth(),
-              quantity: i.SoLuong,
-            })
-          );
-          clearAll();
-          await utils.customer.getKhachHang.refetch();
-          await utils.book.getAllBookWithTitle.refetch();
-          await utils.reference.get.refetch();
-        });
-      },
-      onError(err) {
-        console.error(err);
-      },
-    });
-
   const clearAll = () => {
-    setQuantity(1);
+    setQuantity("1");
     setKH(defaultValue);
     setCurrentBook(defaultBID);
     setList([]);
     setTotal("0");
-    setPay(0);
+    setPay("0");
     setDebit(0);
   };
 
@@ -151,7 +100,7 @@ const HoaDon: NextPageWithLayout = () => {
       setList([
         {
           MaSach: currentBook.MaSach,
-          SoLuong: quantity,
+          SoLuong: Number(quantity),
           DonGia: dongia?.toString() ?? "0",
           ThanhTien: thanhtien?.toString() ?? "0",
         },
@@ -160,7 +109,7 @@ const HoaDon: NextPageWithLayout = () => {
     } else {
       list.push({
         MaSach: currentBook.MaSach,
-        SoLuong: quantity,
+        SoLuong: Number(quantity),
         DonGia: dongia?.toString() ?? "0",
         ThanhTien: thanhtien?.toString() ?? "0",
       });
@@ -168,9 +117,69 @@ const HoaDon: NextPageWithLayout = () => {
       setTotal((Number(thanhtien) + Number(total)).toString());
     }
 
-    setQuantity(1);
+    setQuantity("");
     setCurrentBook(defaultBID);
   };
+
+  const { mutate: updateBookQtFunc } =
+    api.statistic.updateBookLeftStatistic.useMutation();
+
+  const { mutate: updateUserDept } =
+    api.statistic.updateUserDebtStatistic.useMutation();
+
+  const { mutate: createHDFunc } = api.invoice.createHD.useMutation({
+    onSuccess() {
+      executeAfter500ms(async () => {
+        updateDebitFunc({
+          MaKH: selectKH.MaKH,
+          NoHienTai: Number(
+            KhachHang?.find((i) => i.MaKH == selectKH.MaKH)?.TienNo || undefined
+          ),
+          ConLai: debit,
+        });
+
+        updateUserDept({
+          maKH: selectKH.MaKH,
+          month: new Date().getMonth() + 1,
+          year: new Date().getFullYear(),
+          quantity: debit,
+        });
+
+        list.map((i) => {
+          updateBookQtFunc({
+            maSach: i.MaSach,
+            quantity: -i.SoLuong,
+            month: new Date().getMonth() + 1,
+            year: new Date().getFullYear(),
+          });
+        });
+        clearAll();
+        await utils.customer.getKhachHang.refetch();
+        await utils.book.getAllBookWithTitle.refetch();
+        await utils.reference.get.refetch();
+        toast.success("Tạo hóa đơn thành công");
+      });
+    },
+    onError(err) {
+      console.error(err);
+      toast.error("Xảy ra lỗi trong quá trình tạo hóa đơn");
+    },
+  });
+
+  const { mutate: updateDebitFunc } =
+    api.invoice.updateDebitOnNewInvoice.useMutation({
+      onSuccess: () => {
+        executeAfter500ms(async () => {
+          await utils.customer.getKhachHang.refetch();
+          await utils.book.getAllBookWithTitle.refetch();
+        });
+        toast.success("Thanh toán nợ thành công");
+      },
+      onError(err) {
+        console.error(err);
+        toast.error("Xảy ra lỗi trong quá trình thanh toán nợ");
+      },
+    });
 
   const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -187,20 +196,9 @@ const HoaDon: NextPageWithLayout = () => {
   };
 
   useEffect(() => {
-    setDebit(Number(total) - pay);
-  }, [total]);
-  useEffect(() => {
-    setDebit(Number(total) - pay);
-  }, [pay]);
+    setDebit(Number(total) - parseMoneyFormat(pay));
+  }, [total, pay]);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setDate(new Date());
-    }, 60 * 1000);
-    return () => {
-      clearInterval(timer);
-    };
-  }, []);
   return (
     <>
       <Head>
@@ -216,13 +214,22 @@ const HoaDon: NextPageWithLayout = () => {
                 </Typography>
               </CardHeader>
 
-              <CardBody className="px-0 pb-2 pt-4">
-                <div className="flex w-full flex-row items-center justify-between ">
-                  <div className="w-300">
+              <CardBody className="overflow-x-scroll px-0 pb-2 pt-4">
+                <Typography className="text-lg ">
+                  <span className="font-bold">Ngày lập hóa đơn:</span>{" "}
+                  {today.toLocaleDateString("vi-VN", {
+                    timeZone: "Asia/Ho_Chi_Minh",
+                  })}
+                </Typography>
+                <Typography className="mb-4 mt-2 font-bold">
+                  Thông tin khách hàng
+                </Typography>
+                <div className="flex w-full flex-col items-start justify-between gap-2">
+                  <div className="w-1/2">
+                    {" "}
                     <Select
-                      label="Khách hàng (Tên - SĐT): "
                       variant="static"
-                      className="max-w-300"
+                      label="Khách hàng (Tên - SĐT): "
                       disabled={isLoadingKH}
                       onChange={(e) => {
                         setKH((p) => ({ ...p, MaKH: parseInt(e as string) }));
@@ -247,27 +254,27 @@ const HoaDon: NextPageWithLayout = () => {
                       )}
                     </Select>
                   </div>
-                  {selectKH !== defaultValue && (
-                    <Typography>
-                      Số tiền đang nợ:{" "}
-                      {moneyFormat(
-                        Number(
-                          KhachHang?.find((i) => i.MaKH == selectKH.MaKH)
-                            ?.TienNo || undefined
-                        )
-                      )}
-                      VNĐ
-                    </Typography>
-                  )}
-                  <Typography className="font-bold">
-                    Ngày lập hóa đơn: {dayjs(today).format("ddd, DD/MM/YYYY")}
-                  </Typography>
+                  <div className="w-full">
+                    {" "}
+                    {selectKH !== defaultValue && (
+                      <Typography>
+                        Số tiền đang nợ:{" "}
+                        {moneyFormat(
+                          Number(
+                            KhachHang?.find((i) => i.MaKH == selectKH.MaKH)
+                              ?.TienNo || undefined
+                          )
+                        )}
+                        VNĐ
+                      </Typography>
+                    )}
+                  </div>
                 </div>
                 <Typography className="mb-4 mt-4 font-bold">
                   Thông tin sách
                 </Typography>
-                <div className="flex flex-row items-center justify-between">
-                  <div className="md:w-56">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="w-1/2">
                     <Select
                       label="Chọn sách thêm vào hóa đơn: "
                       variant="static"
@@ -306,53 +313,18 @@ const HoaDon: NextPageWithLayout = () => {
                       )}
                     </Select>
                   </div>
-                  <div className=" flex flex-row items-center justify-center gap-2">
+                  <div className="flex flex-1 items-center justify-center gap-2">
                     <Input
-                      className="w-10"
+                      variant="static"
+                      label="Số lượng"
                       value={quantity}
                       onChange={(e) => {
-                        setQuantity(parseInt(e.target.value || "1"));
+                        setQuantity(e.target.value);
                       }}
                     />
-                    <div className="flex flex-col items-center justify-center">
-                      <IconButton
-                        variant="text"
-                        color="blue-gray"
-                        disabled={
-                          Number(
-                            Books?.find((i) => i.MaSach == currentBook.MaSach)
-                              ?.SoLuongTon || -99999999999
-                          ) -
-                            Number(quantity) <=
-                          Number(thamchieu?.TonKhoToiThieuSauBan || -999999)
-                            ? true
-                            : false
-                        }
-                        onClick={() => {
-                          setQuantity(quantity + 1);
-                        }}
-                      >
-                        <ChevronUpIcon
-                          strokeWidth={3}
-                          className="h-6 w-6 text-blue-gray-500"
-                        />
-                      </IconButton>
-                      <IconButton
-                        variant="text"
-                        color="blue-gray"
-                        disabled={quantity === 1}
-                        onClick={() => {
-                          setQuantity(quantity - 1);
-                        }}
-                      >
-                        <ChevronDownIcon
-                          strokeWidth={3}
-                          className="h-6 w-6 text-blue-gray-500"
-                        />
-                      </IconButton>
-                    </div>
+
                     <IconButton
-                      variant="text"
+                      variant="filled"
                       color="blue"
                       disabled={
                         Number(
@@ -366,10 +338,7 @@ const HoaDon: NextPageWithLayout = () => {
                       }
                       onClick={handleAddBook}
                     >
-                      <PaperAirplaneIcon
-                        strokeWidth={1}
-                        className="h-10 w-10 text-blue-500"
-                      />
+                      <PlusIcon strokeWidth={3} className="h-4 w-4" />
                     </IconButton>
                   </div>
                 </div>
@@ -464,8 +433,9 @@ const HoaDon: NextPageWithLayout = () => {
                                   </Typography>
                                 </td>
                                 <td className="p-4">
-                                  <Typography
-                                    as="button"
+                                  <IconButton
+                                    variant="text"
+                                    color="red"
                                     onClick={() => {
                                       setList(
                                         list.filter(
@@ -484,12 +454,9 @@ const HoaDon: NextPageWithLayout = () => {
                                         ).toString()
                                       );
                                     }}
-                                    variant="small"
-                                    color="blue"
-                                    className="font-medium"
                                   >
-                                    Xóa
-                                  </Typography>
+                                    <TrashIcon className="h-4 w-4" />
+                                  </IconButton>
                                 </td>
                               </tr>
                             );
@@ -507,27 +474,48 @@ const HoaDon: NextPageWithLayout = () => {
                       </tbody>
                     )}
                   </table>
-                  <div>
-                    <Typography>
-                      Tổng tiền: {moneyFormat(Number(total))}VNĐ
-                    </Typography>
-                    <div className="flex flex-row">
-                      <Typography className="basis-1/2">
-                        Số tiền trả: {moneyFormat(Number(pay))}VNĐ
+                  <div className="flex justify-between">
+                    <div>
+                      <Typography>
+                        Tổng tiền: {moneyFormat(parseMoneyFormat(total))}VNĐ
                       </Typography>
+                      <Typography className="basis-1/2">
+                        Số tiền trả: {moneyFormat(parseMoneyFormat(pay))}VNĐ
+                      </Typography>
+
+                      <Typography>
+                        Còn lại:{" "}
+                        {Number(total) - parseMoneyFormat(pay) > 0
+                          ? moneyFormat(Number(total) - parseMoneyFormat(pay))
+                          : 0}
+                        VNĐ
+                      </Typography>
+
+                      <Typography>
+                        Tiền thối:{" "}
+                        {Number(total) - parseMoneyFormat(pay) <= 0
+                          ? moneyFormat(-Number(total) + parseMoneyFormat(pay))
+                          : 0}
+                        VNĐ
+                      </Typography>
+                    </div>
+                    <div className="w-1/2">
                       <Input
                         className="w-10 basis-1/4"
                         label="Số tiền trả"
                         value={pay}
                         onChange={(e) => {
-                          setPay(parseInt(e.target.value || "0"));
-                          setDebit(Number(total) - pay);
+                          setPay(
+                            moneyFormat(parseMoneyFormat(e.target.value ?? "0"))
+                          );
+                          setDebit(
+                            Number(total) - parseMoneyFormat(pay) > 0
+                              ? Number(total) - parseMoneyFormat(pay)
+                              : 0
+                          );
                         }}
                       />
                     </div>
-                    <Typography>
-                      Còn lại: {moneyFormat(Number(total) - pay)}VNĐ
-                    </Typography>
                   </div>
                 </div>
                 <div className=" flex justify-end space-x-2">
@@ -535,7 +523,6 @@ const HoaDon: NextPageWithLayout = () => {
                     type="submit"
                     className="mt-2"
                     disabled={
-                      Number(pay) > Number(total) ||
                       Number(
                         KhachHang?.find((i) => i.MaKH == selectKH.MaKH)
                           ?.TienNo || 0
@@ -547,7 +534,8 @@ const HoaDon: NextPageWithLayout = () => {
                         debit >
                         Number(thamchieu?.CongNoToiDa || 0) ||
                       !selectKH.MaKH ||
-                      list.length == 0
+                      !pay ||
+                      list.length === 0
                         ? true
                         : false
                     }
@@ -555,7 +543,6 @@ const HoaDon: NextPageWithLayout = () => {
                     Tạo và in hóa đơn
                   </Button>
                   <AddCustomerButton />
-                  <Button className="mt-2">Thanh toán nợ cũ</Button>
                 </div>
               </CardBody>
             </Card>

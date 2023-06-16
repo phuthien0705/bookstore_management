@@ -61,7 +61,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
   const { data: titles, isLoading: isLoadingTitles } =
     api.title.getAll.useQuery({});
 
-  const { data: reference } = api.reference.get.useQuery({});
+  const { data: reference } = api.reference.get.useQuery();
   const { mutateAsync: createTicket } = api.bookEntryTicket.create.useMutation({
     onSuccess() {
       toast.success("Lưu phiếu nhập sách thành công !");
@@ -104,7 +104,12 @@ const BookEntryTicket: NextPageWithLayout = () => {
   };
   function compareDates(entryDate: string): boolean {
     const currentDate = new Date();
-    const parsedEntryDate = new Date(entryDate);
+    const [year, month, day] = entryDate.split("-");
+    const parsedEntryDate = new Date(
+      Number(year),
+      Number(month) - 1,
+      Number(day)
+    );
     if (parsedEntryDate > currentDate) {
       return false;
     }

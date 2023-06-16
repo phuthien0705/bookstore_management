@@ -135,10 +135,10 @@ export const statisticRouter = createTRPCRouter({
       newWorkSheet.getCell(2, 2).value = year;
 
       newWorkSheet.columns = [
-        { key: "MaSach" },
-        { key: "TonDau" },
-        { key: "PhatSinh" },
-        { key: "TonCuoi" },
+        { key: "MaSach", width: 30 },
+        { key: "TonDau", width: 30 },
+        { key: "PhatSinh", width: 30 },
+        { key: "TonCuoi", width: 30 },
       ];
 
       newWorkSheet.getCell(3, 1).value = "Mã Sách";
@@ -204,8 +204,47 @@ export const statisticRouter = createTRPCRouter({
         quantity: z.number(),
       })
     )
-    .mutation(({ input, ctx }) => {
+    .mutation(async ({ input, ctx }) => {
       const { maKH, month, year, quantity } = input;
+
+      const baocao = await ctx.prisma.bAOCAOCONGNO.findFirst({
+        where: {
+          MaKH: maKH,
+          Thang: month,
+          Nam: year,
+        },
+      });
+
+      if (!baocao) {
+        let prevThang = month - 1;
+        let prevYear = year;
+
+        if (prevThang <= 0) {
+          prevThang = 12;
+          prevYear -= 1;
+        }
+
+        const baocaothangtruoc = await ctx.prisma.bAOCAOCONGNO.findFirst({
+          where: {
+            MaKH: maKH,
+            Thang: prevThang,
+            Nam: prevYear,
+          },
+        });
+
+        return ctx.prisma.bAOCAOCONGNO.create({
+          data: {
+            MaKH: maKH,
+            Thang: month,
+            Nam: year,
+            TonCuoi: baocaothangtruoc
+              ? Number(baocaothangtruoc.TonCuoi) + quantity
+              : quantity,
+            TonDau: baocaothangtruoc ? baocaothangtruoc.TonCuoi : quantity,
+            PhatSinh: baocaothangtruoc ? quantity : 0,
+          },
+        });
+      }
 
       return ctx.prisma.bAOCAOCONGNO.update({
         data: {
@@ -239,7 +278,7 @@ export const statisticRouter = createTRPCRouter({
       const { limit, cursor, month, year } = input;
 
       const records = await ctx.prisma.bAOCAOCONGNO.findMany({
-        skip: 1,
+        skip: cursor ? 1 : 0,
         take: limit,
         cursor: cursor
           ? {
@@ -261,5 +300,65 @@ export const statisticRouter = createTRPCRouter({
         cursor: records[limit - 1]?.MaKH,
         hasNextPage: !!records[limit - 1]?.MaKH,
       };
+    }),
+
+  exportUserDebtExcel: protectedProcedure
+    .input(
+      z.object({
+        month: z.number(),
+        year: z.number(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { month, year } = input;
+
+      const pathStorageCode = path.join(
+        __dirname,
+        `../../../../../public/excel/bao-cao-cong-no.xlsx`
+      );
+
+      const newWorkBook = new ExcelJs.Workbook();
+
+      const newWorkSheet = newWorkBook.addWorksheet("report");
+
+      newWorkSheet.getCell(1, 1).value = "Tháng";
+      newWorkSheet.getCell(1, 2).value = month;
+
+      newWorkSheet.getCell(2, 1).value = "Năm";
+      newWorkSheet.getCell(2, 2).value = year;
+
+      newWorkSheet.columns = [
+        { key: "MaKhachHang", width: 30 },
+        { key: "NoDau", width: 30 },
+        { key: "PhatSinh", width: 30 },
+        { key: "NoCuoi", width: 30 },
+      ];
+
+      newWorkSheet.getCell(3, 1).value = "Mã Khách Hàng";
+      newWorkSheet.getCell(3, 2).value = "Nợ Đầu";
+      newWorkSheet.getCell(3, 3).value = "Phát Sinh";
+      newWorkSheet.getCell(3, 4).value = "Nợ Cuối";
+
+      const records = await ctx.prisma.bAOCAOCONGNO.findMany({
+        where: {
+          Thang: month,
+          Nam: year,
+        },
+      });
+
+      records.forEach((item) => {
+        newWorkSheet.addRow({
+          MaKhachHang: item.MaKH,
+          TonNoDauDau: Number(item.TonDau),
+          PhatSinh: Number(item.PhatSinh),
+          NoCuoi: Number(item.TonCuoi),
+        });
+      });
+
+      await newWorkBook.xlsx.writeFile(pathStorageCode);
+
+      const stream = fs.readFileSync(pathStorageCode).toString("base64");
+
+      return { stream };
     }),
 });

@@ -54,8 +54,9 @@ const BookLeftPanel = () => {
             onClick={() =>
               mutate({ month: Number(state.month), year: Number(state.year) })
             }
+            className="mb-5"
           >
-            export
+            Xuất excel
           </Button>
           <div className="relative">
             {isFetching && (

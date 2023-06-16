@@ -8,6 +8,7 @@ import {
   Input,
 } from "@material-tailwind/react";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 interface IAddCustomerModal {
   open: boolean;
@@ -25,6 +26,11 @@ const AddCustomerModal = ({ open, handleOpen }: IAddCustomerModal) => {
   const { mutate } = api.customer.createKhachHang.useMutation({
     onSuccess() {
       utils.customer.getKhachHang.refetch();
+      toast.success("Tạo khách hàng thành công");
+      handleOpen();
+    },
+    onError() {
+      toast.success("Có lỗi xảy ra.");
     },
   });
 
@@ -32,7 +38,7 @@ const AddCustomerModal = ({ open, handleOpen }: IAddCustomerModal) => {
     <Dialog open={open} handler={handleOpen}>
       <DialogHeader>Tạo khách hàng.</DialogHeader>
       <DialogBody divider>
-        <div>
+        <div className="flex flex-col gap-4">
           <div>
             <Input
               label="Tên"
@@ -44,7 +50,7 @@ const AddCustomerModal = ({ open, handleOpen }: IAddCustomerModal) => {
 
           <div>
             <Input
-              label="Tên"
+              label="Địa chỉ"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               className="w-[250px]"
@@ -53,8 +59,9 @@ const AddCustomerModal = ({ open, handleOpen }: IAddCustomerModal) => {
 
           <div>
             <Input
-              label="Tên"
+              label="Số điện thoại"
               value={number}
+              type="tel"
               onChange={(e) => setNumber(e.target.value)}
               className="w-[250px]"
             />
@@ -62,8 +69,9 @@ const AddCustomerModal = ({ open, handleOpen }: IAddCustomerModal) => {
 
           <div>
             <Input
-              label="Tên"
+              label="Email"
               value={email}
+              type="email"
               onChange={(e) => setEmail(e.target.value)}
               className="w-[250px]"
             />

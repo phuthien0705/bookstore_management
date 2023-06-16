@@ -18,7 +18,8 @@ export function DashboardLayout(props: { children: React.ReactNode }) {
   const [isManager, setIsManager] = useState(false);
   const { data: sessionData, status } = useSession();
   useEffect(() => {
-    if (!sessionData && status !== "loading") {
+    if (status === "loading") return;
+    if (!sessionData) {
       void router.push({
         pathname: "/",
       });
