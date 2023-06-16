@@ -20,7 +20,7 @@ const SettingPage: NextPageWithLayout = () => {
   const [leftMax, setLeftMax] = useState<number>(300);
   const [leftAfterSellMin, setLefAfterSellMin] = useState<number>(20);
   const [priceRatio, setPriceRatio] = useState<number>(105);
-  const [debtMax, setDebtMax] = useState<number>(20000);
+  const [debtMax, setDebtMax] = useState<number>(1000000);
   const [apply, setApply] = useState<boolean>(true);
 
   api.reference.get.useQuery(undefined, {
@@ -29,7 +29,7 @@ const SettingPage: NextPageWithLayout = () => {
       setLeftMax(data?.SoLuongTonToiDa || 300);
       setLefAfterSellMin(data?.TonKhoToiThieuSauBan || 20);
       setPriceRatio(Number(data?.TyLeDonGia) || 105);
-      setDebtMax(data?.CongNoToiDa || 20000);
+      setDebtMax(data?.CongNoToiDa || 1000000);
       setApply(data?.SuDungQuyDinh || false);
     },
   });
@@ -60,7 +60,7 @@ const SettingPage: NextPageWithLayout = () => {
     setLeftMax(300);
     setLefAfterSellMin(20);
     setPriceRatio(105);
-    setDebtMax(20000);
+    setDebtMax(1000000);
     setApply(true);
   };
 
