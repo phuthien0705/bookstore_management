@@ -1,37 +1,33 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import dynamic from "next/dynamic";
-import Head from "next/head";
-import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  Typography,
-  Input,
-  IconButton,
-  Select,
-  Option,
-  Tooltip,
-} from "@material-tailwind/react";
-import { type SACH } from "@prisma/client";
-import DashboardLayout from "@/layouts/dashboard";
-import { type NextPageWithLayout } from "../page";
 import { LoadingScreen } from "@/components/loading/LoadingScreen";
 import {
   Pagination,
   PaginationWrapper,
 } from "@/components/pagination/pagination";
-import useModal from "@/hook/useModal";
-import { api } from "@/utils/api";
-import {
-  EyeIcon,
-  MagnifyingGlassIcon,
-  PencilIcon,
-} from "@heroicons/react/24/outline";
-import useDebounce from "@/hook/useDebounce";
 import { EFilterBook } from "@/constant/constant";
+import useDebounce from "@/hook/useDebounce";
+import useModal from "@/hook/useModal";
+import DashboardLayout from "@/layouts/dashboard";
+import { api } from "@/utils/api";
 import { moneyFormat } from "@/utils/moneyFormat";
+import { EyeIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import {
+  Card,
+  CardBody,
+  CardHeader,
+  IconButton,
+  Input,
+  Option,
+  Select,
+  Tooltip,
+  Typography,
+} from "@material-tailwind/react";
+import { type SACH } from "@prisma/client";
+import dynamic from "next/dynamic";
+import Head from "next/head";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { type NextPageWithLayout } from "../page";
 
 const BookModal = dynamic(() => import("@/components/modals/BookModal"));
 const ConfirmModal = dynamic(() => import("@/components/modals/ConfirmModal"));
@@ -229,7 +225,7 @@ const BookPage: NextPageWithLayout = () => {
                         </td>
                         <td className={`${className}`}>
                           <div className="flex w-full justify-center gap-2">
-                            <IconButton
+                            {/* <IconButton
                               variant="text"
                               color="blue-gray"
                               onClick={() => {
@@ -238,7 +234,7 @@ const BookPage: NextPageWithLayout = () => {
                               }}
                             >
                               <PencilIcon className="h-4 w-4" />
-                            </IconButton>
+                            </IconButton> */}
                             <IconButton
                               variant="text"
                               color="blue-gray"

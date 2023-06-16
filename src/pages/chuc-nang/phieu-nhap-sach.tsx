@@ -290,6 +290,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
                     <Option>Không có đầu sách nào</Option>
                   )}
                 </Select>
+
                 <Input
                   value={publishedYear}
                   variant="outlined"
@@ -321,7 +322,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
                   variant="outlined"
                   label="Số lượng"
                   onChange={(e) => {
-                    if (!isStringNumeric(e.target.value)) return;
+                    if (e.target.value.includes("-")) return;
                     setQuantity(e.target.value);
                   }}
                 />
