@@ -43,10 +43,11 @@ export const statisticRouter = createTRPCRouter({
         month: z.number(),
         year: z.number(),
         quantity: z.number(),
+        updateQuantity: z.boolean().default(true).optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { maSach, month, year, quantity } = input;
+      const { maSach, month, year, quantity, updateQuantity } = input;
 
       await ctx.prisma.bAOCAOTON.update({
         data: {
@@ -66,16 +67,17 @@ export const statisticRouter = createTRPCRouter({
         },
       });
 
-      await ctx.prisma.sACH.update({
-        where: {
-          MaSach: maSach,
-        },
-        data: {
-          SoLuongTon: {
-            increment: quantity,
+      updateQuantity &&
+        (await ctx.prisma.sACH.update({
+          where: {
+            MaSach: maSach,
           },
-        },
-      });
+          data: {
+            SoLuongTon: {
+              increment: quantity,
+            },
+          },
+        }));
     }),
 
   getBookLeftWithPagination: protectedProcedure
