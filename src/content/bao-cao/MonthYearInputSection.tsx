@@ -22,8 +22,12 @@ const MonthYearInputSection = ({
           label="Tháng"
           type="number"
           value={month}
-          onChange={(e) => setMonth(e.target.value)}
+          onChange={(e) => {
+            setMonth(e.target.value);
+          }}
           className="w-[250px]"
+          min={1}
+          max={12}
         />
         <Typography
           variant="small"
@@ -39,8 +43,11 @@ const MonthYearInputSection = ({
           label="Năm"
           type="number"
           value={year}
-          onChange={(e) => setYear(e.target.value)}
+          onChange={(e) => {
+            setYear(e.target.value);
+          }}
           className="w-[250px]"
+          min={0}
         />
         <Typography
           variant="small"

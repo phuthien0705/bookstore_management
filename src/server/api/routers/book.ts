@@ -287,4 +287,18 @@ export const bookRouter = createTRPCRouter({
 
     return books;
   }),
+
+  getAllByTitleId: protectedProcedure
+    .input(
+      z.object({
+        MaDauSach: z.number(),
+      })
+    )
+    .query(({ input, ctx }) => {
+      return ctx.prisma.sACH.findMany({
+        where: {
+          MaDauSach: input.MaDauSach,
+        },
+      });
+    }),
 });

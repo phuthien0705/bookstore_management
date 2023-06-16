@@ -2,8 +2,12 @@ import { api } from "@/utils/api";
 import { useMemo, useState } from "react";
 
 const useBookLeftState = () => {
-  const [month, setMonth] = useState<string>("");
-  const [year, setYear] = useState<string>("");
+  const [month, setMonth] = useState<string>(() =>
+    (new Date().getMonth() + 1).toString()
+  );
+  const [year, setYear] = useState<string>(() =>
+    new Date().getFullYear().toString()
+  );
 
   const queryReturn = api.statistic.getBookLeftWithPagination.useInfiniteQuery(
     {
