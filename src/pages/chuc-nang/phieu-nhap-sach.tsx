@@ -55,6 +55,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
     const formattedDate = `${year}-${month}-${day}`;
     return formattedDate;
   });
+  const { data: references } = api.reference.get.useQuery()
   const [isTableOpen, setIsTableOpen] = useState(true); // Thêm state để theo dõi trạng thái của bảng sách
   const [tableHeight, setTableHeight] = useState(0);
   const tableRef = useRef(null);
@@ -180,7 +181,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
     } else if (!validatedPublisedYear) {
       toast.error("Năm xuất bản không hợp lệ!");
       return false;
-    } else if (!validatedQuantity) {
+    } else if (!validatedQuantity && references?.SuDungQuyDinh) {
       toast.error("Số lượng nhập không hợp lệ!");
       return false;
     } else if (!validatedPrice) {
