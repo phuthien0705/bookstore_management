@@ -1,30 +1,29 @@
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  Typography,
-  Button,
-  Select,
-  Option,
-  IconButton,
-  Input,
-  CardFooter,
-} from "@material-tailwind/react";
+import AddCustomerModal from "@/content/customer/AddCustomerModal";
+import DashboardLayout from "@/layouts/dashboard";
+import { api } from "@/utils/api";
+import { executeAfter500ms } from "@/utils/executeAfter500ms";
+import { moneyFormat } from "@/utils/moneyFormat";
 import {
   ChevronDownIcon,
   ChevronUpIcon,
   PaperAirplaneIcon,
 } from "@heroicons/react/24/outline";
-import Head from "next/head";
+import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  IconButton,
+  Input,
+  Option,
+  Select,
+  Typography,
+} from "@material-tailwind/react";
 import dayjs from "dayjs";
-import { useState, useEffect } from "react";
+import Head from "next/head";
+import { useEffect, useState } from "react";
 import { type NextPageWithLayout } from "../page";
-import { executeAfter500ms } from "@/utils/executeAfter500ms";
-import DashboardLayout from "@/layouts/dashboard";
-import { api } from "@/utils/api";
-import { moneyFormat } from "@/utils/moneyFormat";
 
-import { createInvoiceMaping } from "@/constant/modal";
 const TABLE_HEAD = [
   "STT",
   "Sách",
@@ -68,11 +67,11 @@ const HoaDon: NextPageWithLayout = () => {
 
   const utils = api.useContext();
   const { data: KhachHang, isLoading: isLoadingKH } =
-    api.invoice.getKhachHang.useQuery();
+    api.customer.getKhachHang.useQuery();
 
   const { data: Books, isLoading: isLoadingBook } =
-    api.invoice.getAllBookWithTitle.useQuery();
-  const { data: thamchieu } = api.invoice.getThamChieu.useQuery();
+    api.book.getAllBookWithTitle.useQuery();
+  const { data: thamchieu } = api.reference.get.useQuery();
   const [quantity, setQuantity] = useState(1);
   const [selectKH, setKH] = useState<TKhachHanng>(defaultValue);
   const [currentBook, setCurrentBook] = useState<BID>(defaultBID);
@@ -80,6 +79,53 @@ const HoaDon: NextPageWithLayout = () => {
   const [total, setTotal] = useState<string>("0");
   const [pay, setPay] = useState<number>(0);
   const [debit, setDebit] = useState<number>(0);
+
+  const { mutate: updateDebitFunc } =
+    api.invoice.updateDebitOnNewInvoice.useMutation({
+      onSuccess: () => {
+        executeAfter500ms(async () => {
+          await utils.customer.getKhachHang.refetch();
+          await utils.book.getAllBookWithTitle.refetch();
+        });
+      },
+      onError(err) {
+        console.error(err);
+      },
+    });
+
+  const { mutate: updateBookQtFunc } =
+    api.statistic.updateBookLeftStatistic.useMutation();
+
+  const { mutate: createHDFunc, status: createHDStatus } =
+    api.invoice.createHD.useMutation({
+      onSuccess() {
+        executeAfter500ms(async () => {
+          updateDebitFunc({
+            MaKH: selectKH.MaKH,
+            NoHienTai: Number(
+              KhachHang?.find((i) => i.MaKH == selectKH.MaKH)?.TienNo ||
+                undefined
+            ),
+            ConLai: debit,
+          });
+          list.map((i) =>
+            updateBookQtFunc({
+              maSach: i.MaSach,
+              month: new Date().getMonth(),
+              year: new Date().getMonth(),
+              quantity: i.SoLuong,
+            })
+          );
+          clearAll();
+          await utils.customer.getKhachHang.refetch();
+          await utils.book.getAllBookWithTitle.refetch();
+          await utils.reference.get.refetch();
+        });
+      },
+      onError(err) {
+        console.error(err);
+      },
+    });
 
   const clearAll = () => {
     setQuantity(1);
@@ -125,52 +171,6 @@ const HoaDon: NextPageWithLayout = () => {
     setQuantity(1);
     setCurrentBook(defaultBID);
   };
-  const { mutate: createHDFunc, status: createHDStatus } =
-    api.invoice.createHD.useMutation({
-      onSuccess() {
-        executeAfter500ms(async () => {
-          updateDebitFunc({
-            MaKH: selectKH.MaKH,
-            NoHienTai: Number(
-              KhachHang?.find((i) => i.MaKH == selectKH.MaKH)?.TienNo ||
-                undefined
-            ),
-            ConLai: debit,
-          });
-          list.map((i) =>
-            updateBookQtFunc({
-              MaSach: i.MaSach,
-              Current:
-                Books?.find((s) => s.MaSach == i.MaSach)?.SoLuongTon || 0,
-              Quantity: i.SoLuong,
-            })
-          );
-          clearAll();
-          await utils.invoice.getKhachHang.refetch();
-          await utils.invoice.getAllBookWithTitle.refetch();
-          await utils.invoice.getThamChieu.refetch();
-        });
-      },
-      onError(err) {
-        console.error(err);
-      },
-    });
-
-  const { mutate: updateDebitFunc } =
-    api.invoice.updateDebitOnNewInvoice.useMutation({
-      onSuccess: () => {
-        executeAfter500ms(async () => {
-          await utils.invoice.getKhachHang.refetch();
-          await utils.invoice.getAllBookWithTitle.refetch();
-        });
-      },
-      onError(err) {
-        console.error(err);
-      },
-    });
-
-  const { mutate: updateBookQtFunc } =
-    api.invoice.updateBookQuantity.useMutation();
 
   const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -185,7 +185,6 @@ const HoaDon: NextPageWithLayout = () => {
       })),
     });
   };
-  const status = createHDStatus;
 
   useEffect(() => {
     setDebit(Number(total) - pay);
@@ -193,6 +192,7 @@ const HoaDon: NextPageWithLayout = () => {
   useEffect(() => {
     setDebit(Number(total) - pay);
   }, [pay]);
+
   useEffect(() => {
     const timer = setInterval(() => {
       setDate(new Date());
@@ -216,7 +216,7 @@ const HoaDon: NextPageWithLayout = () => {
                 </Typography>
               </CardHeader>
 
-              <CardBody className="overflow-x-scroll px-0 pb-2 pt-4">
+              <CardBody className="px-0 pb-2 pt-4">
                 <div className="flex w-full flex-row items-center justify-between ">
                   <div className="w-300">
                     <Select
@@ -500,7 +500,6 @@ const HoaDon: NextPageWithLayout = () => {
                         <tr>
                           <td colSpan={5} className=" align-center font-bold">
                             <Typography className="text-align-center font-bold">
-                              {" "}
                               Hãy thêm sách vào hóa đơn!
                             </Typography>
                           </td>
@@ -509,12 +508,10 @@ const HoaDon: NextPageWithLayout = () => {
                     )}
                   </table>
                   <div>
-                    {" "}
                     <Typography>
                       Tổng tiền: {moneyFormat(Number(total))}VNĐ
                     </Typography>
                     <div className="flex flex-row">
-                      {" "}
                       <Typography className="basis-1/2">
                         Số tiền trả: {moneyFormat(Number(pay))}VNĐ
                       </Typography>
@@ -557,19 +554,10 @@ const HoaDon: NextPageWithLayout = () => {
                   >
                     Tạo và in hóa đơn
                   </Button>
-                  <Button className="mt-2">Thêm khách hàng</Button>
+                  <AddCustomerButton />
                   <Button className="mt-2">Thanh toán nợ cũ</Button>
                 </div>
               </CardBody>
-              <CardFooter>
-                <Button>
-                  {
-                    createInvoiceMaping(false)[
-                      status as unknown as keyof typeof createInvoiceMaping
-                    ]
-                  }
-                </Button>
-              </CardFooter>
             </Card>
           </form>
         </div>
@@ -577,5 +565,20 @@ const HoaDon: NextPageWithLayout = () => {
     </>
   );
 };
+
+const AddCustomerButton = () => {
+  const [open, setOpen] = useState(false);
+
+  const toggle = () => setOpen((p) => !p);
+  return (
+    <>
+      <Button onClick={toggle} className="mt-2">
+        Thêm khách hàng
+      </Button>
+      <AddCustomerModal open={open} handleOpen={toggle} />
+    </>
+  );
+};
+
 HoaDon.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
 export default HoaDon;

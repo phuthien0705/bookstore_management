@@ -5,6 +5,7 @@ import { bookRouter } from "./routers/book";
 import { bookEntryDetailRouter } from "./routers/bookEntryDetail";
 import { bookEntryTicketRouter } from "./routers/bookEntryTicket";
 import { categoryRouter } from "./routers/category";
+import { customerRouter } from "./routers/customer";
 import { groupUserRouter } from "./routers/groupUser";
 import { invoiceRouter } from "./routers/invoice";
 import { referenceRouter } from "./routers/reference";
@@ -28,6 +29,7 @@ export const appRouter = createTRPCRouter({
   bookEntryTicket: bookEntryTicketRouter,
   bookEntryDetail: bookEntryDetailRouter,
   reference: referenceRouter,
+  customer: customerRouter,
 });
 
 // export type definition of API

@@ -45,10 +45,10 @@ export const statisticRouter = createTRPCRouter({
         quantity: z.number(),
       })
     )
-    .mutation(({ input, ctx }) => {
+    .mutation(async ({ input, ctx }) => {
       const { maSach, month, year, quantity } = input;
 
-      return ctx.prisma.bAOCAOTON.update({
+      await ctx.prisma.bAOCAOTON.update({
         data: {
           PhatSinh: {
             increment: quantity,
@@ -62,6 +62,17 @@ export const statisticRouter = createTRPCRouter({
             MaSach: maSach,
             Thang: month,
             Nam: year,
+          },
+        },
+      });
+
+      await ctx.prisma.sACH.update({
+        where: {
+          MaSach: maSach,
+        },
+        data: {
+          SoLuongTon: {
+            increment: quantity,
           },
         },
       });
