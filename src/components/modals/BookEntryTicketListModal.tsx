@@ -65,7 +65,7 @@ const BookEntryTicketListModal: React.FC<IBookEntryTicketListModal> = ({
                   Tên tài khoản
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                    
+                  Chi tiết
                 </th>
               </tr>
             </thead>
@@ -76,7 +76,7 @@ const BookEntryTicketListModal: React.FC<IBookEntryTicketListModal> = ({
                   className="hover:bg-purple-50 transition-colors duration-200"
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {bookEntryTicket.MaPhieuNhapSach}
+                    BOXO{bookEntryTicket.MaPhieuNhapSach}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(bookEntryTicket.NgayTao).toLocaleDateString('en-GB')}
