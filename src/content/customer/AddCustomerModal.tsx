@@ -1,4 +1,5 @@
 import { api } from "@/utils/api";
+import { isStringNumeric } from "@/utils/isStringNumeric";
 import {
   Button,
   Dialog,
@@ -63,7 +64,11 @@ const AddCustomerModal = ({ open, handleOpen }: IAddCustomerModal) => {
               label="Số điện thoại"
               value={number}
               type="tel"
-              onChange={(e) => setNumber(e.target.value)}
+              onChange={(e) =>
+                {
+                  if (!isStringNumeric(e.target.value)) return;
+                  setNumber(e.target.value)}
+                }
               className="w-[250px]"
             />
           </div>

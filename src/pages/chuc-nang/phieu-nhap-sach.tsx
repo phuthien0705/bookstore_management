@@ -1,6 +1,7 @@
 import useModal from "@/hook/useModal";
 import DashboardLayout from "@/layouts/dashboard";
 import { api } from "@/utils/api";
+import { isStringNumeric } from "@/utils/isStringNumeric";
 import { moneyFormat, parseMoneyFormat } from "@/utils/moneyFormat";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import {
@@ -293,15 +294,19 @@ const BookEntryTicket: NextPageWithLayout = () => {
                   value={publishedYear}
                   variant="outlined"
                   label="Năm xuất bản"
-                  onChange={(e) => setPublishedYear(e.target.value)}
+                  onChange={(e) => {
+                    if (!isStringNumeric(e.target.value)) return;
+                    setPublishedYear(e.target.value);
+                  }}
                 />
                 <Input
                   variant="outlined"
                   label="Đơn giá nhập (VNĐ)"
                   value={price}
-                  onChange={(e) =>
-                    setPrice(moneyFormat(parseMoneyFormat(e.target.value)))
-                  }
+                  onChange={(e) => {
+                    if (!isStringNumeric(e.target.value)) return;
+                    setPrice(moneyFormat(parseMoneyFormat(e.target.value)));
+                  }}
                 />
               </div>
               <div className="flex w-full flex-col gap-6">
@@ -315,7 +320,10 @@ const BookEntryTicket: NextPageWithLayout = () => {
                   value={quantity}
                   variant="outlined"
                   label="Số lượng"
-                  onChange={(e) => setQuantity(e.target.value)}
+                  onChange={(e) => {
+                    if (!isStringNumeric(e.target.value)) return;
+                    setQuantity(e.target.value);
+                  }}
                 />
                 <div className="flex flex-row justify-end gap-10">
                   <Button onClick={hanldeAddBook}>Thêm sách</Button>
