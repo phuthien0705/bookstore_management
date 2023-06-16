@@ -99,28 +99,34 @@ const ThuTien: NextPageWithLayout = () => {
         <title>Phiếu Thu Tiền</title>
       </Head>
       <div>
-        <div className="mb-8 mt-12 flex flex-col gap-12" ref={payPDF}>
+        <div className="mb-8 mt-12" ref={payPDF}>
           <Card>
-            <CardHeader variant="gradient" color="blue" className="mb-2 p-6">
+            <CardHeader
+              variant="gradient"
+              color="blue"
+              className="mb-2 flex items-center justify-between px-6 py-4"
+            >
               <Typography variant="h6" color="white">
                 Phiếu Thu Tiền
               </Typography>
             </CardHeader>
 
             <CardBody className="overflow-x-scroll px-0 pb-2 pt-0">
-              <form
-                className="w-100 mb-4 ml-8 mt-2 max-w-screen-lg "
-                onSubmit={handleSubmit}
-              >
+              <form className="mx-6 mt-4" onSubmit={handleSubmit}>
+                <Typography className="mb-2 mt-6 basis-1/2 text-lg font-bold">
+                  Ngày lập phiếu thu:{" "}
+                  {today.toLocaleDateString("vi-VN", {
+                    timeZone: "Asia/Ho_Chi_Minh",
+                  })}
+                </Typography>
                 <Typography className="mb-4 font-bold">
                   Thông tin khách hàng
                 </Typography>{" "}
                 <div className="mb-4 mt-4 flex flex-col gap-6">
-                  <div className="flex flex-row">
+                  <div className="w-1/2">
                     <Select
                       label="Khách hàng (Tên - SĐT): "
                       variant="static"
-                      className="max-w-300"
                       disabled={isLoadingKH}
                       onChange={(e) => {
                         setKH((p) => ({ ...p, MaKH: parseInt(e as string) }));
@@ -150,10 +156,6 @@ const ThuTien: NextPageWithLayout = () => {
                         <Option>Không có dữ liệu</Option>
                       )}
                     </Select>
-                    <Typography className="basis-1/2 font-bold ">
-                      Ngày lập phiếu thu:{" "}
-                      {dayjs(today).format("ddd, DD/MM/YYYY")}
-                    </Typography>
                   </div>
 
                   <table className="w-full min-w-max table-auto text-left">
@@ -232,7 +234,8 @@ const ThuTien: NextPageWithLayout = () => {
                     Số tiền nợ:{" "}
                     {moneyFormat(
                       Number(
-                        KhachHang?.find((i) => i.MaKH == selectKH.MaKH)?.TienNo ?? "0"
+                        KhachHang?.find((i) => i.MaKH == selectKH.MaKH)
+                          ?.TienNo ?? "0"
                       )
                     )}
                     VNĐ
@@ -248,9 +251,6 @@ const ThuTien: NextPageWithLayout = () => {
                     onChange={(e) => {
                       setPay(Number(e.target.value || "0"));
                       setDebit(curr - pay);
-                      console.log(`debit`, debit);
-                      console.log(`curr`, curr);
-                      console.log(`pay`, pay);
                     }}
                   />
                   {debit < 0 ? (
