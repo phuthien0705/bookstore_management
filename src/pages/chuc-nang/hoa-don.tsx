@@ -344,9 +344,9 @@ const HoaDon: NextPageWithLayout = () => {
                             ?.SoLuongTon || -99999999999
                         ) -
                           Number(quantity) <
-                        Number(thamchieu?.TonKhoToiThieuSauBan || -999999)
-                          ? true
-                          : false
+                          Number(thamchieu?.TonKhoToiThieuSauBan || -999999) ||
+                        quantity === "0" ||
+                        quantity === ""
                       }
                       onClick={handleAddBook}
                     >
