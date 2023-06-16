@@ -9,7 +9,7 @@ const useUserDebtState = () => {
     {
       month: Number(month),
       year: Number(year),
-      limit: 1,
+      limit: 10,
     },
     {
       enabled: !!month && !!year,
