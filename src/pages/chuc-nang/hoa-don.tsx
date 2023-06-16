@@ -159,12 +159,13 @@ const HoaDon: NextPageWithLayout = () => {
             year: new Date().getFullYear(),
           });
         });
-        clearAll();
+
         await utils.customer.getKhachHang.refetch();
         await utils.book.getAllBookWithTitle.refetch();
         await utils.reference.get.refetch();
         toast.success("Tạo hóa đơn thành công");
         printInvoice();
+        clearAll();
       });
     },
     onError(err) {
