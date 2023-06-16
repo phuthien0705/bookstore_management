@@ -37,9 +37,9 @@ const BookEntryTicketListModal: React.FC<IBookEntryTicketListModal> = ({
       size="md"
       open={open}
       handler={handleOpen}
-      className="bg-transparent shadow-none"
+      className="bg-transparent shadow-none rounded-lg"
     >
-      <Card className="mx-auto w-full max-w-[60rem]">
+      <Card className="mx-auto w-full max-w-[60rem] max-h-[650px] overflow-scroll rounded-lg">
         <CardBody className="flex flex-col gap-4">
           <Typography className="px-6 py-4 text-center text-2xl font-bold">
             Danh sách phiếu nhập sách

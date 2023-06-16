@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import {
   Card,
   CardHeader,
@@ -65,12 +65,14 @@ const BookEntryTicket: NextPageWithLayout = () => {
     }[]
   >([]);
   const [totalPrice, setTotalPrice] = useState(0);
+  const utils = api.useContext();
   const { data: titles, isLoading: isLoadingTitles } =
     api.title.getAll.useQuery({});
   const { data: reference } = api.reference.get.useQuery({});
   const { mutateAsync: createTicket } = api.bookEntryTicket.create.useMutation({
     onSuccess() {
       toast.success("Lưu phiếu nhập sách thành công !");
+      utils.bookEntryTicket.getAll.refetch();
     },
     onError(err) {
       console.error(err);
