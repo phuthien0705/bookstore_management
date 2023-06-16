@@ -31,7 +31,7 @@ const AddCustomerModal = ({ open, handleOpen }: IAddCustomerModal) => {
       handleOpen();
     },
     onError() {
-      toast.success("Có lỗi xảy ra.");
+      toast.error("Có lỗi xảy ra.");
     },
   });
 
@@ -42,13 +42,13 @@ const AddCustomerModal = ({ open, handleOpen }: IAddCustomerModal) => {
         <div className="flex flex-col gap-4">
           <div>
             <Input
+              required
               label="Tên"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-[250px]"
             />
           </div>
-
           <div>
             <Input
               label="Địa chỉ"
@@ -57,19 +57,19 @@ const AddCustomerModal = ({ open, handleOpen }: IAddCustomerModal) => {
               className="w-[250px]"
             />
           </div>
-
           <div>
             <Input
               label="Số điện thoại"
+              required
               value={number}
               type="tel"
               onChange={(e) => setNumber(e.target.value)}
               className="w-[250px]"
             />
           </div>
-
           <div>
             <Input
+              required
               label="Email"
               value={email}
               type="email"
@@ -84,6 +84,7 @@ const AddCustomerModal = ({ open, handleOpen }: IAddCustomerModal) => {
           <span>Huỷ</span>
         </Button>
         <Button
+          disabled={!name || !number || !email}
           variant="gradient"
           color="blue"
           onClick={() => {

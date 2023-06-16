@@ -1,12 +1,12 @@
-import { type AppProps, type AppType } from "next/app";
+import { MaterialTailwindControllerProvider } from "@/context";
+import "@/styles/globals.css";
+import { api } from "@/utils/api";
+import { ThemeProvider } from "@material-tailwind/react";
 import { type Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
-import { ThemeProvider } from "@material-tailwind/react";
+import { type AppProps, type AppType } from "next/app";
 import { Toaster } from "react-hot-toast";
-import { MaterialTailwindControllerProvider } from "@/context";
-import { api } from "@/utils/api";
 import { type NextPageWithLayout } from "./page";
-import "@/styles/globals.css";
 
 type Props = AppProps & {
   Component: NextPageWithLayout;
@@ -22,7 +22,17 @@ const MyApp: AppType<{ session: Session | null }> = ({
       <ThemeProvider>
         <MaterialTailwindControllerProvider>
           <>{getLayout(<Component {...pageProps} />)}</>
-          <Toaster position={"top-right"} />
+          <Toaster
+            containerStyle={{
+              zIndex: 10000000,
+            }}
+            position={"top-right"}
+            toastOptions={{
+              style: {
+                zIndex: 10000000,
+              },
+            }}
+          />
         </MaterialTailwindControllerProvider>
       </ThemeProvider>
     </SessionProvider>

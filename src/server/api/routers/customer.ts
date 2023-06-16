@@ -1,4 +1,5 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 export const customerRouter = createTRPCRouter({
@@ -44,6 +45,21 @@ export const customerRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      const khachHang = await ctx.prisma.kHACHHANG.findFirst({
+        where: {
+          SoDienThoai: input.SoDienThoai,
+          Email: input.Email,
+        },
+      });
+
+      if (khachHang) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Customer already exists",
+          // optional: pass the original error to retain stack trace
+        });
+      }
+
       return ctx.prisma.kHACHHANG.create({
         data: {
           ...input,
