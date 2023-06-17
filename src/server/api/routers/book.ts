@@ -44,6 +44,24 @@ export const bookRouter = createTRPCRouter({
         where: { MaSach },
       });
     }),
+  updateQt: protectedProcedure
+    .input(
+      z.object({
+        MaSach: z.number().int(),
+        Quantity: z.number().int(),
+      })
+    )
+    .mutation(({ input, ctx }) => {
+      const { MaSach, ...req } = input;
+      return ctx.prisma.sACH.update({
+        data: {
+          SoLuongTon: {
+            increment: -req.Quantity,
+          },
+        },
+        where: { MaSach },
+      });
+    }),
 
   getWithPagination: protectedProcedure
     .input(

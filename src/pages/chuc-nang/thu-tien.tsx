@@ -87,7 +87,8 @@ const ThuTien: NextPageWithLayout = () => {
         maKH: selectKH.MaKH,
         month: new Date().getMonth() + 1,
         year: new Date().getFullYear(),
-        quantity: -pay,
+        decreaseQuantity: pay,
+        increaseQuantity: 0,
       });
       executeAfter500ms(async () => {
         printPay();

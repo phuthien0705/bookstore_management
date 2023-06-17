@@ -42,42 +42,49 @@ export const statisticRouter = createTRPCRouter({
         maSach: z.number(),
         month: z.number(),
         year: z.number(),
-        quantity: z.number(),
-        updateQuantity: z.boolean().default(true).optional(),
+        increaseQuantity: z.number(),
+        decreaseQuantity: z.number(),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { maSach, month, year, quantity, updateQuantity } = input;
+      const { maSach, month, year, increaseQuantity, decreaseQuantity } = input;
 
-      await ctx.prisma.bAOCAOTON.update({
-        data: {
-          PhatSinh: {
-            increment: quantity,
-          },
-          TonCuoi: {
-            increment: quantity,
-          },
-        },
-        where: {
-          MaSach_Thang_Nam: {
-            MaSach: maSach,
-            Thang: month,
-            Nam: year,
-          },
-        },
-      });
-
-      updateQuantity &&
-        (await ctx.prisma.sACH.update({
-          where: {
-            MaSach: maSach,
-          },
+      if (increaseQuantity) {
+        await ctx.prisma.bAOCAOTON.update({
           data: {
-            SoLuongTon: {
-              increment: quantity,
+            PhatSinh: {
+              increment: increaseQuantity,
+            },
+            TonCuoi: {
+              increment: increaseQuantity,
             },
           },
-        }));
+          where: {
+            MaSach_Thang_Nam: {
+              MaSach: maSach,
+              Thang: month,
+              Nam: year,
+            },
+          },
+        });
+      }
+
+      if (decreaseQuantity) {
+        await ctx.prisma.bAOCAOTON.update({
+          data: {
+            TonCuoi: {
+              increment: -decreaseQuantity,
+            },
+          },
+          where: {
+            MaSach_Thang_Nam: {
+              MaSach: maSach,
+              Thang: month,
+              Nam: year,
+            },
+          },
+        });
+      }
     }),
 
   getBookLeftWithPagination: protectedProcedure
@@ -191,8 +198,8 @@ export const statisticRouter = createTRPCRouter({
           Thang: month,
           Nam: year,
           TonCuoi: debt,
-          TonDau: debt,
-          PhatSinh: 0,
+          TonDau: 0,
+          PhatSinh: debt,
         },
       });
     }),
@@ -203,11 +210,12 @@ export const statisticRouter = createTRPCRouter({
         maKH: z.number(),
         month: z.number(),
         year: z.number(),
-        quantity: z.number(),
+        increaseQuantity: z.number(),
+        decreaseQuantity: z.number(),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { maKH, month, year, quantity } = input;
+      const { maKH, month, year, increaseQuantity, decreaseQuantity } = input;
 
       const baocao = await ctx.prisma.bAOCAOCONGNO.findFirst({
         where: {
@@ -240,31 +248,52 @@ export const statisticRouter = createTRPCRouter({
             Thang: month,
             Nam: year,
             TonCuoi: baocaothangtruoc
-              ? Number(baocaothangtruoc.TonCuoi) + quantity
-              : quantity,
-            TonDau: baocaothangtruoc ? baocaothangtruoc.TonCuoi : quantity,
-            PhatSinh: baocaothangtruoc ? quantity : 0,
+              ? Number(baocaothangtruoc.TonCuoi) +
+                increaseQuantity -
+                decreaseQuantity
+              : increaseQuantity - decreaseQuantity,
+            TonDau: baocaothangtruoc ? baocaothangtruoc.TonCuoi : 0,
+            PhatSinh: increaseQuantity,
           },
         });
       }
 
-      return ctx.prisma.bAOCAOCONGNO.update({
-        data: {
-          PhatSinh: {
-            increment: quantity,
+      if (increaseQuantity) {
+        return ctx.prisma.bAOCAOCONGNO.update({
+          data: {
+            PhatSinh: {
+              increment: increaseQuantity,
+            },
+            TonCuoi: {
+              increment: increaseQuantity,
+            },
           },
-          TonCuoi: {
-            increment: quantity,
+          where: {
+            MaKH_Thang_Nam: {
+              MaKH: maKH,
+              Thang: month,
+              Nam: year,
+            },
           },
-        },
-        where: {
-          MaKH_Thang_Nam: {
-            MaKH: maKH,
-            Thang: month,
-            Nam: year,
+        });
+      }
+
+      if (decreaseQuantity) {
+        return ctx.prisma.bAOCAOCONGNO.update({
+          data: {
+            TonCuoi: {
+              increment: -decreaseQuantity,
+            },
           },
-        },
-      });
+          where: {
+            MaKH_Thang_Nam: {
+              MaKH: maKH,
+              Thang: month,
+              Nam: year,
+            },
+          },
+        });
+      }
     }),
 
   getUserDebtWithPagination: protectedProcedure

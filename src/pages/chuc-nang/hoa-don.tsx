@@ -127,8 +127,10 @@ const HoaDon: NextPageWithLayout = () => {
     setCurrentBook(defaultBID);
   };
 
-  const { mutate: updateBookQtFunc } =
+  const { mutate: updateBookLeftFunc } =
     api.statistic.updateBookLeftStatistic.useMutation();
+
+  const { mutate: updateBookQtFunc } = api.book.updateQt.useMutation();
 
   const { mutate: updateUserDept } =
     api.statistic.updateUserDebtStatistic.useMutation();
@@ -148,15 +150,21 @@ const HoaDon: NextPageWithLayout = () => {
           maKH: selectKH.MaKH,
           month: new Date().getMonth() + 1,
           year: new Date().getFullYear(),
-          quantity: debit,
+          increaseQuantity: debit,
+          decreaseQuantity: 0,
         });
 
         list.map((i) => {
-          updateBookQtFunc({
+          updateBookLeftFunc({
             maSach: i.MaSach,
-            quantity: -i.SoLuong,
+            decreaseQuantity: i.SoLuong,
+            increaseQuantity: 0,
             month: new Date().getMonth() + 1,
             year: new Date().getFullYear(),
+          });
+          updateBookQtFunc({
+            MaSach: i.MaSach,
+            Quantity: i.SoLuong,
           });
         });
 
