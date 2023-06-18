@@ -1,17 +1,18 @@
-import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
-import {
-  Dialog,
-  Card,
-  Typography,
-  CardBody,
-  Input,
-  CardFooter,
-  Button,
-} from "@material-tailwind/react";
-import { executeAfter500ms } from "@/utils/executeAfter500ms";
-import { api } from "@/utils/api";
-import { type THELOAI } from "@prisma/client";
 import { contentMapping } from "@/constant/modal";
+import { api } from "@/utils/api";
+import { executeAfter500ms } from "@/utils/executeAfter500ms";
+import {
+  Button,
+  Card,
+  CardBody,
+  CardFooter,
+  Dialog,
+  Input,
+  Typography,
+} from "@material-tailwind/react";
+import { type THELOAI } from "@prisma/client";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import toast from "react-hot-toast";
 
 interface ICategoryModal {
   open: boolean;
@@ -31,10 +32,8 @@ const CategoryModal: React.FC<ICategoryModal> = ({
   const clearValueAfterClose = () => {
     setValue("");
   };
-  const onChange = (e: React.FormEvent<HTMLInputElement>): void => {
-    const { value } = e.currentTarget;
-    setValue(value);
-  };
+  const { data: categorys, isLoading: isLoadingCategorys } =
+    api.category.getAll.useQuery();
   const {
     mutate: createFunc,
     status: createStatus,
@@ -43,7 +42,6 @@ const CategoryModal: React.FC<ICategoryModal> = ({
     onSuccess() {
       executeAfter500ms(async () => {
         handleOpen();
-
         clearValueAfterClose();
         await utils.category.getWithPagination.refetch();
       });
@@ -68,12 +66,31 @@ const CategoryModal: React.FC<ICategoryModal> = ({
         handleOpen();
       },
     });
-
+  const onChange = (e: React.FormEvent<HTMLInputElement>): void => {
+    const { value } = e.currentTarget;
+    setValue(value);
+  };
   const onSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
-    currentItem
-      ? updateFunc({ MaTL: currentItem.MaTL, TenTL: value })
-      : createFunc({ TenTL: value });
+    if (
+      currentItem &&
+      categorys &&
+      categorys
+        .filter((i) => i.MaTL !== currentItem.MaTL)
+        .find((i) => i.TenTL === value)
+    ) {
+      toast.error(`Tồn tại thể loại ${value}, vui lòng chọn tên khác.`);
+      return;
+    }
+    if (currentItem) {
+      updateFunc({ MaTL: currentItem.MaTL, TenTL: value });
+      return;
+    }
+    if (categorys && categorys.find((i) => i.TenTL === value)) {
+      toast.error(`Tồn tại thể loại ${value}, vui lòng chọn tên khác.`);
+      return;
+    }
+    createFunc({ TenTL: value });
   };
 
   const status = currentItem ? updateStatus : createStatus;
