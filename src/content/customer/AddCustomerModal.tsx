@@ -23,7 +23,6 @@ const AddCustomerModal = ({ open, handleOpen }: IAddCustomerModal) => {
   const [email, setEmail] = useState("");
 
   const utils = api.useContext();
-
   const { mutate } = api.customer.createKhachHang.useMutation({
     onSuccess() {
       utils.customer.getKhachHang.refetch();
@@ -35,6 +34,14 @@ const AddCustomerModal = ({ open, handleOpen }: IAddCustomerModal) => {
       toast.error("Có lỗi xảy ra.");
     },
   });
+  const handleCreateCustomer = () => {
+    mutate({
+      HoTen: name,
+      DiaChi: address,
+      SoDienThoai: number,
+      Email: email,
+    });
+  };
 
   return (
     <Dialog open={open} handler={handleOpen}>
@@ -64,11 +71,10 @@ const AddCustomerModal = ({ open, handleOpen }: IAddCustomerModal) => {
               required
               value={number}
               type="tel"
-              onChange={(e) =>
-                {
-                  if (!isStringNumeric(e.target.value)) return;
-                  setNumber(e.target.value)}
-                }
+              onChange={(e) => {
+                if (!isStringNumeric(e.target.value)) return;
+                setNumber(e.target.value);
+              }}
               className="w-[250px]"
             />
           </div>
@@ -92,14 +98,7 @@ const AddCustomerModal = ({ open, handleOpen }: IAddCustomerModal) => {
           disabled={!name || !number || !email}
           variant="gradient"
           color="blue"
-          onClick={() => {
-            mutate({
-              HoTen: name,
-              DiaChi: address,
-              SoDienThoai: number,
-              Email: email,
-            });
-          }}
+          onClick={handleCreateCustomer}
         >
           <span>Tạo</span>
         </Button>

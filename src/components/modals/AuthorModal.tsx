@@ -1,17 +1,18 @@
-import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
+import { contentMapping } from "@/constant/modal";
+import { api } from "@/utils/api";
+import { executeAfter500ms } from "@/utils/executeAfter500ms";
 import {
-  Dialog,
-  Card,
-  Typography,
-  CardBody,
-  Input,
-  CardFooter,
   Button,
+  Card,
+  CardBody,
+  CardFooter,
+  Dialog,
+  Input,
+  Typography,
 } from "@material-tailwind/react";
 import { type TACGIA } from "@prisma/client";
-import { executeAfter500ms } from "@/utils/executeAfter500ms";
-import { api } from "@/utils/api";
-import { contentMapping } from "@/constant/modal";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { toast } from "react-hot-toast";
 
 interface IAuthorModal {
   open: boolean;
@@ -31,6 +32,7 @@ const AuthorModal: React.FC<IAuthorModal> = ({
   const clearValueAfterClose = () => {
     setValue("");
   };
+  const { data: authors } = api.author.getAll.useQuery();
   const onChange = (e: React.FormEvent<HTMLInputElement>): void => {
     const { value } = e.currentTarget;
     setValue(value);
@@ -71,9 +73,25 @@ const AuthorModal: React.FC<IAuthorModal> = ({
 
   const onSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
-    currentItem
-      ? updateFunc({ MaTG: currentItem.MaTG, TenTG: value })
-      : createFunc({ TenTG: value });
+    if (
+      currentItem &&
+      authors &&
+      authors
+        .filter((i) => i.MaTG !== currentItem.MaTG)
+        .find((i) => i.TenTG === value)
+    ) {
+      toast.error(`Tồn tại tác giả ${value}, vui lòng chọn tên khác`);
+      return;
+    }
+    if (currentItem) {
+      updateFunc({ MaTG: currentItem.MaTG, TenTG: value });
+      return;
+    }
+    if (authors && authors.find((i) => i.TenTG === value)) {
+      toast.error(`Tồn tại tác giả ${value}, vui lòng chọn tên khác`);
+      return;
+    }
+    createFunc({ TenTG: value });
   };
 
   const status = currentItem ? updateStatus : createStatus;

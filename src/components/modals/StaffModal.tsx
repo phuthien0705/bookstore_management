@@ -1,21 +1,22 @@
-import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
-import {
-  Dialog,
-  Card,
-  Typography,
-  CardBody,
-  Input,
-  CardFooter,
-  Button,
-  Chip,
-  IconButton,
-} from "@material-tailwind/react";
+import { UserRole } from "@/constant/constant";
+import { contentMapping } from "@/constant/modal";
+import { api } from "@/utils/api";
 import { executeAfter500ms } from "@/utils/executeAfter500ms";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import {
+  Button,
+  Card,
+  CardBody,
+  CardFooter,
+  Chip,
+  Dialog,
+  IconButton,
+  Input,
+  Typography,
+} from "@material-tailwind/react";
 import { type TAIKHOAN } from "@prisma/client";
-import { contentMapping } from "@/constant/modal";
-import { UserRole } from "@/constant/constant";
-import { api } from "@/utils/api";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import toast from "react-hot-toast";
 
 interface IStaffModal {
   open: boolean;
@@ -40,6 +41,7 @@ const StaffModal: React.FC<IStaffModal> = ({
     MaNhom: 0,
   });
   const [showPassword, setShowPassword] = useState(false);
+  const { data: accounts } = api.account.getAll.useQuery();
   const { data: groupUsers, isLoading: isLoadingGroupUsers } =
     api.groupUser.getAll.useQuery();
   const clearValueAfterClose = () => {
@@ -89,17 +91,39 @@ const StaffModal: React.FC<IStaffModal> = ({
 
   const onSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
-    if (groupUsers) {
-      currentItem
-        ? updateFunc({ ...value })
-        : createFunc({
-            TenDangNhap: value.TenDangNhap,
-            MatKhau: value.MatKhau,
-            MaNhom:
-              groupUsers?.find((gu) => gu.TenNhom === UserRole.staff)?.MaNhom ??
-              defaultGroupIdOfStaff,
-          });
+    if (!groupUsers) {
+      toast.error("Xảy ra lỗi trong quá trình tải dữ liệu");
+      return;
     }
+    if (
+      currentItem &&
+      accounts &&
+      accounts
+        .filter((i) => i.MaTK !== currentItem.MaTK)
+        .find((i) => i.TenDangNhap === value.TenDangNhap)
+    ) {
+      toast.error(
+        `Tồn tại tài khoản có tên đăng nhập là ${value.TenDangNhap}, vui lòng chọn tên khác.`
+      );
+      return;
+    }
+    if (currentItem) {
+      updateFunc({ ...value });
+      return;
+    }
+    if (accounts && accounts.find((i) => i.TenDangNhap === value.TenDangNhap)) {
+      toast.error(
+        `Tồn tại tài khoản có tên đăng nhập là ${value.TenDangNhap}, vui lòng chọn tên khác.`
+      );
+      return;
+    }
+    createFunc({
+      TenDangNhap: value.TenDangNhap,
+      MatKhau: value.MatKhau,
+      MaNhom:
+        groupUsers?.find((gu) => gu.TenNhom === UserRole.staff)?.MaNhom ??
+        defaultGroupIdOfStaff,
+    });
   };
 
   const status = currentItem ? updateStatus : createStatus;

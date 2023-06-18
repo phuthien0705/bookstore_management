@@ -1,24 +1,25 @@
-import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
+import { contentMapping } from "@/constant/modal";
+import { api } from "@/utils/api";
+import { executeAfter500ms } from "@/utils/executeAfter500ms";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import {
-  Dialog,
-  Card,
-  Typography,
-  CardBody,
-  Input,
-  CardFooter,
   Button,
-  Select,
-  Option,
+  Card,
+  CardBody,
+  CardFooter,
+  Dialog,
+  IconButton,
+  Input,
   List,
   ListItem,
   ListItemSuffix,
-  IconButton,
+  Option,
+  Select,
+  Typography,
 } from "@material-tailwind/react";
 import { type CT_TACGIA, type DAUSACH } from "@prisma/client";
-import { XMarkIcon } from "@heroicons/react/24/outline";
-import { executeAfter500ms } from "@/utils/executeAfter500ms";
-import { api } from "@/utils/api";
-import { contentMapping } from "@/constant/modal";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import toast from "react-hot-toast";
 
 interface ITitleModal {
   open: boolean;
@@ -59,6 +60,7 @@ const TitleModal: React.FC<ITitleModal> = ({
     api.category.getAll.useQuery();
   const { data: authorData, isLoading: isLoadingAuthor } =
     api.author.getAll.useQuery();
+  const { data: titles } = api.title.getAll.useQuery();
   const clearValueAfterClose = () => {
     setValue({ MaDauSach: 0, MaTL: 0, TenDauSach: "", CT_TACGIA: [] });
   };
@@ -104,18 +106,38 @@ const TitleModal: React.FC<ITitleModal> = ({
 
   const onSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
-    currentItem
-      ? updateFunc({
-          MaDauSach: currentItem.MaDauSach,
-          TenDauSach: value.TenDauSach,
-          MaTL: value.MaTL,
-          TacGia: value.CT_TACGIA.map((i) => i.MaTG),
-        })
-      : createFunc({
-          TenDauSach: value.TenDauSach,
-          MaTL: value.MaTL,
-          TacGia: value.CT_TACGIA.map((i) => i.MaTG),
-        });
+    if (
+      currentItem &&
+      titles &&
+      titles
+        .filter((i) => i.MaDauSach !== currentItem.MaDauSach)
+        .find((i) => i.TenDauSach === value.TenDauSach)
+    ) {
+      toast.error(
+        `Tồn tại đầu sách ${value.TenDauSach}, vui lòng chọn tên khác.`
+      );
+      return;
+    }
+    if (currentItem) {
+      updateFunc({
+        MaDauSach: currentItem.MaDauSach,
+        TenDauSach: value.TenDauSach,
+        MaTL: value.MaTL,
+        TacGia: value.CT_TACGIA.map((i) => i.MaTG),
+      });
+      return;
+    }
+    if (titles && titles.find((i) => i.TenDauSach === value.TenDauSach)) {
+      toast.error(
+        `Tồn tại đầu sách ${value.TenDauSach}, vui lòng chọn tên khác.`
+      );
+      return;
+    }
+    createFunc({
+      TenDauSach: value.TenDauSach,
+      MaTL: value.MaTL,
+      TacGia: value.CT_TACGIA.map((i) => i.MaTG),
+    });
   };
 
   const status = currentItem ? updateStatus : createStatus;
