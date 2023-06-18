@@ -55,7 +55,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
     const formattedDate = `${year}-${month}-${day}`;
     return formattedDate;
   });
-  const { data: references } = api.reference.get.useQuery()
+  const { data: references } = api.reference.get.useQuery();
   const [isTableOpen, setIsTableOpen] = useState(true); // Thêm state để theo dõi trạng thái của bảng sách
   const [tableHeight, setTableHeight] = useState(0);
   const tableRef = useRef(null);
@@ -216,17 +216,17 @@ const BookEntryTicket: NextPageWithLayout = () => {
         bookCount: response.count,
       });
 
-      const updateList = bookList.filter((item) => item.MaSach);
-
-      updateList.forEach((item) => {
-        updateBookLeftStatistic({
-          maSach: item?.MaSach as number,
-          month: Number(month),
-          year: Number(year),
-          quantity: item.SoLuongTon,
-          updateQuantity: false,
+      bookList
+        .filter((item) => item.MaSach)
+        .forEach((item) => {
+          updateBookLeftStatistic({
+            maSach: item?.MaSach as number,
+            month: Number(month),
+            year: Number(year),
+            increaseQuantity: item.SoLuongTon,
+            decreaseQuantity: 0,
+          });
         });
-      });
     } else {
       toast.error("Đăng nhập để thực hiện thao tác tạo sách");
       await router.push({
