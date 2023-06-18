@@ -49,6 +49,47 @@ export const statisticRouter = createTRPCRouter({
     .mutation(async ({ input, ctx }) => {
       const { maSach, month, year, increaseQuantity, decreaseQuantity } = input;
 
+      const sachTon = await ctx.prisma.bAOCAOTON.findFirst({
+        where: {
+          MaSach: maSach,
+          Thang: month,
+          Nam: year,
+        },
+      });
+
+      if (!sachTon) {
+        let prevThang = month - 1;
+        let prevYear = year;
+
+        if (prevThang <= 0) {
+          prevThang = 12;
+          prevYear -= 1;
+        }
+
+        const baocaothangtruoc = await ctx.prisma.bAOCAOTON.findFirst({
+          where: {
+            MaSach: maSach,
+            Thang: prevThang,
+            Nam: prevYear,
+          },
+        });
+
+        return ctx.prisma.bAOCAOTON.create({
+          data: {
+            MaSach: maSach,
+            Thang: month,
+            Nam: year,
+            TonCuoi: baocaothangtruoc
+              ? Number(baocaothangtruoc.TonCuoi) +
+                increaseQuantity -
+                decreaseQuantity
+              : increaseQuantity - decreaseQuantity, // không thể âm vì nếu có decrease mà k có increase thì hoá đơn đã ktra lượng tồn phải đủ cho số lượng khách mua r
+            TonDau: baocaothangtruoc ? baocaothangtruoc.TonCuoi : 0,
+            PhatSinh: increaseQuantity,
+          },
+        });
+      }
+
       if (increaseQuantity) {
         await ctx.prisma.bAOCAOTON.update({
           data: {
