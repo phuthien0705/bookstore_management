@@ -22,6 +22,7 @@ import {
   Select,
   Typography,
 } from "@material-tailwind/react";
+import { useSession } from "next-auth/react";
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
@@ -69,7 +70,7 @@ const HoaDon: NextPageWithLayout = () => {
   const [today, setDate] = useState(new Date());
 
   const utils = api.useContext();
-
+  const { data: sessionData } = useSession();
   const { data: thamso } = api.invoice.getReference.useQuery();
   const [quantity, setQuantity] = useState(1);
   const [selectKH, setKH] = useState<TKhachHanng>(defaultValue);
@@ -164,10 +165,6 @@ const HoaDon: NextPageWithLayout = () => {
     api.invoice.getKhachHangWithSearch.useQuery({
       searchValue: searchValueDebouncedKH,
       type: filterVauleKH,
-      NoToiDa:
-        thamso?.SuDungQuyDinh == true
-          ? thamso?.CongNoToiDa ?? 0
-          : 99999999999999,
     });
 
   const {
@@ -247,6 +244,7 @@ const HoaDon: NextPageWithLayout = () => {
   const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
     createHDFunc({
+      MaTK: sessionData?.user?.MaTK || -9,
       TongTien: parseInt(total),
       MaKH: selectKH.MaKH,
       CT_HOADON: list.map((i) => ({
@@ -329,7 +327,7 @@ const HoaDon: NextPageWithLayout = () => {
                     {" "}
                     <Select
                       variant="static"
-                      label="Khách hàng (Tên - SĐT): "
+                      label="Khách hàng: "
                       disabled={isLoadingKH}
                       onChange={(e) => {
                         setKH((p) => ({ ...p, MaKH: parseInt(e as string) }));

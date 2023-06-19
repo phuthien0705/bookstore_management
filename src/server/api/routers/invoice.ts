@@ -9,6 +9,7 @@ export const invoiceRouter = createTRPCRouter({
       z.object({
         TongTien: z.number(),
         MaKH: z.number().int(),
+        MaTK: z.number().int(),
         CT_HOADON: z.array(
           z.object({
             MaSach: z.number().int(),
@@ -21,7 +22,7 @@ export const invoiceRouter = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }) => {
       const invoice = await ctx.prisma.hOADONBANSACH.create({
-        data: { TongTien: input.TongTien, MaKH: input.MaKH, MaTK: 1 },
+        data: { TongTien: input.TongTien, MaKH: input.MaKH, MaTK: input.MaTK },
       });
       return ctx.prisma.cT_HOADON.createMany({
         data: input.CT_HOADON.map((i) => ({
@@ -66,7 +67,9 @@ export const invoiceRouter = createTRPCRouter({
     .input(
       z.object({
         SoTien: z.number(),
+
         MaKH: z.number().int(),
+        MaTK: z.number().int(),
       })
     )
     .mutation(({ input, ctx }) => {
@@ -74,7 +77,7 @@ export const invoiceRouter = createTRPCRouter({
         data: {
           SoTien: input.SoTien,
           MaKH: input.MaKH,
-          MaTK: 1,
+          MaTK: input.MaTK,
         },
       });
     }),
@@ -174,13 +177,12 @@ export const invoiceRouter = createTRPCRouter({
   getKhachHangWithSearch: protectedProcedure
     .input(
       z.object({
-        NoToiDa: z.number(),
         searchValue: z.string(),
         type: z.string(),
       })
     )
     .query(async ({ input, ctx }) => {
-      const { NoToiDa, searchValue } = input;
+      const { searchValue } = input;
       const [customers] = await Promise.all([
         ctx.prisma.kHACHHANG.findMany({
           where: {
