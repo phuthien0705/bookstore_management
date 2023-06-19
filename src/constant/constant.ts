@@ -12,3 +12,15 @@ export enum EFilterBook {
   bookId = "bookId",
   price = "price",
 }
+
+export enum EFilterBookInvoice {
+  all = "all",
+  bookId = "bookId",
+  title = "title",
+}
+export enum EFilterKHInvoice {
+  all = "all",
+  MaKH = "MaKH",
+  HoTen = "HoTen",
+  SoDienThoai = "SoDienThoai",
+}
