@@ -1,9 +1,16 @@
+import { EFilterBookInvoice, EFilterKHInvoice } from "@/constant/constant";
 import AddCustomerModal from "@/content/customer/AddCustomerModal";
+import useDebounce from "@/hook/useDebounce";
 import DashboardLayout from "@/layouts/dashboard";
 import { api } from "@/utils/api";
 import { executeAfter500ms } from "@/utils/executeAfter500ms";
+import { isStringNumeric } from "@/utils/isStringNumeric";
 import { moneyFormat, parseMoneyFormat } from "@/utils/moneyFormat";
-import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import {
+  MagnifyingGlassIcon,
+  PlusIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
 import {
   Button,
   Card,
@@ -15,12 +22,12 @@ import {
   Select,
   Typography,
 } from "@material-tailwind/react";
+import { useSession } from "next-auth/react";
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useReactToPrint } from "react-to-print";
 import { type NextPageWithLayout } from "../page";
-
 const TABLE_HEAD = [
   "STT",
   "Sách",
@@ -63,21 +70,32 @@ const HoaDon: NextPageWithLayout = () => {
   const [today, setDate] = useState(new Date());
 
   const utils = api.useContext();
-  const { data: KhachHang, isLoading: isLoadingKH } =
-    api.customer.getKhachHang.useQuery();
-
-  const { data: Books, isLoading: isLoadingBook } =
-    api.book.getAllBookWithTitle.useQuery();
-  const { data: thamchieu } = api.reference.get.useQuery();
-  const [quantity, setQuantity] = useState("0");
+  const { data: sessionData } = useSession();
+  const { data: thamso } = api.invoice.getReference.useQuery();
+  const [quantity, setQuantity] = useState(1);
   const [selectKH, setKH] = useState<TKhachHanng>(defaultValue);
   const [currentBook, setCurrentBook] = useState<BID>(defaultBID);
   const [list, setList] = useState<LBook[]>([]);
   const [total, setTotal] = useState<string>("0");
   const [pay, setPay] = useState<string>("0");
   const [debit, setDebit] = useState<number>(0);
+  // Filter and search states
+  const [filterVaule, setFilterValue] = useState(EFilterBookInvoice.all);
+  const [searchValue, setSearchValue] = useState<string>("");
+  const [searchValueDebounced, setSearchValueDebounced] = useState<string>("");
+  const debounced = useDebounce({ value: searchValue, delay: 500 });
+  // Search Customer
+  const [filterVauleKH, setFilterValueKH] = useState(EFilterKHInvoice.all);
+  const [searchValueKH, setSearchValueKH] = useState<string>("");
+  const [searchValueDebouncedKH, setSearchValueDebouncedKH] =
+    useState<string>("");
+  const debouncedKH = useDebounce({ value: searchValueKH, delay: 500 });
   const clearAll = () => {
-    setQuantity("1");
+    setFilterValue(EFilterBookInvoice.all);
+    setFilterValueKH(EFilterKHInvoice.all);
+    setSearchValue("");
+    setSearchValueKH("");
+    setQuantity(1);
     setKH(defaultValue);
     setCurrentBook(defaultBID);
     setList([]);
@@ -92,12 +110,21 @@ const HoaDon: NextPageWithLayout = () => {
   const handleAddBook = () => {
     let dongia;
     let thanhtien;
-    if (Books && thamchieu) {
+    if (Books && thamso && thamso.SuDungQuyDinh == true) {
       dongia =
-        (Number(Books.find((i) => i.MaSach == currentBook.MaSach)?.DonGiaBan) ??
-          0) *
-        (Number(thamchieu.TyLeDonGia) / 100);
-      if (dongia && thamchieu) {
+        (Number(
+          Books.datas.find((i) => i.MaSach == currentBook.MaSach)?.DonGiaBan
+        ) ?? 0) *
+        (Number(thamso.TyLeDonGia) / 100);
+      if (dongia && thamso) {
+        thanhtien = Number(dongia) * (Number(quantity) || 0);
+      }
+    } else if (thamso?.SuDungQuyDinh == false) {
+      dongia =
+        Number(
+          Books?.datas?.find((i) => i.MaSach == currentBook.MaSach)?.DonGiaBan
+        ) ?? 0;
+      if (dongia && thamso) {
         thanhtien = Number(dongia) * (Number(quantity) || 0);
       }
     }
@@ -106,7 +133,7 @@ const HoaDon: NextPageWithLayout = () => {
       setList([
         {
           MaSach: currentBook.MaSach,
-          SoLuong: Number(quantity),
+          SoLuong: quantity,
           DonGia: dongia?.toString() ?? "0",
           ThanhTien: thanhtien?.toString() ?? "0",
         },
@@ -115,15 +142,14 @@ const HoaDon: NextPageWithLayout = () => {
     } else {
       list.push({
         MaSach: currentBook.MaSach,
-        SoLuong: Number(quantity),
+        SoLuong: quantity,
         DonGia: dongia?.toString() ?? "0",
         ThanhTien: thanhtien?.toString() ?? "0",
       });
       setList(list);
       setTotal((Number(thanhtien) + Number(total)).toString());
     }
-
-    setQuantity("");
+    setQuantity(1);
     setCurrentBook(defaultBID);
   };
 
@@ -135,13 +161,31 @@ const HoaDon: NextPageWithLayout = () => {
   const { mutate: updateUserDept } =
     api.statistic.updateUserDebtStatistic.useMutation();
 
+  const { data: KhachHang, isLoading: isLoadingKH } =
+    api.invoice.getKhachHangWithSearch.useQuery({
+      searchValue: searchValueDebouncedKH,
+      type: filterVauleKH,
+    });
+
+  const {
+    data: Books,
+    isLoading: isLoadingBook,
+    isFetching,
+  } = api.invoice.getBookWithSearch.useQuery({
+    searchValue: searchValueDebounced,
+    type: filterVaule,
+    SLTon:
+      thamso?.SuDungQuyDinh == true ? thamso?.TonKhoToiThieuSauBan ?? 0 : 0,
+  });
+
   const { mutate: createHDFunc } = api.invoice.createHD.useMutation({
     onSuccess() {
       executeAfter500ms(async () => {
         updateDebitFunc({
           MaKH: selectKH.MaKH,
           NoHienTai: Number(
-            KhachHang?.find((i) => i.MaKH == selectKH.MaKH)?.TienNo || undefined
+            KhachHang?.datas?.find((i) => i.MaKH == selectKH.MaKH)?.TienNo ||
+              undefined
           ),
           ConLai: debit,
         });
@@ -168,9 +212,9 @@ const HoaDon: NextPageWithLayout = () => {
           });
         });
 
-        await utils.customer.getKhachHang.refetch();
-        await utils.book.getAllBookWithTitle.refetch();
-        await utils.reference.get.refetch();
+        await utils.invoice.getKhachHangWithSearch.refetch();
+        await utils.invoice.getBookWithSearch.refetch();
+        await utils.invoice.getReference.refetch();
         toast.success("Tạo hóa đơn thành công");
         printInvoice();
         clearAll();
@@ -186,8 +230,8 @@ const HoaDon: NextPageWithLayout = () => {
     api.invoice.updateDebitOnNewInvoice.useMutation({
       onSuccess: () => {
         executeAfter500ms(async () => {
-          await utils.customer.getKhachHang.refetch();
-          await utils.book.getAllBookWithTitle.refetch();
+          await utils.invoice.getKhachHangWithSearch.refetch();
+          await utils.invoice.getBookWithSearch.refetch();
         });
         toast.success("Đã cập nhật nợ khách hàng thành công");
       },
@@ -200,6 +244,7 @@ const HoaDon: NextPageWithLayout = () => {
   const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
     createHDFunc({
+      MaTK: sessionData?.user?.MaTK || -9,
       TongTien: parseInt(total),
       MaKH: selectKH.MaKH,
       CT_HOADON: list.map((i) => ({
@@ -215,6 +260,13 @@ const HoaDon: NextPageWithLayout = () => {
     setDebit(Number(total) - parseMoneyFormat(pay));
   }, [total, pay]);
 
+  useEffect(() => {
+    setSearchValueDebounced(searchValue);
+  }, [debounced]);
+
+  useEffect(() => {
+    setSearchValueDebouncedKH(searchValueKH);
+  }, [debouncedKH]);
   return (
     <>
       <Head>
@@ -244,12 +296,38 @@ const HoaDon: NextPageWithLayout = () => {
                 <Typography className="mb-4 mt-2 font-bold">
                   Thông tin khách hàng
                 </Typography>
+                {/* Search KH */}
+                <div className="m-4 flex justify-end gap-2">
+                  <div className="w-full md:w-56">
+                    <Select
+                      label="Tìm kiếm theo"
+                      onChange={(e) => {
+                        setFilterValueKH(e as unknown as EFilterKHInvoice);
+                      }}
+                    >
+                      <Option value={EFilterKHInvoice.all}>Tất cả</Option>{" "}
+                      <Option value={EFilterKHInvoice.MaKH}>ID khách</Option>
+                      <Option value={EFilterKHInvoice.HoTen}>Họ tên</Option>
+                      <Option value={EFilterKHInvoice.SoDienThoai}>
+                        Số điện thoại
+                      </Option>
+                    </Select>
+                  </div>
+                  <div className="w-full md:w-56">
+                    <Input
+                      label="Tìm kiếm khách hàng"
+                      icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                      value={searchValueKH}
+                      onChange={(e) => setSearchValueKH(e.target.value)}
+                    />
+                  </div>
+                </div>
                 <div className="flex w-full flex-col items-start justify-between gap-2">
                   <div className="w-1/2">
                     {" "}
                     <Select
                       variant="static"
-                      label="Khách hàng (Tên - SĐT): "
+                      label="Khách hàng: "
                       disabled={isLoadingKH}
                       onChange={(e) => {
                         setKH((p) => ({ ...p, MaKH: parseInt(e as string) }));
@@ -257,16 +335,36 @@ const HoaDon: NextPageWithLayout = () => {
                     >
                       {isLoadingKH ? (
                         <Option>Đang tải...</Option>
-                      ) : KhachHang && KhachHang.length > 0 ? (
-                        KhachHang.map((item) => (
+                      ) : KhachHang && KhachHang?.datas?.length > 0 ? (
+                        KhachHang?.datas?.map((item) => (
                           <Option
+                            disabled={
+                              Number(item.TienNo) >=
+                              Number(
+                                thamso?.SuDungQuyDinh == true
+                                  ? thamso?.CongNoToiDa || 0
+                                  : 9999999999999
+                              )
+                            }
                             key={item.MaKH}
                             value={item.MaKH.toString()}
                             className="max-w-300"
                           >
-                            KH: {item.HoTen}
+                            ID:{item.MaKH.toString()} {item.HoTen}
                             {" - SDT: "}
                             {item.SoDienThoai}
+                            {Number(item.TienNo) >=
+                            Number(
+                              thamso?.SuDungQuyDinh == true
+                                ? thamso?.CongNoToiDa || 0
+                                : 9999999999999
+                            )
+                              ? ` (Khách hàng này đã vượt mức nợ quy định là: ${moneyFormat(
+                                  thamso?.SuDungQuyDinh == true
+                                    ? thamso?.CongNoToiDa || 0
+                                    : 9999999999999
+                                )} VNĐ! Thanh toán nợ cũ để mua tiếp) `
+                              : ""}
                           </Option>
                         ))
                       ) : (
@@ -281,8 +379,9 @@ const HoaDon: NextPageWithLayout = () => {
                         Số tiền đang nợ:{" "}
                         {moneyFormat(
                           Number(
-                            KhachHang?.find((i) => i.MaKH == selectKH.MaKH)
-                              ?.TienNo || undefined
+                            KhachHang?.datas?.find(
+                              (i) => i.MaKH == selectKH.MaKH
+                            )?.TienNo || undefined
                           )
                         )}
                         VNĐ
@@ -293,6 +392,29 @@ const HoaDon: NextPageWithLayout = () => {
                 <Typography className="mb-4 mt-4 font-bold">
                   Thông tin sách
                 </Typography>
+                <div className="m-4 flex justify-end gap-2">
+                  <div className="w-full md:w-56">
+                    <Select
+                      label="Tìm kiếm theo"
+                      // value={filterVaule}
+                      onChange={(e) => {
+                        setFilterValue(e as unknown as EFilterBookInvoice);
+                      }}
+                    >
+                      <Option value={EFilterBookInvoice.all}>Tất cả</Option>{" "}
+                      <Option value={EFilterBookInvoice.bookId}>Mã Sách</Option>
+                      <Option value={EFilterBookInvoice.title}>Tên sách</Option>
+                    </Select>
+                  </div>
+                  <div className="w-full md:w-56">
+                    <Input
+                      label="Tìm kiếm sản phẩm"
+                      icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                      value={searchValue}
+                      onChange={(e) => setSearchValue(e.target.value)}
+                    />
+                  </div>
+                </div>
                 <div className="flex items-center justify-between gap-4">
                   <div className="w-1/2">
                     <Select
@@ -308,8 +430,8 @@ const HoaDon: NextPageWithLayout = () => {
                     >
                       {isLoadingBook ? (
                         <Option>Đang tải sách...</Option>
-                      ) : Books && Books.length > 0 ? (
-                        Books.map((item) => (
+                      ) : Books && Books.datas.length > 0 ? (
+                        Books.datas.map((item) => (
                           <Option
                             disabled={
                               list.find((i) => i.MaSach == item.MaSach)
@@ -319,13 +441,25 @@ const HoaDon: NextPageWithLayout = () => {
                             key={item.MaSach}
                             value={item.MaSach.toString()}
                           >
-                            {item.DauSach.TenDauSach.toString() +
+                            {"MS: " +
+                              item.MaSach.toString() +
+                              " " +
+                              item.DauSach.TenDauSach.toString() +
                               " - " +
                               "Xuất bản: " +
                               item.NamXuatBan.toString() +
                               " (Qt: " +
                               item.SoLuongTon.toString() +
-                              ")"}
+                              ") - Đơn giá: " +
+                              moneyFormat(
+                                Number(item.DonGiaBan) *
+                                  Number(
+                                    thamso?.SuDungQuyDinh == true
+                                      ? thamso?.TyLeDonGia ?? 0 / 100
+                                      : 1
+                                  )
+                              ) +
+                              " VNĐ"}
                           </Option>
                         ))
                       ) : (
@@ -339,29 +473,53 @@ const HoaDon: NextPageWithLayout = () => {
                       label="Số lượng"
                       value={quantity}
                       onChange={(e) => {
-                        if (e.target.value.includes("-")) return;
-                        setQuantity(e.target.value);
+                        if (!isStringNumeric(e.target.value)) return;
+                        setQuantity(Number(e.target.value || "0"));
                       }}
                     />
-
                     <IconButton
                       variant="filled"
                       color="blue"
                       disabled={
                         Number(
-                          Books?.find((i) => i.MaSach == currentBook.MaSach)
-                            ?.SoLuongTon || -99999999999
+                          Books?.datas?.find(
+                            (i) => i.MaSach == currentBook.MaSach
+                          )?.SoLuongTon ?? -99999999999
                         ) -
                           Number(quantity) <
-                          Number(thamchieu?.TonKhoToiThieuSauBan || -999999) ||
-                        quantity === "0" ||
-                        quantity === ""
+                          Number(
+                            thamso?.SuDungQuyDinh == true
+                              ? thamso?.TonKhoToiThieuSauBan ?? 0
+                              : 0
+                          ) ||
+                        quantity === 0 ||
+                        quantity === null
                       }
                       onClick={handleAddBook}
                     >
                       <PlusIcon strokeWidth={3} className="h-4 w-4" />
                     </IconButton>
                   </div>
+                  {Number(
+                    Books?.datas?.find((i) => i.MaSach == currentBook.MaSach)
+                      ?.SoLuongTon ?? -99999999999
+                  ) -
+                    Number(quantity) <
+                    Number(
+                      thamso?.SuDungQuyDinh == true
+                        ? thamso?.TonKhoToiThieuSauBan ?? 0
+                        : 0
+                    ) && currentBook !== defaultBID ? (
+                    <Typography className="text-red-500">
+                      Tồn kho tối thiểu sau khi bán phải lớn hơn{" "}
+                      {thamso?.SuDungQuyDinh == true
+                        ? thamso?.TonKhoToiThieuSauBan ?? 0
+                        : 0}
+                      !
+                    </Typography>
+                  ) : (
+                    ""
+                  )}
                 </div>
                 <div className="mb-4 mt-4 flex flex-col gap-6">
                   <table className="w-full min-w-max table-auto text-left">
@@ -386,7 +544,7 @@ const HoaDon: NextPageWithLayout = () => {
                     {list.length > 0 ? (
                       <tbody>
                         {Books &&
-                          Books.map((items, index) => {
+                          Books.datas.map((items, index) => {
                             if (!list.find((i) => i.MaSach == items.MaSach)) {
                               return;
                             }
@@ -419,10 +577,14 @@ const HoaDon: NextPageWithLayout = () => {
                                     color="blue-gray"
                                     className="font-normal"
                                   >
-                                    {thamchieu &&
+                                    {thamso &&
                                       moneyFormat(
                                         Number(items.DonGiaBan) *
-                                          (Number(thamchieu.TyLeDonGia) / 100)
+                                          Number(
+                                            thamso?.SuDungQuyDinh == true
+                                              ? thamso.TyLeDonGia ?? 0 / 100
+                                              : 1
+                                          )
                                       )}
                                     VNĐ
                                   </Typography>
@@ -465,8 +627,7 @@ const HoaDon: NextPageWithLayout = () => {
                                     onClick={() => {
                                       setList(
                                         list.filter(
-                                          (cailon) =>
-                                            cailon.MaSach != items.MaSach
+                                          (ft) => ft.MaSach != items.MaSach
                                         )
                                       );
                                       setTotal(
@@ -541,6 +702,40 @@ const HoaDon: NextPageWithLayout = () => {
                           );
                         }}
                       />
+                      {Number(
+                        KhachHang?.datas?.find((i) => i.MaKH == selectKH.MaKH)
+                          ?.TienNo || 0
+                      ) >
+                        Number(
+                          thamso?.SuDungQuyDinh == true
+                            ? thamso?.CongNoToiDa || 0
+                            : 9999999999999
+                        ) ||
+                      (Number(
+                        KhachHang?.datas?.find((i) => i.MaKH == selectKH.MaKH)
+                          ?.TienNo || 0
+                      ) +
+                        debit >
+                        Number(
+                          thamso?.SuDungQuyDinh == true
+                            ? thamso?.CongNoToiDa || 0
+                            : 9999999999999
+                        ) &&
+                        selectKH !== defaultValue) ? (
+                        <Typography className="text-red-500">
+                          Tiền nợ của khách hàng không được vượt quá{" "}
+                          {moneyFormat(
+                            Number(
+                              thamso?.SuDungQuyDinh == true
+                                ? thamso?.CongNoToiDa || 0
+                                : 9999999999999
+                            )
+                          )}
+                          VNĐ!
+                        </Typography>
+                      ) : (
+                        ""
+                      )}
                     </div>
                   </div>
                 </div>
@@ -550,15 +745,24 @@ const HoaDon: NextPageWithLayout = () => {
                     className="mt-2"
                     disabled={
                       Number(
-                        KhachHang?.find((i) => i.MaKH == selectKH.MaKH)
+                        KhachHang?.datas?.find((i) => i.MaKH == selectKH.MaKH)
                           ?.TienNo || 0
-                      ) > Number(thamchieu?.CongNoToiDa || 0) ||
+                      ) >
+                        Number(
+                          thamso?.SuDungQuyDinh == true
+                            ? thamso?.CongNoToiDa || 0
+                            : 9999999999999
+                        ) ||
                       Number(
-                        KhachHang?.find((i) => i.MaKH == selectKH.MaKH)
+                        KhachHang?.datas?.find((i) => i.MaKH == selectKH.MaKH)
                           ?.TienNo || 0
                       ) +
                         debit >
-                        Number(thamchieu?.CongNoToiDa || 0) ||
+                        Number(
+                          thamso?.SuDungQuyDinh == true
+                            ? thamso?.CongNoToiDa || 0
+                            : 9999999999999
+                        ) ||
                       !selectKH.MaKH ||
                       !pay ||
                       list.length === 0

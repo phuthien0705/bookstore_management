@@ -1,3 +1,5 @@
+import { EFilterKHInvoice } from "@/constant/constant";
+import useDebounce from "@/hook/useDebounce";
 import DashboardLayout from "@/layouts/dashboard";
 import { api } from "@/utils/api";
 import { executeAfter500ms } from "@/utils/executeAfter500ms";
@@ -31,6 +33,8 @@ import { parseMoneyFormat } from "@/utils/moneyFormat";
 import { useRef } from "react";
 
 import { isStringNumeric } from "@/utils/isStringNumeric";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { useSession } from "next-auth/react";
 import { toast } from "react-hot-toast";
 import { useReactToPrint } from "react-to-print";
 
@@ -41,7 +45,7 @@ const ThuTien: NextPageWithLayout = () => {
 
   const dayJsVi = dayjs;
   dayJsVi.locale(locale);
-
+  const { data: sessionData } = useSession();
   const [today, setDate] = useState(new Date());
   const utils = api.useContext();
   const [selectKH, setKH] = useState<KHACHHANG>(defaultValue);
@@ -49,6 +53,12 @@ const ThuTien: NextPageWithLayout = () => {
   const [debit, setDebit] = useState<number>(0);
   const [curr, setCurr] = useState<number>(0);
   const payPDF = useRef(null);
+  // Search Customer
+  const [filterVauleKH, setFilterValueKH] = useState(EFilterKHInvoice.all);
+  const [searchValueKH, setSearchValueKH] = useState<string>("");
+  const [searchValueDebouncedKH, setSearchValueDebouncedKH] =
+    useState<string>("");
+  const debouncedKH = useDebounce({ value: searchValueKH, delay: 500 });
 
   const printPay = useReactToPrint({
     content: () => payPDF.current,
@@ -57,19 +67,31 @@ const ThuTien: NextPageWithLayout = () => {
   useEffect(() => {
     setDebit(Number(curr) - pay);
   }, [curr, pay]);
+  useEffect(() => {
+    setSearchValueDebouncedKH(searchValueKH);
+  }, [debouncedKH]);
 
   const { data: KhachHang, isLoading: isLoadingKH } =
-    api.customer.getKhachHang.useQuery(undefined, {
-      onSuccess(data) {
-        if (selectKH.MaKH !== 0) {
-          setCurr(Number(data?.find((i) => i.MaKH == selectKH.MaKH)?.TienNo));
-        }
+    api.invoice.getKhachHangWithSearch.useQuery(
+      {
+        searchValue: searchValueDebouncedKH,
+        type: filterVauleKH,
       },
-    });
+      {
+        onSuccess(data) {
+          if (selectKH.MaKH !== 0) {
+            setCurr(
+              Number(data.datas?.find((i) => i.MaKH == selectKH.MaKH)?.TienNo)
+            );
+          }
+        },
+      }
+    );
 
   const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
     createPTFunc({
+      MaTK: sessionData?.user?.MaTK || -9,
       SoTien: pay,
       MaKH: selectKH.MaKH,
     });
@@ -92,7 +114,7 @@ const ThuTien: NextPageWithLayout = () => {
       });
       executeAfter500ms(async () => {
         printPay();
-        await utils.customer.getKhachHang.refetch();
+        await utils.invoice.getKhachHangWithSearch.refetch();
         setPay(0);
         toast.success("Tạo phiếu thu tiền thành công!");
       });
@@ -132,17 +154,42 @@ const ThuTien: NextPageWithLayout = () => {
                 <Typography className="mb-4 font-bold">
                   Thông tin khách hàng
                 </Typography>{" "}
+                <div className="m-4 flex justify-end gap-2">
+                  <div className="w-full md:w-56">
+                    <Select
+                      label="Tìm kiếm theo"
+                      onChange={(e) => {
+                        setFilterValueKH(e as unknown as EFilterKHInvoice);
+                      }}
+                    >
+                      <Option value={EFilterKHInvoice.all}>Tất cả</Option>{" "}
+                      <Option value={EFilterKHInvoice.MaKH}>ID khách</Option>
+                      <Option value={EFilterKHInvoice.HoTen}>Họ tên</Option>
+                      <Option value={EFilterKHInvoice.SoDienThoai}>
+                        Số điện thoại
+                      </Option>
+                    </Select>
+                  </div>
+                  <div className="w-full md:w-56">
+                    <Input
+                      label="Tìm kiếm khách hàng"
+                      icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                      value={searchValueKH}
+                      onChange={(e) => setSearchValueKH(e.target.value)}
+                    />
+                  </div>
+                </div>
                 <div className="mb-4 mt-4 flex flex-col gap-6">
                   <div className="w-1/2">
                     <Select
-                      label="Khách hàng (Tên - SĐT): "
+                      label="Khách hàng: "
                       variant="static"
                       disabled={isLoadingKH}
                       onChange={(e) => {
                         setKH((p) => ({ ...p, MaKH: parseInt(e as string) }));
                         setCurr(
                           Number(
-                            KhachHang?.find(
+                            KhachHang?.datas?.find(
                               (i) => i.MaKH == parseInt(e as string)
                             )?.TienNo
                           )
@@ -151,14 +198,15 @@ const ThuTien: NextPageWithLayout = () => {
                     >
                       {isLoadingKH ? (
                         <Option>Đang tải...</Option>
-                      ) : KhachHang && KhachHang.length > 0 ? (
-                        KhachHang.map((item) => (
+                      ) : KhachHang && KhachHang.datas.length > 0 ? (
+                        KhachHang.datas.map((item) => (
                           <Option
                             key={item.MaKH}
                             value={item.MaKH.toString()}
                             className="max-w-300"
                           >
-                            KH: {item.HoTen}
+                            {" "}
+                            ID:{item.MaKH.toString()} {item.HoTen}
                             {" - SDT: "}
                             {item.SoDienThoai}
                           </Option>
@@ -197,8 +245,9 @@ const ThuTien: NextPageWithLayout = () => {
                             className="font-normal"
                           >
                             {
-                              KhachHang?.find((i) => i.MaKH == selectKH.MaKH)
-                                ?.HoTen
+                              KhachHang?.datas?.find(
+                                (i) => i.MaKH == selectKH.MaKH
+                              )?.HoTen
                             }
                           </Typography>
                         </td>
@@ -209,8 +258,9 @@ const ThuTien: NextPageWithLayout = () => {
                             className="font-normal"
                           >
                             {
-                              KhachHang?.find((i) => i.MaKH == selectKH.MaKH)
-                                ?.DiaChi
+                              KhachHang?.datas?.find(
+                                (i) => i.MaKH == selectKH.MaKH
+                              )?.DiaChi
                             }
                           </Typography>
                         </td>
@@ -221,8 +271,9 @@ const ThuTien: NextPageWithLayout = () => {
                             className="font-normal"
                           >
                             {
-                              KhachHang?.find((i) => i.MaKH == selectKH.MaKH)
-                                ?.Email
+                              KhachHang?.datas?.find(
+                                (i) => i.MaKH == selectKH.MaKH
+                              )?.Email
                             }
                           </Typography>
                         </td>
@@ -233,8 +284,9 @@ const ThuTien: NextPageWithLayout = () => {
                             className="font-normal"
                           >
                             {
-                              KhachHang?.find((i) => i.MaKH == selectKH.MaKH)
-                                ?.SoDienThoai
+                              KhachHang?.datas?.find(
+                                (i) => i.MaKH == selectKH.MaKH
+                              )?.SoDienThoai
                             }
                           </Typography>
                         </td>
@@ -245,7 +297,7 @@ const ThuTien: NextPageWithLayout = () => {
                     Số tiền nợ:{" "}
                     {moneyFormat(
                       Number(
-                        KhachHang?.find((i) => i.MaKH == selectKH.MaKH)
+                        KhachHang?.datas?.find((i) => i.MaKH == selectKH.MaKH)
                           ?.TienNo ?? "0"
                       )
                     )}
@@ -266,7 +318,7 @@ const ThuTien: NextPageWithLayout = () => {
                     }}
                   />
                   {debit < 0 ? (
-                    <Typography>
+                    <Typography className="text-red-500">
                       Số tiền thu không được lớn hơn số tiền nợ!{" "}
                     </Typography>
                   ) : (
