@@ -12,10 +12,10 @@ import {
   Input,
   Option,
   Select,
-  Typography,
-  Tabs,
   Tab,
-  TabsHeader
+  Tabs,
+  TabsHeader,
+  Typography,
 } from "@material-tailwind/react";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
@@ -148,8 +148,6 @@ const BookEntryTicket: NextPageWithLayout = () => {
       setBookList((prevBookList) => [...prevBookList, newBook]);
     }
   };
-
- 
 
   const toggleTable = () => {
     setIsTableOpen(!isTableOpen);
@@ -339,7 +337,6 @@ const BookEntryTicket: NextPageWithLayout = () => {
               <Select
                 label="Mã sách"
                 disabled={addNewTab}
-                value={addNewTab ? undefined : bookId}
                 onChange={(e) => {
                   setBookId(e as string);
                   setPublisher(
@@ -364,7 +361,9 @@ const BookEntryTicket: NextPageWithLayout = () => {
                 ) : bookListDueToDauSach ? (
                   bookListDueToDauSach.map((book) => (
                     <Option key={book.MaSach} value={book.MaSach.toString()}>
-                      {book.MaSach} ({book.NamXuatBan}, {book.NhaXuatBan}, {moneyFormat(Number(book.DonGiaBan))}đ) - SL: {book.SoLuongTon}
+                      {book.MaSach} ({book.NamXuatBan}, {book.NhaXuatBan},{" "}
+                      {moneyFormat(Number(book.DonGiaBan))}đ) - SL:{" "}
+                      {book.SoLuongTon}
                     </Option>
                   ))
                 ) : (
@@ -414,18 +413,22 @@ const BookEntryTicket: NextPageWithLayout = () => {
                   <TabsHeader>
                     <Tab
                       value={"1"}
-                      className={`whitespace-nowrap mr-1 ${addNewTab ? 'text-blue-500' : ''}`}
+                      className={`mr-1 whitespace-nowrap ${
+                        addNewTab ? "text-blue-500" : ""
+                      }`}
                       onClick={() => {
-                        setAddNewTab(true)
+                        setAddNewTab(true);
                       }}
                     >
                       Thêm sách mới
                     </Tab>
                     <Tab
                       value={"2"}
-                      className={`whitespace-nowrap ml-1 ${!addNewTab ? 'text-blue-500' : ''}`}
+                      className={`ml-1 whitespace-nowrap ${
+                        !addNewTab ? "text-blue-500" : ""
+                      }`}
                       onClick={() => {
-                        setAddNewTab(false)
+                        setAddNewTab(false);
                       }}
                     >
                       Thêm sách đã có
