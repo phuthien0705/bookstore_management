@@ -32,6 +32,7 @@ const defaultValue: KHACHHANG = {
 import { parseMoneyFormat } from "@/utils/moneyFormat";
 import { useRef } from "react";
 
+import { isStringNumeric } from "@/utils/isStringNumeric";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { useSession } from "next-auth/react";
 import { toast } from "react-hot-toast";
@@ -311,7 +312,7 @@ const ThuTien: NextPageWithLayout = () => {
                     label="Số tiền thu"
                     value={pay}
                     onChange={(e) => {
-                      if (e.target.value.includes("-")) return;
+                      if (!isStringNumeric(e.target.value)) return;
                       setPay(Number(e.target.value || "0"));
                       setDebit(curr - pay);
                     }}
