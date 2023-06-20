@@ -5,6 +5,7 @@ import DashboardLayout from "@/layouts/dashboard";
 import { api } from "@/utils/api";
 import { executeAfter500ms } from "@/utils/executeAfter500ms";
 import { moneyFormat, parseMoneyFormat } from "@/utils/moneyFormat";
+
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -71,7 +72,7 @@ const HoaDon: NextPageWithLayout = () => {
   const utils = api.useContext();
   const { data: sessionData } = useSession();
   const { data: thamso } = api.invoice.getReference.useQuery();
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState("1");
   const [selectKH, setKH] = useState<TKhachHanng>(defaultValue);
   const [currentBook, setCurrentBook] = useState<BID>(defaultBID);
   const [list, setList] = useState<LBook[]>([]);
@@ -94,7 +95,7 @@ const HoaDon: NextPageWithLayout = () => {
     setFilterValueKH(EFilterKHInvoice.all);
     setSearchValue("");
     setSearchValueKH("");
-    setQuantity(1);
+    setQuantity("1");
     setKH(defaultValue);
     setCurrentBook(defaultBID);
     setList([]);
@@ -132,7 +133,7 @@ const HoaDon: NextPageWithLayout = () => {
       setList([
         {
           MaSach: currentBook.MaSach,
-          SoLuong: quantity,
+          SoLuong: Number(quantity),
           DonGia: dongia?.toString() ?? "0",
           ThanhTien: thanhtien?.toString() ?? "0",
         },
@@ -141,14 +142,14 @@ const HoaDon: NextPageWithLayout = () => {
     } else {
       list.push({
         MaSach: currentBook.MaSach,
-        SoLuong: quantity,
+        SoLuong: Number(quantity),
         DonGia: dongia?.toString() ?? "0",
         ThanhTien: thanhtien?.toString() ?? "0",
       });
       setList(list);
       setTotal((Number(thanhtien) + Number(total)).toString());
     }
-    setQuantity(1);
+    setQuantity("1");
     setCurrentBook(defaultBID);
   };
 
@@ -472,9 +473,9 @@ const HoaDon: NextPageWithLayout = () => {
                       label="Số lượng"
                       value={quantity}
                       onChange={(e) => {
-                        if (e.target.value.includes("-")) return;
-                        // if (!isStringNumeric(e.target.value)) return;
-                        setQuantity(Number(e.target.value || "0"));
+                        setQuantity(
+                          moneyFormat(parseMoneyFormat(e.target.value ?? "0"))
+                        );
                       }}
                     />
                     <IconButton
@@ -492,7 +493,7 @@ const HoaDon: NextPageWithLayout = () => {
                               ? thamso?.TonKhoToiThieuSauBan ?? 0
                               : 0
                           ) ||
-                        quantity === 0 ||
+                        Number(quantity) === 0 ||
                         quantity === null
                       }
                       onClick={handleAddBook}
