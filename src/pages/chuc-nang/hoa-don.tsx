@@ -455,7 +455,7 @@ const HoaDon: NextPageWithLayout = () => {
                                 Number(item.DonGiaBan) *
                                   Number(
                                     thamso?.SuDungQuyDinh == true
-                                      ? thamso?.TyLeDonGia ?? 0 / 100
+                                      ? Number(thamso.TyLeDonGia) / 100
                                       : 1
                                   )
                               ) +
@@ -582,11 +582,10 @@ const HoaDon: NextPageWithLayout = () => {
                                         Number(items.DonGiaBan) *
                                           Number(
                                             thamso?.SuDungQuyDinh == true
-                                              ? thamso.TyLeDonGia ?? 0 / 100
+                                              ? Number(thamso.TyLeDonGia) / 100
                                               : 1
                                           )
-                                      )}
-                                    VNĐ
+                                      ) + "VNĐ"}
                                   </Typography>
                                 </td>
                                 <td className="p-4">
