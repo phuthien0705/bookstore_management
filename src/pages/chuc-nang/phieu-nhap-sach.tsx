@@ -12,6 +12,9 @@ import {
   Input,
   Option,
   Select,
+  Tab,
+  Tabs,
+  TabsHeader,
   Typography,
 } from "@material-tailwind/react";
 import { useSession } from "next-auth/react";
@@ -42,7 +45,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
     name: "",
   }); // title id
   const [bookId, setBookId] = useState("");
-
+  const [featureTitle, setFeatureTitle] = useState("thêm sách mới");
   const [publisher, setPublisher] = useState("");
   const [publishedYear, setPublishedYear] = useState("");
   const [price, setPrice] = useState<string>("");
@@ -70,6 +73,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
     }[]
   >([]);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [addNewTab, setAddNewTab] = useState<boolean>(true);
   const utils = api.useContext();
   const { data: titles, isLoading: isLoadingTitles } =
     api.title.getAll.useQuery({});
@@ -332,6 +336,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
 
               <Select
                 label="Mã sách"
+                disabled={addNewTab}
                 onChange={(e) => {
                   setBookId(e as string);
                   setPublisher(
@@ -356,7 +361,9 @@ const BookEntryTicket: NextPageWithLayout = () => {
                 ) : bookListDueToDauSach ? (
                   bookListDueToDauSach.map((book) => (
                     <Option key={book.MaSach} value={book.MaSach.toString()}>
-                      {book.MaSach} ({book.NamXuatBan}, NXB. {book.NhaXuatBan})
+                      {book.MaSach} ({book.NamXuatBan}, {book.NhaXuatBan},{" "}
+                      {moneyFormat(Number(book.DonGiaBan))}đ) - SL:{" "}
+                      {book.SoLuongTon}
                     </Option>
                   ))
                 ) : (
@@ -367,6 +374,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
               <Input
                 value={publishedYear}
                 variant="outlined"
+                disabled={!addNewTab}
                 label="Năm xuất bản"
                 onChange={(e) => {
                   if (!isStringNumeric(e.target.value)) return;
@@ -376,6 +384,7 @@ const BookEntryTicket: NextPageWithLayout = () => {
               <Input
                 variant="outlined"
                 label="Đơn giá nhập (VNĐ)"
+                disabled={!addNewTab}
                 value={price}
                 onChange={(e) => {
                   if (e.target.value.includes("-")) return;
@@ -385,21 +394,48 @@ const BookEntryTicket: NextPageWithLayout = () => {
               <Input
                 value={publisher}
                 variant="outlined"
+                disabled={!addNewTab}
                 label="Nhà xuất bản"
                 onChange={(e) => setPublisher(e.target.value)}
               />
               <Input
                 value={quantity}
                 variant="outlined"
-                label="Số lượng"
+                label={`Số lượng ${addNewTab ? "" : " nhập thêm"}`}
                 onChange={(e) => {
                   if (e.target.value.includes("-")) return;
                   setQuantity(e.target.value);
                 }}
               />
               <div></div>
-              <div className="flex flex-row justify-end gap-10 self-end">
-                <Button onClick={hanldeAddBook}>Thêm sách</Button>
+              <div className="flex flex-row justify-end gap-3 self-end">
+                <Tabs value="1">
+                  <TabsHeader>
+                    <Tab
+                      value={"1"}
+                      className={`mr-1 whitespace-nowrap ${
+                        addNewTab ? "text-blue-500" : ""
+                      }`}
+                      onClick={() => {
+                        setAddNewTab(true);
+                      }}
+                    >
+                      Thêm sách mới
+                    </Tab>
+                    <Tab
+                      value={"2"}
+                      className={`ml-1 whitespace-nowrap ${
+                        !addNewTab ? "text-blue-500" : ""
+                      }`}
+                      onClick={() => {
+                        setAddNewTab(false);
+                      }}
+                    >
+                      Thêm sách đã có
+                    </Tab>
+                  </TabsHeader>
+                </Tabs>
+                <Button onClick={hanldeAddBook}>Thêm vào phiếu</Button>
               </div>
             </div>
           </CardBody>

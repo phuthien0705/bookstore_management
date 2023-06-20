@@ -71,7 +71,7 @@ const BookEntryDetailModal: React.FC<IBookEntryDetailModal> = ({
                       {bookEntryDetail.Sach.NamXuatBan}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                      {bookEntryDetail.Sach.SoLuongTon}
+                      {bookEntryDetail.SoLuong}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                       {moneyFormat(Number(bookEntryDetail.DonGia))} VND
