@@ -68,8 +68,8 @@ export const managerRoutes = [
     pages: [
       {
         icon: <FilledSetting {...icon} />,
-        name: "Tham chiếu",
-        path: "/tham-chieu",
+        name: "Tham số",
+        path: "/tham-so",
       },
       {
         icon: <FilledStaff {...icon} />,

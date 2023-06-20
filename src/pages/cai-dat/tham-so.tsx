@@ -67,7 +67,7 @@ const SettingPage: NextPageWithLayout = () => {
   return (
     <>
       <Head>
-        <title>Thay đổi tham chiếu</title>
+        <title>Thay đổi tham số</title>
       </Head>
       <div className="mb-8 mt-12">
         <Card>

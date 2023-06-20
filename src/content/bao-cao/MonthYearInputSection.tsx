@@ -20,9 +20,9 @@ const MonthYearInputSection = ({
       <div>
         <Input
           label="Tháng"
-          type="number"
           value={month}
           onChange={(e) => {
+            if (e.target.value.includes("-")) return;
             setMonth(e.target.value);
           }}
           className="w-[250px]"
@@ -41,9 +41,9 @@ const MonthYearInputSection = ({
       <div>
         <Input
           label="Năm"
-          type="number"
           value={year}
           onChange={(e) => {
+            if (e.target.value.includes("-")) return;
             setYear(e.target.value);
           }}
           className="w-[250px]"

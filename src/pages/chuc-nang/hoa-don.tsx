@@ -4,7 +4,6 @@ import useDebounce from "@/hook/useDebounce";
 import DashboardLayout from "@/layouts/dashboard";
 import { api } from "@/utils/api";
 import { executeAfter500ms } from "@/utils/executeAfter500ms";
-import { isStringNumeric } from "@/utils/isStringNumeric";
 import { moneyFormat, parseMoneyFormat } from "@/utils/moneyFormat";
 import {
   MagnifyingGlassIcon,
@@ -473,7 +472,8 @@ const HoaDon: NextPageWithLayout = () => {
                       label="Số lượng"
                       value={quantity}
                       onChange={(e) => {
-                        if (!isStringNumeric(e.target.value)) return;
+                        if (e.target.value.includes("-")) return;
+                        // if (!isStringNumeric(e.target.value)) return;
                         setQuantity(Number(e.target.value || "0"));
                       }}
                     />

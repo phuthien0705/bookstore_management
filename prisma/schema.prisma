@@ -103,14 +103,14 @@ model SACH {
 
 model BAOCAOTON {
     Sach     SACH    @relation(fields: [MaSach], references: [MaSach])
-    MaSach   Int     @id
+    MaSach   Int     
     Thang    Int
     Nam      Int
     TonDau   Decimal
     PhatSinh Decimal
     TonCuoi  Decimal
 
-    @@unique([MaSach, Thang, Nam])
+    @@id([MaSach, Thang, Nam])
 }
 
 model PHIEUNHAPSACH {
@@ -181,12 +181,12 @@ model PHIEUTHUTIEN {
 
 model BAOCAOCONGNO {
     KhachHang KHACHHANG @relation(fields: [MaKH], references: [MaKH])
-    MaKH      Int       @id
+    MaKH      Int       
     Thang     Int
     Nam       Int
     TonDau    Decimal
     PhatSinh  Decimal
     TonCuoi   Decimal
 
-    @@unique([MaKH, Thang, Nam])
+    @@id([MaKH, Thang, Nam])
 }
